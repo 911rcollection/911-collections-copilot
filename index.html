@@ -789,13 +789,13 @@ var FALLBACK_USERS=[
   {email:'leoneld151174@gmail.com',name:'Leo Daniszewski',role:'Admin',offices:['Portland','Seattle'],settingsAccess:true,opsAccess:true,password:'911Admin!2026'},
   {email:'shtilmanservices@gmail.com',name:'Moshe Shtilman',role:'Manager',offices:['Portland','Seattle'],settingsAccess:true,opsAccess:true,password:'911Moshe!2026'},
   {email:'officeassistant@911restoration.com',name:'Christina',role:'Manager',offices:['Portland','Seattle'],settingsAccess:true,opsAccess:true,password:'911Chris!2026'},
-  {email:'wa.admin@911restoration.com',name:'Hannah',role:'Staff',offices:['Seattle'],settingsAccess:false,opsAccess:true,password:'911Hannah!2026'}
+  {email:'wa.admin@911restoration.com',name:'Hannah',role:'Staff',offices:['Seattle'],settingsAccess:false,opsAccess:false,password:'911Hannah!2026'}
 ];
 
 const ROLES={
   moshe:{name:'Moshe',mode:'Full',offices:['Portland','Seattle'],canViewSettings:true,canViewErrors:true,canViewOps:true,canViewPayments:true,canViewLiens:true},
   christina:{name:'Christina',mode:'Full',offices:['Portland'],canViewSettings:false,canViewErrors:true,canViewOps:true,canViewPayments:true,canViewLiens:true},
-  hannah:{name:'Hannah',mode:'Full',offices:['Seattle'],canViewSettings:false,canViewErrors:true,canViewOps:true,canViewPayments:true,canViewLiens:true}
+  hannah:{name:'Hannah',mode:'Full',offices:['Seattle'],canViewSettings:false,canViewErrors:false,canViewOps:false,canViewPayments:true,canViewLiens:true}
 };
 
 function loginUser(emailOverride,passwordOverride){
@@ -3823,4 +3823,4 @@ function toggleAccordion(headerEl){
 </script>
 </body>
 </html>
-      
+   
