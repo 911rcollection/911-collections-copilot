@@ -471,6 +471,11 @@ td{font-size:1rem}
     <input type="password" id="loginPassword" placeholder="Enter your password" style="margin-top:8px" onkeydown="if(event.key==='Enter')loginUser()">
     <button class="login-btn" onclick="loginUser()">Sign In</button>
     <div class="login-error" id="loginError"></div>
+    <div id="patSetupSection" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.1);">
+      <div style="font-size:12px;color:#94a3b8;margin-bottom:8px;">First-time setup — enter Airtable PAT to connect:</div>
+      <input type="password" id="loginPatInput" placeholder="Enter Airtable Personal Access Token" style="margin-top:0;font-size:12px;">
+      <button class="login-btn" onclick="savePatAndRetry()" style="margin-top:8px;font-size:12px;padding:8px;background:rgba(59,130,246,0.2);border-color:rgba(59,130,246,0.4);">Save PAT & Connect</button>
+    </div>
   </div>
 </div>
 <div class="app-layout" style="display:none" id="appLayout">
@@ -779,24 +784,16 @@ let SCENARIOS=[
 // ============================================================
 // STATE
 // ============================================================
-let currentRole='moshe';
 let currentScreen='dashboard';var previousScreen='dashboard';
 let selectedCaseJob=null;
 let caseFileTab='timeline';
 var CURRENT_USER=null;
 
-var FALLBACK_USERS=[
-  {email:'leoneld151174@gmail.com',name:'Leo Daniszewski',role:'Admin',offices:['Portland','Seattle'],settingsAccess:true,opsAccess:true,password:'911Admin!2026'},
-  {email:'shtilmanservices@gmail.com',name:'Moshe Shtilman',role:'Manager',offices:['Portland','Seattle'],settingsAccess:true,opsAccess:true,password:'911Moshe!2026'},
-  {email:'officeassistant@911restoration.com',name:'Christina',role:'Manager',offices:['Portland','Seattle'],settingsAccess:true,opsAccess:true,password:'911Chris!2026'},
-  {email:'wa.admin@911restoration.com',name:'Hannah',role:'Staff',offices:['Seattle'],settingsAccess:false,opsAccess:false,password:'911Hannah!2026'}
-];
+// Authentication is managed exclusively through the Airtable Users table.
+// No hardcoded credentials. PAT must be configured on first use via the login screen.
 
-const ROLES={
-  moshe:{name:'Moshe',mode:'Full',offices:['Portland','Seattle'],canViewSettings:true,canViewErrors:true,canViewOps:true,canViewPayments:true,canViewLiens:true},
-  christina:{name:'Christina',mode:'Full',offices:['Portland'],canViewSettings:false,canViewErrors:true,canViewOps:true,canViewPayments:true,canViewLiens:true},
-  hannah:{name:'Hannah',mode:'Full',offices:['Seattle'],canViewSettings:false,canViewErrors:false,canViewOps:false,canViewPayments:true,canViewLiens:true}
-};
+// Role permissions are derived from CURRENT_USER (Airtable Users table).
+// No hardcoded role definitions.
 
 function loginUser(emailOverride,passwordOverride){
   var email=(emailOverride||document.getElementById('loginEmail').value||'').trim().toLowerCase();
@@ -806,7 +803,7 @@ function loginUser(emailOverride,passwordOverride){
   if(!password&&!emailOverride){if(errorEl)errorEl.textContent='Please enter your password.';return;}
   if(errorEl)errorEl.textContent='';
 
-  // Try Airtable first, fall back to hardcoded list
+  // Authenticate via Airtable Users table
   var pat=localStorage.getItem('airtable_pat')||'';
   var foundUser=null;
 
@@ -839,11 +836,10 @@ function loginUser(emailOverride,passwordOverride){
     }
   }
 
-  function tryFallback(){
-    var fb=FALLBACK_USERS.find(function(u){return u.email===email;});
-    if(!fb){if(errorEl)errorEl.textContent='Email not recognized. Contact your administrator.';return;}
-    if(password&&fb.password&&fb.password!==password){if(errorEl)errorEl.textContent='Incorrect password. Please try again.';return;}
-    activateUser(fb);
+  function showPatSetup(msg){
+    if(errorEl)errorEl.textContent=msg||'';
+    var patSection=document.getElementById('patSetupSection');
+    if(patSection)patSection.style.display='block';
   }
 
   if(pat){
@@ -874,9 +870,21 @@ function loginUser(emailOverride,passwordOverride){
           recordId:rec.id
         };
         activateUser(user);
-      } else { tryFallback(); }
-    }).catch(function(){ tryFallback(); });
-  } else { tryFallback(); }
+      } else { if(errorEl)errorEl.textContent='Email not found. Check your email or contact your administrator.'; }
+    }).catch(function(){ if(errorEl)errorEl.textContent='Could not connect to Airtable. Check your PAT in Settings or contact your administrator.'; showPatSetup(''); });
+  } else { showPatSetup('Airtable PAT not configured. Enter your PAT below to connect.'); }
+}
+
+function savePatAndRetry(){
+  var patInput=document.getElementById('loginPatInput');
+  var patVal=patInput?patInput.value.trim():'';
+  if(!patVal){var err=document.getElementById('loginError');if(err)err.textContent='Please enter an Airtable PAT.';return;}
+  localStorage.setItem('airtable_pat',patVal);
+  var patSection=document.getElementById('patSetupSection');
+  if(patSection)patSection.style.display='none';
+  var err=document.getElementById('loginError');
+  if(err)err.textContent='PAT saved. Now sign in with your email and password.';
+  if(patInput)patInput.value='';
 }
 
 function logoutUser(){
@@ -918,7 +926,8 @@ function getRole(){
       canViewLiens:true
     };
   }
-  return ROLES[currentRole];
+  // No authenticated user — return safe read-only defaults to prevent errors
+  return {name:'Guest',mode:'Guided',offices:['Portland','Seattle'],canViewSettings:false,canViewErrors:false,canViewOps:false,canViewPayments:false,canViewLiens:false};
 }
 function filterByOffice(arr){
   const r=getRole();
@@ -989,11 +998,7 @@ function toggleSidebar(){
   const sb=$('sidebar');sb.classList.toggle('collapsed');
   $('toggleIcon').innerHTML=sb.classList.contains('collapsed')?'&#9654;':'&#9664;';
 }
-function switchRole(role){
-  if(CURRENT_USER) return; // role switching disabled when logged in
-  currentRole=role;const r=getRole();
-  renderScreen(currentScreen);
-}
+// switchRole removed — auth is Airtable-only, roles come from CURRENT_USER
 function renderScreen(screen){
   switch(screen){
     case'dashboard':renderDashboard();break;case'ar-aging':renderARTable();break;
@@ -3889,22 +3894,4 @@ setTimeout(function(){
     var btn=document.createElement('button');
     btn.id='screenHelpBtn';
     btn.className='';
-    btn.style.cssText='position:fixed;bottom:20px;right:20px;z-index:1000;padding:10px 20px;font-size:.95rem;border-radius:24px;box-shadow:0 4px 16px rgba(249,115,22,.4);display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;border:none;font-weight:600;cursor:pointer';
-    btn.innerHTML='&#128712; What is this screen?';
-    btn.onclick=function(){showScreenHelp('dashboard')};
-    document.body.appendChild(btn);
-  }
-},300);
-if(typeof logoData!=='undefined')document.getElementById('sidebarLogo').src=logoData;
-
-
-function toggleAccordion(headerEl){
-  headerEl.classList.toggle('open');
-  var body=headerEl.nextElementSibling;
-  if(body&&body.classList.contains('accordion-body')){
-    body.classList.toggle('open');
-  }
-}
-</script>
-</body>
-</html>
+    btn.style.cssText='position:fixed;bottom:20px;right:20px;z-index:1000;padding:10px 20px;font-size:.95rem;border-radius:24px;box-shadow:0 4px 16px rgba(249,115,22,.4);display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;border:none;font-weight:600;cursor:p
