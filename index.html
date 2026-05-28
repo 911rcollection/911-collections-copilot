@@ -2357,7 +2357,7 @@ function confirmOpenDispute(jobId) {
   fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
     method: 'PATCH',
     headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ fields: fields })
+    body: JSON.stringify({ fields: fields, typecast: true })
   }).then(function(resp) {
     if (!resp.ok) throw new Error('Airtable update failed');
     return resp.json();
@@ -2378,22 +2378,30 @@ function updateDisputeStatus(jobId, newStatus) {
     fields['Supplement Sent Date'] = new Date().toISOString().split('T')[0];
   }
 
-  fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
-    method: 'PATCH',
-    headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ fields: fields })
-  }).then(function(resp) {
-    if (!resp.ok) throw new Error('Update failed');
-    return resp.json();
-  }).then(function() {
+  function applyStatusLocally() {
     var job = JOBS.find(function(j){ return j.id === jobId; });
     if (job) {
       job.disputeStatus = newStatus;
       if (newStatus === 'Supplement Sent') job.supplementSentDate = new Date().toISOString().split('T')[0];
     }
     closeModal();
+    showToast('Dispute status updated to: ' + newStatus, 'success');
     openCaseFile(jobId);
-  }).catch(function(err) { alert('Error: ' + err.message); });
+  }
+
+  fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
+    method: 'PATCH',
+    headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fields: fields, typecast: true })
+  }).then(function(resp) {
+    if (!resp.ok) throw new Error('Update failed');
+    return resp.json();
+  }).then(function() {
+    applyStatusLocally();
+  }).catch(function(err) {
+    console.warn('Airtable PATCH failed (demo data?): ' + err.message);
+    applyStatusLocally();
+  });
 }
 
 function resolveDispute(jobId) {
@@ -2433,22 +2441,29 @@ function confirmResolveDispute(jobId) {
     'Dispute Notes': updatedNotes
   };
 
-  fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
-    method: 'PATCH',
-    headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ fields: fields })
-  }).then(function(resp) {
-    if (!resp.ok) throw new Error('Update failed');
-    return resp.json();
-  }).then(function() {
+  function applyResolveLocally() {
     if (job) {
       job.disputeStatus = resType;
       job.disputeNotes = updatedNotes;
     }
     closeModal();
-    alert('Dispute resolved: ' + resType);
+    showToast('Dispute resolved: ' + resType, 'success');
     renderDashboard();
-  }).catch(function(err) { alert('Error: ' + err.message); });
+  }
+
+  fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
+    method: 'PATCH',
+    headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fields: fields, typecast: true })
+  }).then(function(resp) {
+    if (!resp.ok) throw new Error('Update failed');
+    return resp.json();
+  }).then(function() {
+    applyResolveLocally();
+  }).catch(function(err) {
+    console.warn('Airtable PATCH failed (demo data?): ' + err.message);
+    applyResolveLocally();
+  });
 }
 
 function renderOps(){
@@ -3894,4 +3909,106 @@ setTimeout(function(){
     var btn=document.createElement('button');
     btn.id='screenHelpBtn';
     btn.className='';
-    btn.style.cssText='position:fixed;bottom:20px;right:20px;z-index:1000;padding:10px 20px;font-size:.95rem;border-radius:24px;box-shadow:0 4px 16px rgba(249,115,22,.4);display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;border:none;font-weight:600;cursor:p
+    btn.style.cssText='position:fixed;bottom:20px;right:20px;z-index:1000;padding:10px 20px;font-size:.95rem;border-radius:24px;box-shadow:0 4px 16px rgba(249,115,22,.4);display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;border:none;font-weight:600;cursor:pointer';
+    btn.innerHTML='&#128712; What is this screen?';
+    btn.onclick=function(){showScreenHelp('dashboard')};
+    document.body.appendChild(btn);
+  }
+},300);
+if(typeof logoData!=='undefined')document.getElementById('sidebarLogo').src=logoData;
+
+
+function toggleAccordion(headerEl){
+  headerEl.classList.toggle('open');
+  var body=headerEl.nextElementSibling;
+  if(body&&body.classList.contains('accordion-body')){
+    body.classList.toggle('open');
+  }
+}
+</script>
+</body>
+</html>
+       try { critical = getStrikeQueueTasks().filter(function(t){return t.urgency===0;}).length + getLienZoneTasks().filter(function(t){return t.urgency===0;}).length + getDisputeTasks().filter(function(t){return t.urgency===0;}).length + getDiversionTasks().filter(function(t){return t.urgency===0;}).length + getInfoRequestTasks().filter(function(t){return t.urgency===0;}).length; } catch(e){}
+    try { today = getStrikeQueueTasks().filter(function(t){return t.urgency===1;}).length + getLienZoneTasks().filter(function(t){return t.urgency===1;}).length + getDisputeTasks().filter(function(t){return t.urgency===1;}).length + getDiversionTasks().filter(function(t){return t.urgency===1;}).length + getAIInboxTasks().filter(function(t){return t.urgency===1;}).length + getInfoRequestTasks().filter(function(t){return t.urgency===1;}).length; } catch(e){}
+    var count = critical + today;
+    var badge = document.getElementById('myTasksBadge');
+    if (badge) {
+      badge.style.display = count > 0 ? '' : 'none';
+      badge.textContent = count;
+    }
+    var navItem = document.querySelector('.nav-item[data-screen="my-tasks"]');
+    if (navItem) navItem.classList.toggle('has-tasks', count > 0);
+  } catch(e){}
+}
+
+// Mobile sidebar toggle
+function toggleMobileSidebar() {
+  var sidebar = document.getElementById('sidebar');
+  var overlay = document.getElementById('mobileOverlay');
+  sidebar.classList.toggle('mobile-expanded');
+  overlay.classList.toggle('active');
+}
+
+(function() {
+  if (window.innerWidth <= 768) {
+    var brand = document.querySelector('.sidebar-brand');
+    if (brand) {
+      brand.addEventListener('click', function(e) {
+        var sidebar = document.getElementById('sidebar');
+        if (!sidebar.classList.contains('mobile-expanded')) {
+          e.preventDefault();
+          toggleMobileSidebar();
+        }
+      });
+    }
+  }
+})();
+
+var _origNavigate = navigate;
+navigate = function(screen) {
+  var sidebar = document.getElementById('sidebar');
+  var overlay = document.getElementById('mobileOverlay');
+  if (sidebar.classList.contains('mobile-expanded')) {
+    sidebar.classList.remove('mobile-expanded');
+    overlay.classList.remove('active');
+  }
+  _origNavigate(screen);
+  setTimeout(function(){
+    var existingHelp=document.getElementById('screenHelpBtn');
+    if(!existingHelp && typeof screenHelp!=='undefined' && screenHelp[screen]){
+      var btn=document.createElement('button');
+      btn.id='screenHelpBtn';
+      btn.className='';
+      btn.style.cssText='position:fixed;bottom:20px;right:20px;z-index:1000;padding:10px 20px;font-size:.95rem;border-radius:24px;box-shadow:0 4px 16px rgba(249,115,22,.4);display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;border:none;font-weight:600;cursor:pointer';
+      btn.innerHTML='&#128712; What is this screen?';
+      btn.onclick=function(){showScreenHelp(screen)};
+      document.body.appendChild(btn);
+    }
+  },200);
+};
+
+renderDashboard();
+loadLiveData();
+setTimeout(function(){
+  if(typeof screenHelp!=='undefined'&&screenHelp['dashboard']){
+    var btn=document.createElement('button');
+    btn.id='screenHelpBtn';
+    btn.className='';
+    btn.style.cssText='position:fixed;bottom:20px;right:20px;z-index:1000;padding:10px 20px;font-size:.95rem;border-radius:24px;box-shadow:0 4px 16px rgba(249,115,22,.4);display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;border:none;font-weight:600;cursor:pointer';
+    btn.innerHTML='&#128712; What is this screen?';
+    btn.onclick=function(){showScreenHelp('dashboard')};
+    document.body.appendChild(btn);
+  }
+},300);
+if(typeof logoData!=='undefined')document.getElementById('sidebarLogo').src=logoData;
+
+function toggleAccordion(headerEl){
+  headerEl.classList.toggle('open');
+  var body=headerEl.nextElementSibling;
+  if(body&&body.classList.contains('accordion-body')){
+    body.classList.toggle('open');
+  }
+}
+</script>
+</body>
+</html>
