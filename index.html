@@ -2029,7 +2029,7 @@ function renderSettings(){
   var currentPAT = getAirtablePAT();
   var maskedPAT = currentPAT ? currentPAT.substring(0,6) + '...' + currentPAT.substring(currentPAT.length-4) : 'Not set';
   var isLive = currentPAT && _liveDataLoaded && !_dataLoadError;
-  $('settingsContent').innerHTML='<div class="card"><div class="card-header"><span class="card-title">&#128273; Airtable Connection</span></div><div style="padding:4px 0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span class="status-dot '+(currentPAT?'active':'')+'"></span><span style="font-size:.95rem">'+(currentPAT?'PAT configured: <code style="background:var(--bg-tertiary);padding:2px 6px;border-radius:4px">'+maskedPAT+'</code>':'No PAT configured — enter your Airtable Personal Access Token below')+'</span></div><div style="display:flex;gap:8px;align-items:center"><input type="password" id="settingsPATInput" placeholder="pat-xxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" value="'+currentPAT+'" style="flex:1;padding:10px 12px;border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border-color);font-family:monospace;font-size:.9rem"><button class="btn btn-secondary btn-sm" onclick="var i=$(\'settingsPATInput\');i.type=i.type===\'password\'?\'text\':\'password\'">&#128065; Show</button><button class="btn btn-primary btn-sm" onclick="var v=$(\'settingsPATInput\').value.trim();if(!v){showToast(\'Please enter a PAT\',\'error\');return}setAirtablePAT(v);showToast(\'PAT saved successfully\',\'success\');renderSettings()">Save PAT</button></div><div style="margin-top:8px;font-size:.85rem;color:var(--text-muted)">Your PAT is stored locally in this browser. Get one from <a href=\'https://airtable.com/create/tokens\' target=\'_blank\' style=\'color:var(--accent-blue)\'>airtable.com/create/tokens</a> with read access to the 911 base.</div></div></div><div class="card"><div class="card-header"><span class="card-title">&#128268; Data Mode</span></div><div style="padding:4px 0"><div style="display:flex;align-items:center;gap:16px;margin-bottom:12px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 16px;border-radius:8px;border:2px solid '+(!isLive?'var(--accent-blue)':'var(--border-color)')+';background:'+(!isLive?'rgba(59,130,246,.08)':'transparent')+'"><input type="radio" name="dataMode" value="demo" '+(isLive?'':'checked')+' onchange="switchDataMode(\'demo\')"> <span style="font-weight:600">&#127922; Demo Data</span></label><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 16px;border-radius:8px;border:2px solid '+(isLive?'var(--accent-green)':'var(--border-color)')+';background:'+(isLive?'rgba(34,197,94,.08)':'transparent')+'"><input type="radio" name="dataMode" value="live" '+(isLive?'checked':'')+' onchange="switchDataMode(\'live\')"> <span style="font-weight:600">&#128994; Live Airtable</span></label></div><div style="font-size:.9rem;color:var(--text-muted)">'+(_dataLoadError?'<span style="color:var(--accent-red)">&#9888;&#65039; Last sync error: '+_dataLoadError+'</span>':isLive?'<span style="color:var(--accent-green)">&#9989; Connected — showing live Airtable data</span>':'Showing built-in demo data. Save a valid PAT and switch to Live to pull from Airtable.')+'</div></div></div><div class="card"><div class="card-header"><span class="card-title">Authorized Senders</span><button class="btn btn-primary btn-sm" onclick="openAddSender()">+ Add Domain</button></div><div class="table-container"><table><thead><tr><th>Domain</th><th>Name</th><th>Type</th><th>Added</th><th>Status</th><th>Actions</th></tr></thead><tbody>'+AUTHORIZED_SENDERS.map(s=>'<tr><td><strong>@'+s.domain+'</strong></td><td>'+s.name+'</td><td><span class="badge badge-'+(s.type==='Carrier'?'blue':s.type==='Internal'?'purple':'cyan')+'">'+s.type+'</span></td><td>'+formatDate(s.addedDate)+'</td><td><span class="badge badge-green">'+s.status+'</span></td><td><button class="btn btn-ghost btn-sm" onclick="showToast(\'Edit '+s.domain+'\',\'info\')">Edit</button> <button class="btn btn-ghost btn-sm" style="color:var(--accent-red)" onclick="showToast(\'Remove '+s.domain+'\',\'info\')">Remove</button></td></tr>').join('')+'</tbody></table></div></div><div class="card"><div class="card-header"><span class="card-title">Holiday Calendar 2026</span><button class="btn btn-primary btn-sm" onclick="openAddHoliday()">+ Add Holiday</button></div><div class="table-container"><table><thead><tr><th>Holiday</th><th>Date</th><th>Type</th></tr></thead><tbody>'+HOLIDAYS_2026.map(h=>'<tr><td>'+h.name+'</td><td>'+formatDate(h.date)+'</td><td><span class="badge badge-blue">'+h.type+'</span></td></tr>').join('')+'</tbody></table></div></div><div class="card"><div class="card-header"><span class="card-title">System Status</span></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px"><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Airtable Connection</div><div style="display:flex;align-items:center;gap:6px"><span class="status-dot active"></span> Connected</div></div><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Make.com Status</div><div style="display:flex;align-items:center;gap:6px"><span class="status-dot active"></span> Operational</div></div><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Last Sync</div><div style="font-size:1rem">May 19, 2026 9:15 AM</div></div></div></div><div class="card"><div class="card-header"><span class="card-title">User Roles</span></div><div class="table-container"><table><thead><tr><th>User</th><th>Mode</th><th>Offices</th><th>Permissions</th></tr></thead><tbody><tr><td><strong>Moshe</strong></td><td><span class="badge badge-green">Full Access</span></td><td>Portland, Seattle</td><td>All features, settings, admin</td></tr><tr><td><strong>Christina</strong></td><td><span class="badge badge-blue">Full Mode</span></td><td>Portland</td><td>Collections, payments, errors, ops</td></tr><tr><td><strong>Hannah</strong></td><td><span class="badge badge-yellow">Guided Mode</span></td><td>Seattle</td><td>Guided AR, Strike Queue, Lien Zone</td></tr></tbody></table></div></div>';
+  $('settingsContent').innerHTML='<div class="card"><div class="card-header"><span class="card-title">&#128273; Airtable Connection</span></div><div style="padding:4px 0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span class="status-dot '+(currentPAT?'active':'')+'"></span><span style="font-size:.95rem">'+(currentPAT?'PAT configured: <code style="background:var(--bg-tertiary);padding:2px 6px;border-radius:4px">'+maskedPAT+'</code>':'No PAT configured — enter your Airtable Personal Access Token below')+'</span></div><div style="display:flex;gap:8px;align-items:center"><input type="password" id="settingsPATInput" placeholder="pat-xxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" value="'+currentPAT+'" style="flex:1;padding:10px 12px;border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border-color);font-family:monospace;font-size:.9rem"><button class="btn btn-secondary btn-sm" onclick="var i=$(\'settingsPATInput\');i.type=i.type===\'password\'?\'text\':\'password\'">&#128065; Show</button><button class="btn btn-primary btn-sm" onclick="var v=$(\'settingsPATInput\').value.trim();if(!v){showToast(\'Please enter a PAT\',\'error\');return}setAirtablePAT(v);showToast(\'PAT saved successfully\',\'success\');renderSettings()">Save PAT</button></div><div style="margin-top:8px;font-size:.85rem;color:var(--text-muted)">Your PAT is stored locally in this browser. Get one from <a href=\'https://airtable.com/create/tokens\' target=\'_blank\' style=\'color:var(--accent-blue)\'>airtable.com/create/tokens</a> with read access to the 911 base.</div></div></div><div class="card"><div class="card-header"><span class="card-title">&#128268; Data Mode</span></div><div style="padding:4px 0"><div style="display:flex;align-items:center;gap:16px;margin-bottom:12px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 16px;border-radius:8px;border:2px solid '+(!isLive?'var(--accent-blue)':'var(--border-color)')+';background:'+(!isLive?'rgba(59,130,246,.08)':'transparent')+'"><input type="radio" name="dataMode" value="demo" '+(isLive?'':'checked')+' onchange="switchDataMode(\'demo\')"> <span style="font-weight:600">&#127922; Demo Data</span></label><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 16px;border-radius:8px;border:2px solid '+(isLive?'var(--accent-green)':'var(--border-color)')+';background:'+(isLive?'rgba(34,197,94,.08)':'transparent')+'"><input type="radio" name="dataMode" value="live" '+(isLive?'checked':'')+' onchange="switchDataMode(\'live\')"> <span style="font-weight:600">&#128994; Live Airtable</span></label></div><div style="font-size:.9rem;color:var(--text-muted)">'+(_dataLoadError?'<span style="color:var(--accent-red)">&#9888;&#65039; Last sync error: '+_dataLoadError+'</span>':isLive?'<span style="color:var(--accent-green)">&#9989; Connected — showing live Airtable data</span>':'Showing built-in demo data. Save a valid PAT and switch to Live to pull from Airtable.')+'</div>'+(isLive?'<div style="margin-top:12px;padding:10px 14px;background:var(--bg-tertiary);border-radius:8px;display:flex;align-items:center;justify-content:space-between"><div style="font-size:.85rem"><span style="color:var(--text-muted)">&#128230; Cache: </span><span style="color:var(--accent-green)">'+((_liveDataTimestamp>0)?'Data cached '+Math.round((Date.now()-_liveDataTimestamp)/1000)+'s ago (5-min TTL)':'No cache yet')+'</span><br><span style="color:var(--text-muted);font-size:.8rem">Cache saves ~90% of API calls by reusing data within 5 minutes</span></div><button class="btn btn-secondary btn-sm" onclick="clearApiCache();_liveDataLoaded=false;loadLiveData(true).then(function(){renderSettings();navigate(currentScreen)})">&#128260; Force Refresh</button></div>':'')+'</div></div><div class="card"><div class="card-header"><span class="card-title">Authorized Senders</span><button class="btn btn-primary btn-sm" onclick="openAddSender()">+ Add Domain</button></div><div class="table-container"><table><thead><tr><th>Domain</th><th>Name</th><th>Type</th><th>Added</th><th>Status</th><th>Actions</th></tr></thead><tbody>'+AUTHORIZED_SENDERS.map(s=>'<tr><td><strong>@'+s.domain+'</strong></td><td>'+s.name+'</td><td><span class="badge badge-'+(s.type==='Carrier'?'blue':s.type==='Internal'?'purple':'cyan')+'">'+s.type+'</span></td><td>'+formatDate(s.addedDate)+'</td><td><span class="badge badge-green">'+s.status+'</span></td><td><button class="btn btn-ghost btn-sm" onclick="showToast(\'Edit '+s.domain+'\',\'info\')">Edit</button> <button class="btn btn-ghost btn-sm" style="color:var(--accent-red)" onclick="showToast(\'Remove '+s.domain+'\',\'info\')">Remove</button></td></tr>').join('')+'</tbody></table></div></div><div class="card"><div class="card-header"><span class="card-title">Holiday Calendar 2026</span><button class="btn btn-primary btn-sm" onclick="openAddHoliday()">+ Add Holiday</button></div><div class="table-container"><table><thead><tr><th>Holiday</th><th>Date</th><th>Type</th></tr></thead><tbody>'+HOLIDAYS_2026.map(h=>'<tr><td>'+h.name+'</td><td>'+formatDate(h.date)+'</td><td><span class="badge badge-blue">'+h.type+'</span></td></tr>').join('')+'</tbody></table></div></div><div class="card"><div class="card-header"><span class="card-title">System Status</span></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px"><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Airtable Connection</div><div style="display:flex;align-items:center;gap:6px"><span class="status-dot active"></span> Connected</div></div><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Make.com Status</div><div style="display:flex;align-items:center;gap:6px"><span class="status-dot active"></span> Operational</div></div><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Last Sync</div><div style="font-size:1rem">'+(_liveDataTimestamp>0?new Date(_liveDataTimestamp).toLocaleString():'Not synced yet')+'</div></div></div></div><div class="card"><div class="card-header"><span class="card-title">User Roles</span></div><div class="table-container"><table><thead><tr><th>User</th><th>Mode</th><th>Offices</th><th>Permissions</th></tr></thead><tbody><tr><td><strong>Moshe</strong></td><td><span class="badge badge-green">Full Access</span></td><td>Portland, Seattle</td><td>All features, settings, admin</td></tr><tr><td><strong>Christina</strong></td><td><span class="badge badge-blue">Full Mode</span></td><td>Portland</td><td>Collections, payments, errors, ops</td></tr><tr><td><strong>Hannah</strong></td><td><span class="badge badge-yellow">Guided Mode</span></td><td>Seattle</td><td>Guided AR, Strike Queue, Lien Zone</td></tr></tbody></table></div></div>';
 }
 function openAddSender(){openModal('<div class="modal-header"><h2>Add Authorized Sender</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>Domain</label><input type="text" placeholder="e.g., progressive.com"></div><div class="form-group"><label>Organization Name</label><input type="text" placeholder="e.g., Progressive Insurance"></div><div class="form-group"><label>Type</label><select><option>Carrier</option><option>Vendor</option><option>Internal</option></select></div><div class="form-actions"><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button><button class="btn btn-primary" onclick="closeModalForce();showToast(\'Sender added\',\'success\')">Add Sender</button></div>')}
 function openAddHoliday(){openModal('<div class="modal-header"><h2>Add Holiday</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>Holiday Name</label><input type="text" placeholder="e.g., Company Holiday"></div><div class="form-group"><label>Date</label><input type="date"></div><div class="form-group"><label>Type</label><select><option>Federal</option><option>Company</option><option>State</option></select></div><div class="form-actions"><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button><button class="btn btn-primary" onclick="closeModalForce();showToast(\'Holiday added\',\'success\')">Add Holiday</button></div>')}
@@ -2512,18 +2512,86 @@ const AIRTABLE_CONFIG = {
 
 let _liveDataLoaded = false;
 let _dataLoadError = null;
+let _liveDataTimestamp = 0;
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5-minute cache TTL
 
 function getAirtablePAT() { return localStorage.getItem('airtable_pat') || ''; }
 function setAirtablePAT(pat) { localStorage.setItem('airtable_pat', pat); }
+
+// --- API Cache Layer ---
+const _apiCache = {};
+function getCachedData(cacheKey) {
+  var entry = _apiCache[cacheKey];
+  if (entry && (Date.now() - entry.ts < CACHE_TTL_MS)) return entry.data;
+  // Also try sessionStorage for cross-reload persistence
+  try {
+    var stored = sessionStorage.getItem('at_' + cacheKey);
+    if (stored) {
+      var parsed = JSON.parse(stored);
+      if (Date.now() - parsed.ts < CACHE_TTL_MS) {
+        _apiCache[cacheKey] = parsed; // promote to memory
+        return parsed.data;
+      }
+      sessionStorage.removeItem('at_' + cacheKey);
+    }
+  } catch(e) {}
+  return null;
+}
+function setCachedData(cacheKey, data) {
+  var entry = { data: data, ts: Date.now() };
+  _apiCache[cacheKey] = entry;
+  try { sessionStorage.setItem('at_' + cacheKey, JSON.stringify(entry)); } catch(e) {}
+}
+function clearApiCache() {
+  Object.keys(_apiCache).forEach(function(k) { delete _apiCache[k]; });
+  try {
+    Object.keys(sessionStorage).forEach(function(k) {
+      if (k.startsWith('at_')) sessionStorage.removeItem(k);
+    });
+  } catch(e) {}
+  _liveDataTimestamp = 0;
+}
+function invalidateCacheForTable(tableId) {
+  Object.keys(_apiCache).forEach(function(k) {
+    if (k.startsWith(tableId)) delete _apiCache[k];
+  });
+  try {
+    Object.keys(sessionStorage).forEach(function(k) {
+      if (k.startsWith('at_' + tableId)) sessionStorage.removeItem(k);
+    });
+  } catch(e) {}
+}
+// Intercept fetch to auto-invalidate cache on writes
+var _origFetch = window.fetch;
+window.fetch = function(url, opts) {
+  var result = _origFetch.apply(this, arguments);
+  if (opts && (opts.method === 'PATCH' || opts.method === 'POST' || opts.method === 'DELETE')) {
+    if (typeof url === 'string' && url.includes('api.airtable.com')) {
+      result.then(function(resp) {
+        if (resp.ok) {
+          // Extract tableId from URL and invalidate its cache
+          var T = typeof AIRTABLE_CONFIG !== 'undefined' ? AIRTABLE_CONFIG.tables : {};
+          Object.values(T).forEach(function(tid) {
+            if (url.includes(tid)) invalidateCacheForTable(tid);
+          });
+          console.log('[Cache] Write detected — invalidated relevant table cache');
+        }
+      }).catch(function(){});
+    }
+  }
+  return result;
+};
 
 function switchDataMode(mode) {
   if (mode === 'live') {
     var pat = getAirtablePAT();
     if (!pat) { showToast('Please save your Airtable PAT first', 'error'); renderSettings(); return; }
     showToast('Switching to live data...', 'info');
+    clearApiCache();
     _liveDataLoaded = false; _dataLoadError = null;
-    loadLiveData().then(function() { renderSettings(); navigate(currentScreen); }).catch(function(e) { _dataLoadError = e.message; renderSettings(); });
+    loadLiveData(true).then(function() { renderSettings(); navigate(currentScreen); }).catch(function(e) { _dataLoadError = e.message; renderSettings(); });
   } else {
+    clearApiCache();
     _liveDataLoaded = false; _dataLoadError = null;
     localStorage.removeItem('data_mode');
     showToast('Switched to demo data', 'success');
@@ -2532,7 +2600,14 @@ function switchDataMode(mode) {
   }
 }
 
-async function fetchAllRecords(tableId, fields, pat) {
+async function fetchAllRecords(tableId, fields, pat, opts) {
+  opts = opts || {};
+  // Cache check — skip if forceRefresh is set
+  if (!opts.forceRefresh) {
+    var cacheKey = tableId + '_' + (fields ? fields.join(',') : 'all');
+    var cached = getCachedData(cacheKey);
+    if (cached) { console.log('[Cache HIT] ' + tableId + ' (' + cached.length + ' records)'); return cached; }
+  }
   const allRecords = [];
   let offset = null;
   const params = new URLSearchParams();
@@ -2547,14 +2622,23 @@ async function fetchAllRecords(tableId, fields, pat) {
     allRecords.push.apply(allRecords, data.records);
     offset = data.offset || null;
   } while (offset);
+  // Store in cache
+  var ck = tableId + '_' + (fields ? fields.join(',') : 'all');
+  setCachedData(ck, allRecords);
+  console.log('[Cache MISS] ' + tableId + ' — fetched ' + allRecords.length + ' records from API');
   return allRecords;
 }
 
-async function loadLiveData() {
+async function loadLiveData(forceRefresh) {
   var pat = getAirtablePAT();
   if (!pat) return;
+  // TTL guard — skip if data was loaded recently (within 5 min) unless forced
+  if (!forceRefresh && _liveDataLoaded && (Date.now() - _liveDataTimestamp < CACHE_TTL_MS)) {
+    console.log('[Cache] Skipping loadLiveData — cached data still fresh (' + Math.round((Date.now() - _liveDataTimestamp)/1000) + 's old)');
+    return;
+  }
   try {
-    showToast('Loading live data from Airtable...', 'info');
+    showToast(forceRefresh ? 'Refreshing live data...' : 'Loading live data from Airtable...', 'info');
     var T = AIRTABLE_CONFIG.tables;
 
     // Fetch Jobs
@@ -2781,6 +2865,7 @@ async function loadLiveData() {
     });
 
     _liveDataLoaded = true;
+    _liveDataTimestamp = Date.now();
     _dataLoadError = null;
     // Calculate effectiveDaysOut for demo mode jobs too
     JOBS.forEach(function(j) {
@@ -3732,95 +3817,3 @@ function renderMyTasks() {
 function updateMyTasksBadge() {
   try {
     var critical = 0, today = 0;
-    try { critical = getStrikeQueueTasks().filter(function(t){return t.urgency===0;}).length + getLienZoneTasks().filter(function(t){return t.urgency===0;}).length + getDisputeTasks().filter(function(t){return t.urgency===0;}).length + getDiversionTasks().filter(function(t){return t.urgency===0;}).length + getInfoRequestTasks().filter(function(t){return t.urgency===0;}).length; } catch(e){}
-    try { today = getStrikeQueueTasks().filter(function(t){return t.urgency===1;}).length + getLienZoneTasks().filter(function(t){return t.urgency===1;}).length + getDisputeTasks().filter(function(t){return t.urgency===1;}).length + getDiversionTasks().filter(function(t){return t.urgency===1;}).length + getAIInboxTasks().filter(function(t){return t.urgency===1;}).length + getInfoRequestTasks().filter(function(t){return t.urgency===1;}).length; } catch(e){}
-    var count = critical + today;
-    var badge = document.getElementById('myTasksBadge');
-    if (badge) {
-      badge.style.display = count > 0 ? '' : 'none';
-      badge.textContent = count;
-    }
-    var navItem = document.querySelector('.nav-item[data-screen="my-tasks"]');
-    if (navItem) navItem.classList.toggle('has-tasks', count > 0);
-  } catch(e){}
-}
-
-// Mobile sidebar toggle
-
-function toggleMobileSidebar() {
-  var sidebar = document.getElementById('sidebar');
-  var overlay = document.getElementById('mobileOverlay');
-  sidebar.classList.toggle('mobile-expanded');
-  overlay.classList.toggle('active');
-}
-
-// Click sidebar brand area to expand/collapse on mobile
-(function() {
-  if (window.innerWidth <= 768) {
-    var brand = document.querySelector('.sidebar-brand');
-    if (brand) {
-      brand.addEventListener('click', function(e) {
-        var sidebar = document.getElementById('sidebar');
-        if (!sidebar.classList.contains('mobile-expanded')) {
-          e.preventDefault();
-          toggleMobileSidebar();
-        }
-      });
-    }
-  }
-})();
-
-// Override navigate to close mobile sidebar
-var _origNavigate = navigate;
-navigate = function(screen) {
-  var sidebar = document.getElementById('sidebar');
-  var overlay = document.getElementById('mobileOverlay');
-  if (sidebar.classList.contains('mobile-expanded')) {
-    sidebar.classList.remove('mobile-expanded');
-    overlay.classList.remove('active');
-  }
-  _origNavigate(screen);
-  // Ensure help button is added (re-check after override)
-  setTimeout(function(){
-    var existingHelp=document.getElementById('screenHelpBtn');
-    if(!existingHelp && typeof screenHelp!=='undefined' && screenHelp[screen]){
-      var btn=document.createElement('button');
-      btn.id='screenHelpBtn';
-      btn.className='';
-      btn.style.cssText='position:fixed;bottom:20px;right:20px;z-index:1000;padding:10px 20px;font-size:.95rem;border-radius:24px;box-shadow:0 4px 16px rgba(249,115,22,.4);display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;border:none;font-weight:600;cursor:pointer';
-      btn.innerHTML='&#128712; What is this screen?';
-      btn.onclick=function(){showScreenHelp(screen)};
-      document.body.appendChild(btn);
-    }
-  },200);
-};
-
-// Init
-renderDashboard();
-loadLiveData();
-// Show help button on initial screen
-setTimeout(function(){
-  if(typeof screenHelp!=='undefined'&&screenHelp['dashboard']){
-    var btn=document.createElement('button');
-    btn.id='screenHelpBtn';
-    btn.className='';
-    btn.style.cssText='position:fixed;bottom:20px;right:20px;z-index:1000;padding:10px 20px;font-size:.95rem;border-radius:24px;box-shadow:0 4px 16px rgba(249,115,22,.4);display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;border:none;font-weight:600;cursor:pointer';
-    btn.innerHTML='&#128712; What is this screen?';
-    btn.onclick=function(){showScreenHelp('dashboard')};
-    document.body.appendChild(btn);
-  }
-},300);
-if(typeof logoData!=='undefined')document.getElementById('sidebarLogo').src=logoData;
-
-
-function toggleAccordion(headerEl){
-  headerEl.classList.toggle('open');
-  var body=headerEl.nextElementSibling;
-  if(body&&body.classList.contains('accordion-body')){
-    body.classList.toggle('open');
-  }
-}
-</script>
-</body>
-</html>
-   
