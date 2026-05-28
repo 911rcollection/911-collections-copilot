@@ -3926,19 +3926,6 @@ function toggleAccordion(headerEl){
   }
 }
 
-    try { critical = getStrikeQueueTasks().filter(function(t){return t.urgency===0;}).length + getLienZoneTasks().filter(function(t){return t.urgency===0;}).length + getDisputeTasks().filter(function(t){return t.urgency===0;}).length + getDiversionTasks().filter(function(t){return t.urgency===0;}).length + getInfoRequestTasks().filter(function(t){return t.urgency===0;}).length; } catch(e){}
-    try { today = getStrikeQueueTasks().filter(function(t){return t.urgency===1;}).length + getLienZoneTasks().filter(function(t){return t.urgency===1;}).length + getDisputeTasks().filter(function(t){return t.urgency===1;}).length + getDiversionTasks().filter(function(t){return t.urgency===1;}).length + getAIInboxTasks().filter(function(t){return t.urgency===1;}).length + getInfoRequestTasks().filter(function(t){return t.urgency===1;}).length; } catch(e){}
-    var count = critical + today;
-    var badge = document.getElementById('myTasksBadge');
-    if (badge) {
-      badge.style.display = count > 0 ? '' : 'none';
-      badge.textContent = count;
-    }
-    var navItem = document.querySelector('.nav-item[data-screen="my-tasks"]');
-    if (navItem) navItem.classList.toggle('has-tasks', count > 0);
-  } catch(e){}
-}
-
 // Mobile sidebar toggle
 function toggleMobileSidebar() {
   var sidebar = document.getElementById('sidebar');
