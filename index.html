@@ -2342,9 +2342,9 @@ function confirmOpenDispute(jobId) {
   if (!pat) { alert('Connect Airtable PAT first'); return; }
 
   var fields = {
-    'Dispute Status': { name: 'Active Dispute' },
+    'Dispute Status': 'Active Dispute',
     'Dispute Date': new Date().toISOString().split('T')[0],
-    'Dispute Category': { name: cat },
+    'Dispute Category': cat,
     'Dispute Notes': notes
   };
   if (ourEst > 0) fields['Our Estimate'] = ourEst;
@@ -2372,7 +2372,7 @@ function confirmOpenDispute(jobId) {
   fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
     method: 'PATCH',
     headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ fields: fields })
+    body: JSON.stringify({ fields: fields, typecast: true })
   }).then(function(resp) {
     if (!resp.ok) throw new Error('Airtable update failed');
     return resp.json();
@@ -2388,7 +2388,7 @@ function updateDisputeStatus(jobId, newStatus) {
   var pat = getAirtablePAT();
   if (!pat) { alert('Connect Airtable PAT first'); return; }
 
-  var fields = { 'Dispute Status': { name: newStatus } };
+  var fields = { 'Dispute Status': newStatus };
   if (newStatus === 'Supplement Sent') {
     fields['Supplement Sent Date'] = new Date().toISOString().split('T')[0];
   }
@@ -2396,9 +2396,9 @@ function updateDisputeStatus(jobId, newStatus) {
   fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
     method: 'PATCH',
     headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ fields: fields })
+    body: JSON.stringify({ fields: fields, typecast: true })
   }).then(function(resp) {
-    if (!resp.ok) throw new Error('Update failed');
+    if (!resp.ok) return resp.text().then(function(t){ throw new Error('Update failed (' + resp.status + '): ' + t); });
     return resp.json();
   }).then(function() {
     var job = JOBS.find(function(j){ return j.id === jobId; });
@@ -2444,16 +2444,16 @@ function confirmResolveDispute(jobId) {
   var updatedNotes = existingNotes + '\n\n--- RESOLVED ' + new Date().toLocaleDateString() + ' ---\n' + resType + (amount ? ' | Agreed: $' + fmtNum(amount) : '') + (notes ? '\n' + notes : '');
 
   var fields = {
-    'Dispute Status': { name: resType },
+    'Dispute Status': resType,
     'Dispute Notes': updatedNotes
   };
 
   fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
     method: 'PATCH',
     headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ fields: fields })
+    body: JSON.stringify({ fields: fields, typecast: true })
   }).then(function(resp) {
-    if (!resp.ok) throw new Error('Update failed');
+    if (!resp.ok) return resp.text().then(function(t){ throw new Error('Update failed (' + resp.status + '): ' + t); });
     return resp.json();
   }).then(function() {
     if (job) {
