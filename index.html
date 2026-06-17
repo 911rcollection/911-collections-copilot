@@ -2865,7 +2865,7 @@ function confirmCarrierInfoRequest(jobId) {
 
   if (pat) {
     var jobFields = {
-      'Carrier Info Request Status': { name: 'Pending — Gathering Docs' },
+      'Carrier Info Request Status': 'Pending — Gathering Docs',
       'Info Request Date': today,
       'Info Requested Items': requestedItems,
       'Info Response Deadline': deadline
@@ -2949,7 +2949,7 @@ function confirmMarkDocsSent(jobId) {
   if (pat) {
     var jobFields = {
       'Info Docs Sent Date': sentDate,
-      'Carrier Info Request Status': { name: 'Docs Sent — Awaiting Response' },
+      'Carrier Info Request Status': 'Docs Sent — Awaiting Response',
       'Aging Paused': false,
       'Aging Pause Days': newPauseDays
     };
@@ -3180,7 +3180,7 @@ function confirmCarrierFullAgreement(jobId) {
 
   if (pat) {
     var jobFields = {
-      'Carrier Response Status': { name: 'Agreed — Full' },
+      'Carrier Response Status': 'Agreed — Full',
       'Carrier Agreed Amount': amount,
       'Carrier Response Date': date,
       'Carrier Response Notes': notes + (refNum ? '\nReference #: ' + refNum : ''),
@@ -3354,11 +3354,11 @@ function confirmCarrierPartialAgreement(jobId) {
 
   if (pat) {
     var jobFields = {
-      'Carrier Response Status': { name: 'Agreed — Partial' },
+      'Carrier Response Status': 'Agreed — Partial',
       'Carrier Agreed Amount': partial,
       'Carrier Response Date': date,
       'Carrier Response Notes': notes,
-      'Partial Gap Decision': { name: gapDecision },
+      'Partial Gap Decision': gapDecision,
       'Communication Track': j.communicationTrack ? { name: j.communicationTrack } : null,
       'Track Assigned Date': j.trackAssignedDate || null
     };
