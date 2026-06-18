@@ -3228,7 +3228,7 @@ function showSendConfirmationModal(jobId, responseType, agreedAmount, gap, respD
   var subject = '', body = '';
 
   if (responseType === 'full') {
-    subject = 'Payment Confirmation — Claim ' + (j.claimNum||j.jobNum) + ' — ' + j.jobNum;
+    subject = 'Payment Confirmation — Claim ' + (j.claimNum||j.jobNum);
     body = 'Dear ' + adjName + ',\n\n' +
       'Thank you for confirming payment for the above-referenced claim.\n\n' +
       'This email confirms the following:\n' +
@@ -3243,7 +3243,7 @@ function showSendConfirmationModal(jobId, responseType, agreedAmount, gap, respD
       'Best regards,\n' +
       '911 Restoration — Collections Department';
   } else if (responseType === 'partial') {
-    subject = 'Partial Payment Acknowledgment — Claim ' + (j.claimNum||j.jobNum) + ' — ' + j.jobNum;
+    subject = 'Partial Payment Acknowledgment — Claim ' + (j.claimNum||j.jobNum);
     body = 'Dear ' + adjName + ',\n\n' +
       'We are writing to acknowledge the partial payment agreement for the above-referenced claim.\n\n' +
       'Summary:\n' +
@@ -3259,7 +3259,7 @@ function showSendConfirmationModal(jobId, responseType, agreedAmount, gap, respD
       'Best regards,\n' +
       '911 Restoration — Collections Department';
   } else if (responseType === 'dispute') {
-    subject = 'Estimate Dispute Notice — Claim ' + (j.claimNum||j.jobNum) + ' — ' + j.jobNum;
+    subject = 'Estimate Dispute Notice — Claim ' + (j.claimNum||j.jobNum);
     body = 'Dear ' + adjName + ',\n\n' +
       'We are writing to formally dispute the estimate for the above-referenced claim.\n\n' +
       '• Job: ' + j.jobNum + '\n' +
