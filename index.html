@@ -813,7 +813,7 @@ function saveAdminPat(){
   var v=(inp&&inp.value||'').trim();
   var s=document.getElementById('adminPatStatus');
   if(!v){if(s){s.textContent='Please paste an Airtable PAT.';s.style.color='#d33';}return;}
-  localStorage.setItem('airtable_pat',v);
+  localStorage.setItem('proxy_token',v);
   if(inp)inp.value='';
   if(s){s.textContent='✓ Airtable connection saved on this device. You can sign in now.';s.style.color='#2a8a5a';}
 }
@@ -826,7 +826,7 @@ function loginUser(emailOverride,passwordOverride){
   if(errorEl)errorEl.textContent='';
 
   // Try Airtable first, fall back to hardcoded list
-  var pat=localStorage.getItem('airtable_pat')||'';
+  var pat=localStorage.getItem('proxy_token')||'';
   var foundUser=null;
 
   function activateUser(user){
@@ -852,7 +852,7 @@ function loginUser(emailOverride,passwordOverride){
     // Update last login in Airtable if possible
     if(pat&&user.recordId){
       fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.users+'/'+user.recordId,{
-        method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
+        method:'PATCH',headers:{'X-Proxy-Token':pat,'Content-Type':'application/json'},
         body:JSON.stringify({fields:{'Last Login':new Date().toISOString()}})
       }).catch(function(){});
     }
@@ -869,7 +869,7 @@ function loginUser(emailOverride,passwordOverride){
   if(pat){
     var formula=encodeURIComponent('{Email}="'+email+'"');
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.users+'?filterByFormula='+formula+'&maxRecords=1',{
-      headers:{'Authorization':'Bearer '+pat}
+      headers:{'X-Proxy-Token':pat}
     }).then(function(r){if(!r.ok)throw new Error('API error');return r.json();})
     .then(function(data){
       if(data.records&&data.records.length>0){
@@ -1320,7 +1320,7 @@ function saveCallAndLog(taskId){
     };
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{
       method:'POST',
-      headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
+      headers:{'X-Proxy-Token':pat,'Content-Type':'application/json'},
       body:JSON.stringify({fields:fields})
     }).then(function(r){
       if(r.ok){showToast('Call logged to Airtable','success');return r.json();}
@@ -1656,7 +1656,7 @@ function sendEmailAndLog(jobId){
   var pat=getAirtablePAT();
   if(pat){
     var fields={'Message':logMsg,'Channel':'Email','Direction':'Outbound','Source':'Command Center','Log Entry':newEntry.subject,'Date':newEntry.date,'Logged By':'Command Center'};
-    fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{method:'POST',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},body:JSON.stringify({fields:fields})}).then(function(r){if(r.ok){return r.json();}else{showToast('Airtable log failed ('+r.status+')','error');}}).then(function(data){if(data&&data.id){newEntry.id=data.id;}}).catch(function(e){showToast('Network error logging email','error');});
+    fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{method:'POST',headers:{'X-Proxy-Token':pat,'Content-Type':'application/json'},body:JSON.stringify({fields:fields})}).then(function(r){if(r.ok){return r.json();}else{showToast('Airtable log failed ('+r.status+')','error');}}).then(function(data){if(data&&data.id){newEntry.id=data.id;}}).catch(function(e){showToast('Network error logging email','error');});
   }
   closeModalForce();
   showToast('Email opened in mail client + logged to CommsLog','success');
@@ -1948,7 +1948,7 @@ function setLienMode(jobId,mode){
   if(!pat){showToast('Lien mode saved locally only — no PAT','warning');return;}
   fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.jobs+'/'+jobId,{
     method:'PATCH',
-    headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
+    headers:{'X-Proxy-Token':pat,'Content-Type':'application/json'},
     body:JSON.stringify({fields:{'Lien Mode':mode},typecast:true})
   }).then(function(resp){
     if(!resp.ok) throw new Error('Airtable update failed ('+resp.status+')');
@@ -2000,7 +2000,7 @@ function confirmResolvePayment(paymentId){
     // Write to Airtable if connected
     var pat=getAirtablePAT();
     if(pat&&p.id.startsWith('rec')){
-      fetch('https://api.airtable.com/v0/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.payments+'/'+p.id,{method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},body:JSON.stringify({fields:{'Recovery Status':resolution,'Recovery Step':9},typecast:true})}).then(function(){showToast('Airtable updated','success')}).catch(function(){showToast('Local only — Airtable update failed','warning')});
+      fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.payments+'/'+p.id,{method:'PATCH',headers:{'X-Proxy-Token':pat,'Content-Type':'application/json'},body:JSON.stringify({fields:{'Recovery Status':resolution,'Recovery Step':9},typecast:true})}).then(function(){showToast('Airtable updated','success')}).catch(function(){showToast('Local only — Airtable update failed','warning')});
     }
   }
   closeModalForce();
@@ -2371,7 +2371,7 @@ function confirmOpenDispute(jobId) {
 
   fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
     method: 'PATCH',
-    headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+    headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
     body: JSON.stringify({ fields: fields, typecast: true })
   }).then(function(resp) {
     if (!resp.ok) throw new Error('Airtable update failed');
@@ -2395,7 +2395,7 @@ function updateDisputeStatus(jobId, newStatus) {
 
   fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
     method: 'PATCH',
-    headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+    headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
     body: JSON.stringify({ fields: fields, typecast: true })
   }).then(function(resp) {
     if (!resp.ok) return resp.text().then(function(t){ throw new Error('Update failed (' + resp.status + '): ' + t); });
@@ -2450,7 +2450,7 @@ function confirmResolveDispute(jobId) {
 
   fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
     method: 'PATCH',
-    headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+    headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
     body: JSON.stringify({ fields: fields, typecast: true })
   }).then(function(resp) {
     if (!resp.ok) return resp.text().then(function(t){ throw new Error('Update failed (' + resp.status + '): ' + t); });
@@ -2512,7 +2512,7 @@ function renderOps(){
 // ============================================================
 const AIRTABLE_CONFIG = {
   baseId: 'app5yjgGXTznjT0Or',
-  apiUrl: 'https://api.airtable.com/v0',
+  apiUrl: 'https://collections-airtable-proxy.911rcollection.workers.dev/api',
   tables: {
     jobs: 'tblwuJAsF1d8F2hk1',
     invoices: 'tblGIhyzpiHfCSjHB',
@@ -2533,8 +2533,11 @@ const AIRTABLE_CONFIG = {
 let _liveDataLoaded = false;
 let _dataLoadError = null;
 
-function getAirtablePAT() { return localStorage.getItem('airtable_pat') || ''; }
-function setAirtablePAT(pat) { localStorage.setItem('airtable_pat', pat); }
+// SECURITY: app no longer holds the Airtable PAT. It sends the Cloudflare Worker proxy token (X-Proxy-Token).
+// Replace PASTE_PROXY_TOKEN_HERE below with the PROXY_TOKEN value you set as a Worker secret, OR set it at runtime via Settings (stored in localStorage 'proxy_token').
+var PROXY_TOKEN_PLACEHOLDER = 'PASTE_PROXY_TOKEN_HERE';
+function getAirtablePAT() { return localStorage.getItem('proxy_token') || (PROXY_TOKEN_PLACEHOLDER === 'PASTE_PROXY_TOKEN_HERE' ? '' : PROXY_TOKEN_PLACEHOLDER); }
+function setAirtablePAT(pat) { localStorage.setItem('proxy_token', pat); }
 
 function switchDataMode(mode) {
   if (mode === 'live') {
@@ -2561,7 +2564,7 @@ async function fetchAllRecords(tableId, fields, pat) {
   do {
     if (offset) params.set('offset', offset);
     var url = AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + tableId + '?' + params;
-    var resp = await fetch(url, { headers: { 'Authorization': 'Bearer ' + pat } });
+    var resp = await fetch(url, { headers: { 'X-Proxy-Token': pat } });
     if (!resp.ok) throw new Error('Airtable API error ' + resp.status + ': ' + resp.statusText);
     var data = await resp.json();
     allRecords.push.apply(allRecords, data.records);
@@ -2876,7 +2879,7 @@ function confirmCarrierInfoRequest(jobId) {
     }
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
       method: 'PATCH',
-      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ typecast: true, fields: jobFields })
     }).then(function(r){ if (!r.ok) throw new Error('Jobs PATCH failed ' + r.status); })
       .catch(function(e){ showToast('Airtable update failed: ' + e.message, 'error'); });
@@ -2885,7 +2888,7 @@ function confirmCarrierInfoRequest(jobId) {
     var taskDesc = 'Carrier ' + (j.carrier||'') + ' requested: ' + (requestedItems||'documents').substring(0,200) + (deadline ? '. Send by ' + deadline + '.' : '.');
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.hsq, {
       method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ typecast: true, fields: {
         'Task Type': 'Carrier Info Request — Gather & Send Docs',
         'Priority': 'P2',
@@ -2957,7 +2960,7 @@ function confirmMarkDocsSent(jobId) {
 
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
       method: 'PATCH',
-      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ typecast: true, fields: jobFields })
     }).then(function(r){ if (!r.ok) throw new Error('Jobs PATCH failed'); })
       .catch(function(e){ showToast('Airtable update failed: ' + e.message, 'error'); });
@@ -2966,7 +2969,7 @@ function confirmMarkDocsSent(jobId) {
     var logMsg = 'DOCS SENT — ' + j.jobNum + '\nSent via: ' + sentVia + '\nDescription: ' + sentDesc + '\nResponse expected: ' + responseExpected;
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.commsLog, {
       method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ fields: {
         'Message': logMsg, 'Channel': sentVia, 'Direction': 'Outbound',
         'Source': 'Command Center', 'Log Entry': sentDate + ' — Docs Sent — ' + j.jobNum,
@@ -2978,7 +2981,7 @@ function confirmMarkDocsSent(jobId) {
     if (responseExpected) {
       fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.hsq, {
         method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+        headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
         body: JSON.stringify({ typecast: true, fields: {
           'Task Type': 'Carrier Info Request — Follow Up',
           'Priority': 'P2',
@@ -3191,7 +3194,7 @@ function confirmCarrierFullAgreement(jobId) {
 
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
       method: 'PATCH',
-      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ typecast: true, fields: jobFields })
     }).then(function(r){ if (!r.ok) throw new Error('Jobs PATCH failed ' + r.status); })
       .catch(function(e){ showToast('Airtable update failed: ' + e.message, 'error'); });
@@ -3200,7 +3203,7 @@ function confirmCarrierFullAgreement(jobId) {
     var logMsg = 'CARRIER RESPONSE: Full Agreement — ' + j.jobNum + '\nAgreed Amount: ' + fmt(amount) + '\nDate: ' + date + (refNum ? '\nRef #: ' + refNum : '') + (notes ? '\nNotes: ' + notes : '');
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.commsLog, {
       method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ fields: {
         'Message': logMsg, 'Channel': 'Email', 'Direction': 'Inbound',
         'Source': 'Command Center', 'Log Entry': date + ' — Carrier Response: Full Agreement — ' + j.jobNum,
@@ -3306,7 +3309,7 @@ function sendAdjusterConfirmation(jobId, responseType) {
     var logMsg = 'OUTBOUND CONFIRMATION (' + responseType.toUpperCase() + ')\nTo: ' + to + '\nSubject: ' + subject + '\n\n' + body;
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.commsLog, {
       method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ fields: {
         'Message': logMsg, 'Channel': 'Email', 'Direction': 'Outbound',
         'Source': 'Command Center', 'Log Entry': new Date().toISOString().split('T')[0] + ' — Sent ' + responseType + ' confirmation to ' + to,
@@ -3364,7 +3367,7 @@ function confirmCarrierPartialAgreement(jobId) {
     };
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
       method: 'PATCH',
-      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ typecast: true, fields: jobFields })
     }).then(function(r){ if (!r.ok) throw new Error('Jobs PATCH failed ' + r.status); })
       .catch(function(e){ showToast('Airtable update failed: ' + e.message, 'error'); });
@@ -3372,7 +3375,7 @@ function confirmCarrierPartialAgreement(jobId) {
     var logMsg = 'CARRIER RESPONSE: Partial Agreement — ' + j.jobNum + '\nAgreed: ' + fmt(partial) + ' of ' + fmt(j.amtInvoiced) + '\nGap: ' + fmt(gap) + '\nGap Decision: ' + gapDecision + (notes ? '\nNotes: ' + notes : '');
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.commsLog, {
       method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ fields: {
         'Message': logMsg, 'Channel': 'Email', 'Direction': 'Inbound',
         'Source': 'Command Center', 'Log Entry': date + ' — Carrier Response: Partial Agreement — ' + j.jobNum,
@@ -3428,13 +3431,13 @@ function setCommTrack(jobId, track) {
   if(pat&&jobId.startsWith('rec')){
     var fields={'Communication Track':track?{name:track}:null,'Track Assigned Date':j.trackAssignedDate||null};
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.jobs+'/'+jobId,{
-      method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
+      method:'PATCH',headers:{'X-Proxy-Token':pat,'Content-Type':'application/json'},
       body:JSON.stringify({typecast:true,fields:fields})
     }).then(function(r){if(!r.ok)throw new Error('PATCH failed '+r.status)})
       .catch(function(e){showToast('Airtable update failed: '+e.message,'error')});
     // Log track assignment to CommsLog
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{
-      method:'POST',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
+      method:'POST',headers:{'X-Proxy-Token':pat,'Content-Type':'application/json'},
       body:JSON.stringify({fields:{'Message':'Communication Track set to: '+track+' for '+j.jobNum,'Channel':'system','Direction':'Outbound','Source':'Command Center','Log Entry':new Date().toISOString().split('T')[0]+' — Track assigned: '+track+' — '+j.jobNum,'Date':new Date().toISOString(),'Logged By':'Command Center','Linked Job':[jobId]}})
     }).catch(function(e){console.warn('CommsLog failed:',e)});
   }
