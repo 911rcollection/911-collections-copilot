@@ -366,7 +366,7 @@ td{font-size:1rem}
   /* Page header - sticky on mobile */
   .page-header{padding-top:8px;position:sticky;top:0;z-index:50;background:var(--bg-primary);padding-bottom:8px;border-bottom:1px solid var(--border);margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}
   .page-header h1{font-size:1.3rem}
-  /* Tables — horizontal scroll */
+  /* Tables â horizontal scroll */
   .table-container,.card{overflow-x:auto;-webkit-overflow-scrolling:touch}
   table{min-width:600px}
   th,td{padding:10px 12px;font-size:.9rem;white-space:nowrap}
@@ -403,7 +403,7 @@ td{font-size:1rem}
   /* Bar charts */
   .bar-row{flex-direction:column;gap:4px}
   .bar-label{min-width:0;width:100%}
-  /* Ops dashboard charts — stack on mobile */
+  /* Ops dashboard charts â stack on mobile */
   #opsContent>div[style*="grid-template-columns: 1fr 1fr"],#opsContent>div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   .ops-chart-card{padding:14px}
   /* Hide hamburger btn - we don't need it anymore */
@@ -472,7 +472,7 @@ td{font-size:1rem}
     <button class="login-btn" onclick="loginUser()">Sign In</button>
     <div class="login-error" id="loginError"></div>
     <details id="adminSetup" style="margin-top:16px;text-align:left">
-      <summary style="cursor:pointer;font-size:13px;color:#8a94a6">Admin setup — connect Airtable (one-time)</summary>
+      <summary style="cursor:pointer;font-size:13px;color:#8a94a6">Admin setup â connect Airtable (one-time)</summary>
       <p style="font-size:12px;color:#9aa3b2;margin:8px 0 4px">Paste the Airtable Personal Access Token (PAT). It is stored only in this browser (localStorage) and is required to sign in. The admin (or Moshe) does this once per device.</p>
       <input type="password" id="adminPatInput" placeholder="Airtable PAT (pat...)" autocomplete="off">
       <button class="login-btn" style="margin-top:8px" onclick="saveAdminPat()">Save connection</button>
@@ -572,7 +572,7 @@ td{font-size:1rem}
 
     <!-- AI INBOX -->
     <div class="screen" id="screen-ai-inbox">
-      <div class="page-header"><div><h1>AI Inbox</h1><div class="subtitle">S-03 Email Reply Parser — AI-classified adjuster responses</div></div><button class="btn btn-secondary" onclick="showToast('Inbox refreshed','info')">&#8635; Refresh</button></div>
+      <div class="page-header"><div><h1>AI Inbox</h1><div class="subtitle">S-03 Email Reply Parser â AI-classified adjuster responses</div></div><button class="btn btn-secondary" onclick="showToast('Inbox refreshed','info')">&#8635; Refresh</button></div>
       <div class="kpi-grid" id="aiInboxKPIs"></div>
       <div class="filter-bar" id="aiInboxFilters"></div>
       <div class="table-container" id="aiInboxTableContainer"></div>
@@ -629,7 +629,7 @@ let JOBS=[
   {id:'J-007',jobNum:'1-25-1007-FIRE',claimNum:'CLM-2025-71845',office:'Seattle',carrier:'State Farm',status:'Invoice Sent',amtInvoiced:41500,amtPaid:0,daysOut:12,adjuster:'Brian Moore',adjPhone:'206-555-0634',adjEmail:'bmoore@statefarm.com',homeowner:'Jennifer Adams',hoPhone:'206-555-3347',lienState:'WA',lienDeadline:'2026-10-01',lienDaysLeft:135,lienMode:'None',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
   {id:'J-008',jobNum:'1-25-1008-WTR',claimNum:'CLM-2025-33918',office:'Portland',carrier:'Allstate',status:'Escalated',amtInvoiced:27800,amtPaid:10000,daysOut:112,adjuster:'Nicole Parker',adjPhone:'503-555-0748',adjEmail:'nparker@allstate.com',homeowner:'Thomas Wright',hoPhone:'503-555-5562',lienState:'OR',lienDeadline:'2026-06-01',lienDaysLeft:13,lienMode:'Regular',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
   {id:'J-009',jobNum:'1-25-1009-MOLD',claimNum:'CLM-2025-58476',office:'Seattle',carrier:'Farmers',status:'In Collections',amtInvoiced:9600,amtPaid:2400,daysOut:78,adjuster:'Steve Harris',adjPhone:'206-555-0861',adjEmail:'sharris@farmers.com',homeowner:'Angela Brown',hoPhone:'206-555-7789',lienState:'WA',lienDeadline:'2026-07-04',lienDaysLeft:46,lienMode:'Silent',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-010',jobNum:'1-25-1010-WTR',claimNum:'CLM-2025-42567',office:'Portland',carrier:'Erie Insurance',status:'Payment Pending',amtInvoiced:6200,amtPaid:6200,daysOut:33,adjuster:'Laura Scott',adjPhone:'503-555-0974',adjEmail:'lscott@erieinsurance.com',homeowner:'Christopher Lee',hoPhone:'503-555-1145',lienState:'OR',lienDeadline:'2026-09-15',lienDaysLeft:119,lienMode:'None',carrierResponseStatus:'Agreed — Full',carrierAgreedAmount:6200,carrierResponseDate:'2026-05-10',carrierResponseNotes:'Full payment confirmed via ACH. Ref: EI-2026-42567',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
+  {id:'J-010',jobNum:'1-25-1010-WTR',claimNum:'CLM-2025-42567',office:'Portland',carrier:'Erie Insurance',status:'Payment Pending',amtInvoiced:6200,amtPaid:6200,daysOut:33,adjuster:'Laura Scott',adjPhone:'503-555-0974',adjEmail:'lscott@erieinsurance.com',homeowner:'Christopher Lee',hoPhone:'503-555-1145',lienState:'OR',lienDeadline:'2026-09-15',lienDaysLeft:119,lienMode:'None',carrierResponseStatus:'Agreed â Full',carrierAgreedAmount:6200,carrierResponseDate:'2026-05-10',carrierResponseNotes:'Full payment confirmed via ACH. Ref: EI-2026-42567',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
   {id:'J-011',jobNum:'1-25-1011-FIRE',claimNum:'CLM-2025-66891',office:'Portland',carrier:'Travelers',status:'In Collections',amtInvoiced:52300,amtPaid:15000,daysOut:87,adjuster:'Mark Thompson',adjPhone:'503-555-1087',adjEmail:'mthompson@travelers.com',homeowner:'Patricia Davis',hoPhone:'503-555-8834',lienState:'OR',lienDeadline:'2026-06-18',lienDaysLeft:30,lienMode:'Regular',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
   {id:'J-012',jobNum:'1-25-1012-WTR',claimNum:'CLM-2025-29384',office:'Seattle',carrier:'USAA',status:'Invoice Sent',amtInvoiced:11200,amtPaid:0,daysOut:8,adjuster:'Rachel Green',adjPhone:'206-555-1193',adjEmail:'rgreen@usaa.com',homeowner:'Kevin Johnson',hoPhone:'206-555-2256',lienState:'WA',lienDeadline:'2026-11-01',lienDaysLeft:166,lienMode:'None',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
   {id:'J-013',jobNum:'1-25-1013-WTR',claimNum:'CLM-2025-73620',office:'Portland',carrier:'Hartford',status:'Escalated',amtInvoiced:19400,amtPaid:7000,daysOut:99,adjuster:'Greg Wilson',adjPhone:'503-555-1306',adjEmail:'gwilson@thehartford.com',homeowner:'Michelle Taylor',hoPhone:'503-555-6678',lienState:'OR',lienDeadline:'2026-06-08',lienDaysLeft:20,lienMode:'Silent',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
@@ -641,7 +641,7 @@ let JOBS=[
   {id:'J-019',jobNum:'1-25-1019-WTR',claimNum:'CLM-2025-41876',office:'Portland',carrier:'Travelers',status:'In Collections',amtInvoiced:7500,amtPaid:2500,daysOut:38,adjuster:'Ryan Davis',adjPhone:'503-555-1974',adjEmail:'rdavis@travelers.com',homeowner:'Betty Moore',hoPhone:'503-555-8856',lienState:'OR',lienDeadline:'2026-09-01',lienDaysLeft:105,lienMode:'None',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
   {id:'J-020',jobNum:'1-25-1020-FIRE',claimNum:'CLM-2025-93714',office:'Portland',carrier:'USAA',status:'Invoice Sent',amtInvoiced:45600,amtPaid:0,daysOut:5,adjuster:'Ashley Thomas',adjPhone:'503-555-2087',adjEmail:'athomas@usaa.com',homeowner:'George White',hoPhone:'503-555-2234',lienState:'OR',lienDeadline:'2026-11-15',lienDaysLeft:180,lienMode:'None',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
   {id:'J-021',jobNum:'1-25-1021-WTR',claimNum:'CLM-2025-26539',office:'Seattle',carrier:'Erie Insurance',status:'In Collections',amtInvoiced:13900,amtPaid:3500,daysOut:52,adjuster:'Jeff Martin',adjPhone:'206-555-2198',adjEmail:'jmartin@erieinsurance.com',homeowner:'Dorothy Anderson',hoPhone:'206-555-6645',lienState:'WA',lienDeadline:'2026-07-30',lienDaysLeft:72,lienMode:'None',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-022',jobNum:'1-25-1022-MOLD',claimNum:'CLM-2025-78463',office:'Portland',carrier:'Hartford',status:'In Collections',amtInvoiced:20100,amtPaid:5000,daysOut:84,adjuster:'Melissa King',adjPhone:'503-555-2311',adjEmail:'mking@thehartford.com',homeowner:'Charles Jackson',hoPhone:'503-555-1178',lienState:'OR',lienDeadline:'2026-06-25',lienDaysLeft:37,lienMode:'Silent',carrierResponseStatus:'Agreed — Partial',carrierAgreedAmount:14500,carrierResponseDate:'2026-05-15',carrierResponseNotes:'Hartford approved $14,500 of $20,100. Gap of $5,600 relates to mold testing scope.',partialGapDecision:'Pending',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
+  {id:'J-022',jobNum:'1-25-1022-MOLD',claimNum:'CLM-2025-78463',office:'Portland',carrier:'Hartford',status:'In Collections',amtInvoiced:20100,amtPaid:5000,daysOut:84,adjuster:'Melissa King',adjPhone:'503-555-2311',adjEmail:'mking@thehartford.com',homeowner:'Charles Jackson',hoPhone:'503-555-1178',lienState:'OR',lienDeadline:'2026-06-25',lienDaysLeft:37,lienMode:'Silent',carrierResponseStatus:'Agreed â Partial',carrierAgreedAmount:14500,carrierResponseDate:'2026-05-15',carrierResponseNotes:'Hartford approved $14,500 of $20,100. Gap of $5,600 relates to mold testing scope.',partialGapDecision:'Pending',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
   {id:'J-023',jobNum:'1-25-1023-WTR',claimNum:'CLM-2025-52184',office:'Seattle',carrier:'State Farm',status:'Invoice Sent',amtInvoiced:17300,amtPaid:0,daysOut:15,adjuster:'Kevin Brown',adjPhone:'206-555-2424',adjEmail:'kbrown@statefarm.com',homeowner:'Barbara Harris',hoPhone:'206-555-3390',lienState:'WA',lienDeadline:'2026-10-20',lienDaysLeft:154,lienMode:'None',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
   {id:'J-024',jobNum:'1-25-1024-FIRE',claimNum:'CLM-2025-64817',office:'Portland',carrier:'Allstate',status:'Escalated',amtInvoiced:38900,amtPaid:12000,daysOut:106,adjuster:'Lisa Robinson',adjPhone:'503-555-2537',adjEmail:'lrobinson@allstate.com',homeowner:'Edward Lewis',hoPhone:'503-555-8812',lienState:'OR',lienDeadline:'2026-05-30',lienDaysLeft:11,lienMode:'Regular',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
   {id:'J-025',jobNum:'1-25-1025-WTR',claimNum:'CLM-2025-88956',office:'Seattle',carrier:'Farmers',status:'In Collections',amtInvoiced:10800,amtPaid:2700,daysOut:49,adjuster:'John Carter',adjPhone:'206-555-2650',adjEmail:'jcarter@farmers.com',homeowner:'Helen Walker',hoPhone:'206-555-4423',lienState:'WA',lienDeadline:'2026-08-05',lienDaysLeft:78,lienMode:'None',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:49,communicationTrack:'',trackAssignedDate:'',hoEmail:''}
@@ -670,12 +670,12 @@ let STRIKE_QUEUE=[
 ];
 
 let AI_INBOX=[
-  {id:'AI-T01',from:'mreynolds@statefarm.com',fromName:'Mike Reynolds',to:'collections@911restoration.com',subject:'RE: Payment Status — Claim CLM-2025-44821',body:'Hi, I have reviewed the documentation for Job 1-25-1001-WTR and we are approving the full amount of $18,750. Payment will be issued to 911 Restoration Portland within 10 business days. Please confirm receipt of this authorization. Reference: SF-AUTH-2026-44821. Best regards, Mike Reynolds, Claims Adjuster, State Farm.',date:'2026-05-24T09:15:00',outcome:'payment confirmed',confidence:0.95,jobId:'J-001',jobNum:'1-25-1001-WTR',carrier:'State Farm',read:false,actionTaken:false},
-  {id:'AI-T02',from:'afoster@nationwide.com',fromName:'Amy Foster',to:'collections@911restoration.com',subject:'RE: Invoice INV-2025-3006 — Partial Approval',body:'Hello, after reviewing the scope for Job 1-25-1006-WTR, we are approving $9,800 of the $15,300 invoiced. The remaining $5,500 relates to line items we believe exceed the policy coverage for Category 3 water damage drying equipment charges. We are open to reviewing supplemental documentation if you believe the full amount is warranted. Please advise. Amy Foster, Senior Adjuster, Nationwide.',date:'2026-05-24T10:30:00',outcome:'payment confirmed',confidence:0.82,jobId:'J-006',jobNum:'1-25-1006-WTR',carrier:'Nationwide',read:false,actionTaken:false},
-  {id:'AI-T03',from:'mthompson@travelers.com',fromName:'Mark Thompson',to:'collections@911restoration.com',subject:'RE: Disputed Charges — Job 1-25-1011-FIRE',body:'Dear 911 Restoration, we have completed our review of the supplemental documentation submitted for Job 1-25-1011-FIRE. Unfortunately, we maintain our position that the depreciation holdback of $15,200 is not recoverable under the current policy terms. Our approved amount remains $37,100 of the $52,300 invoiced. If you wish to proceed with a formal dispute, please submit through our appraisal process per Section 12 of the policy. Mark Thompson, Claims Manager, Travelers.',date:'2026-05-24T08:45:00',outcome:'dispute',confidence:0.91,jobId:'J-011',jobNum:'1-25-1011-FIRE',carrier:'Travelers',read:false,actionTaken:false},
-  {id:'AI-T04',from:'syoung@libertymutual.com',fromName:'Sandra Young',to:'collections@911restoration.com',subject:'Additional Documentation Needed — Claim CLM-2025-85502',body:'Hi, regarding Job 1-25-1018-MOLD, before we can process payment we need the following: 1) Pre-remediation air quality test results, 2) Post-remediation clearance certificate, 3) Itemized equipment log with daily readings. Please send these at your earliest convenience so we can proceed with the review. Sandra Young, Claims Specialist, Liberty Mutual.',date:'2026-05-24T11:00:00',outcome:'info request',confidence:0.94,jobId:'J-018',jobNum:'1-25-1018-MOLD',carrier:'Liberty Mutual',read:false,actionTaken:false},
-  {id:'AI-T05',from:'kwhite@allstate.com',fromName:'Karen White',to:'collections@911restoration.com',subject:'RE: Follow-up Invoice — Job 1-25-1002-FIRE',body:'Good morning, I wanted to let you know that I have submitted the invoice for Job 1-25-1002-FIRE ($34,200) to our payment department. It should be processed within the next 7-10 business days. The full amount has been approved. I will send you the payment confirmation number once it is issued. Karen White, Adjuster, Allstate.',date:'2026-05-23T16:20:00',outcome:'payment confirmed',confidence:0.93,jobId:'J-002',jobNum:'1-25-1002-FIRE',carrier:'Allstate',read:true,actionTaken:false},
-  {id:'AI-T06',from:'panderson@statefarm.com',fromName:'Paul Anderson',to:'collections@911restoration.com',subject:'Payment Update — Claim CLM-2025-54378',body:'Hi team, just following up on our phone conversation. We can approve $23,000 of the $31,000 invoiced for Job 1-25-1015-WTR. The remaining $8,000 pertains to emergency services charges that we feel are above the customary rate for the Portland market. Happy to discuss further. Paul Anderson, State Farm.',date:'2026-05-23T14:10:00',outcome:'payment confirmed',confidence:0.78,jobId:'J-015',jobNum:'1-25-1015-WTR',carrier:'State Farm',read:true,actionTaken:false}
+  {id:'AI-T01',from:'mreynolds@statefarm.com',fromName:'Mike Reynolds',to:'collections@911restoration.com',subject:'RE: Payment Status â Claim CLM-2025-44821',body:'Hi, I have reviewed the documentation for Job 1-25-1001-WTR and we are approving the full amount of $18,750. Payment will be issued to 911 Restoration Portland within 10 business days. Please confirm receipt of this authorization. Reference: SF-AUTH-2026-44821. Best regards, Mike Reynolds, Claims Adjuster, State Farm.',date:'2026-05-24T09:15:00',outcome:'payment confirmed',confidence:0.95,jobId:'J-001',jobNum:'1-25-1001-WTR',carrier:'State Farm',read:false,actionTaken:false},
+  {id:'AI-T02',from:'afoster@nationwide.com',fromName:'Amy Foster',to:'collections@911restoration.com',subject:'RE: Invoice INV-2025-3006 â Partial Approval',body:'Hello, after reviewing the scope for Job 1-25-1006-WTR, we are approving $9,800 of the $15,300 invoiced. The remaining $5,500 relates to line items we believe exceed the policy coverage for Category 3 water damage drying equipment charges. We are open to reviewing supplemental documentation if you believe the full amount is warranted. Please advise. Amy Foster, Senior Adjuster, Nationwide.',date:'2026-05-24T10:30:00',outcome:'payment confirmed',confidence:0.82,jobId:'J-006',jobNum:'1-25-1006-WTR',carrier:'Nationwide',read:false,actionTaken:false},
+  {id:'AI-T03',from:'mthompson@travelers.com',fromName:'Mark Thompson',to:'collections@911restoration.com',subject:'RE: Disputed Charges â Job 1-25-1011-FIRE',body:'Dear 911 Restoration, we have completed our review of the supplemental documentation submitted for Job 1-25-1011-FIRE. Unfortunately, we maintain our position that the depreciation holdback of $15,200 is not recoverable under the current policy terms. Our approved amount remains $37,100 of the $52,300 invoiced. If you wish to proceed with a formal dispute, please submit through our appraisal process per Section 12 of the policy. Mark Thompson, Claims Manager, Travelers.',date:'2026-05-24T08:45:00',outcome:'dispute',confidence:0.91,jobId:'J-011',jobNum:'1-25-1011-FIRE',carrier:'Travelers',read:false,actionTaken:false},
+  {id:'AI-T04',from:'syoung@libertymutual.com',fromName:'Sandra Young',to:'collections@911restoration.com',subject:'Additional Documentation Needed â Claim CLM-2025-85502',body:'Hi, regarding Job 1-25-1018-MOLD, before we can process payment we need the following: 1) Pre-remediation air quality test results, 2) Post-remediation clearance certificate, 3) Itemized equipment log with daily readings. Please send these at your earliest convenience so we can proceed with the review. Sandra Young, Claims Specialist, Liberty Mutual.',date:'2026-05-24T11:00:00',outcome:'info request',confidence:0.94,jobId:'J-018',jobNum:'1-25-1018-MOLD',carrier:'Liberty Mutual',read:false,actionTaken:false},
+  {id:'AI-T05',from:'kwhite@allstate.com',fromName:'Karen White',to:'collections@911restoration.com',subject:'RE: Follow-up Invoice â Job 1-25-1002-FIRE',body:'Good morning, I wanted to let you know that I have submitted the invoice for Job 1-25-1002-FIRE ($34,200) to our payment department. It should be processed within the next 7-10 business days. The full amount has been approved. I will send you the payment confirmation number once it is issued. Karen White, Adjuster, Allstate.',date:'2026-05-23T16:20:00',outcome:'payment confirmed',confidence:0.93,jobId:'J-002',jobNum:'1-25-1002-FIRE',carrier:'Allstate',read:true,actionTaken:false},
+  {id:'AI-T06',from:'panderson@statefarm.com',fromName:'Paul Anderson',to:'collections@911restoration.com',subject:'Payment Update â Claim CLM-2025-54378',body:'Hi team, just following up on our phone conversation. We can approve $23,000 of the $31,000 invoiced for Job 1-25-1015-WTR. The remaining $8,000 pertains to emergency services charges that we feel are above the customary rate for the Portland market. Happy to discuss further. Paul Anderson, State Farm.',date:'2026-05-23T14:10:00',outcome:'payment confirmed',confidence:0.78,jobId:'J-015',jobNum:'1-25-1015-WTR',carrier:'State Farm',read:true,actionTaken:false}
 ];
 let COMMS_LOG=[
   {id:'CL-001',jobId:'J-005',jobNum:'1-25-1005-MOLD',channel:'email',direction:'Outbound',subject:'Escalation Notice - Claim CLM-2025-55092',summary:'Sent 3rd follow-up to adjuster David Chen regarding outstanding $17,100 balance.',date:'2026-05-19T09:15:00',agent:'System (Auto)'},
@@ -813,9 +813,9 @@ function saveAdminPat(){
   var v=(inp&&inp.value||'').trim();
   var s=document.getElementById('adminPatStatus');
   if(!v){if(s){s.textContent='Please paste an Airtable PAT.';s.style.color='#d33';}return;}
-  localStorage.setItem('airtable_pat',v);
+  localStorage.setItem('proxy_token',v);
   if(inp)inp.value='';
-  if(s){s.textContent='✓ Airtable connection saved on this device. You can sign in now.';s.style.color='#2a8a5a';}
+  if(s){s.textContent='â Airtable connection saved on this device. You can sign in now.';s.style.color='#2a8a5a';}
 }
 function loginUser(emailOverride,passwordOverride){
   var email=(emailOverride||document.getElementById('loginEmail').value||'').trim().toLowerCase();
@@ -826,7 +826,7 @@ function loginUser(emailOverride,passwordOverride){
   if(errorEl)errorEl.textContent='';
 
   // Try Airtable first, fall back to hardcoded list
-  var pat=localStorage.getItem('airtable_pat')||'';
+  var pat=localStorage.getItem('proxy_token')||'';
   var foundUser=null;
 
   function activateUser(user){
@@ -838,7 +838,7 @@ function loginUser(emailOverride,passwordOverride){
     var roleEl=document.getElementById('sidebarUserRole');
     if(nameEl)nameEl.textContent=user.name;
     if(roleEl){
-      roleEl.textContent=user.role+' — '+user.offices.join(' & ');
+      roleEl.textContent=user.role+' â '+user.offices.join(' & ');
       roleEl.className='user-role-badge role-'+user.role.toLowerCase();
     }
     // Hide/show nav items based on access
@@ -852,7 +852,7 @@ function loginUser(emailOverride,passwordOverride){
     // Update last login in Airtable if possible
     if(pat&&user.recordId){
       fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.users+'/'+user.recordId,{
-        method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
+        method:'PATCH',headers:{'X-Proxy-Token':pat,'Content-Type':'application/json'},
         body:JSON.stringify({fields:{'Last Login':new Date().toISOString()}})
       }).catch(function(){});
     }
@@ -869,7 +869,7 @@ function loginUser(emailOverride,passwordOverride){
   if(pat){
     var formula=encodeURIComponent('{Email}="'+email+'"');
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.users+'?filterByFormula='+formula+'&maxRecords=1',{
-      headers:{'Authorization':'Bearer '+pat}
+      headers:{'X-Proxy-Token':pat}
     }).then(function(r){if(!r.ok)throw new Error('API error');return r.json();})
     .then(function(data){
       if(data.records&&data.records.length>0){
@@ -956,13 +956,13 @@ function filterByOffice(arr){
 var screenHelp={
   'dashboard':{title:'Dashboard',desc:'Your collections command center at a glance. Shows key performance indicators (KPIs) like total outstanding, DSO, collection rate, and active cases across all offices.',actions:['Monitor overall AR health','Track DSO trends over time','View recent activity and urgent alerts','Spot payment diversions and escalated disputes']},
   'ar-aging':{title:'AR Aging Table',desc:'The master list of all open invoices, organized by how long payment has been outstanding. This is where you track every active collection case.',actions:['Sort and filter invoices by age, office, or status','Click any row to open the full Case File','Switch between Guided (simplified) and Full (detailed) views','Track aging buckets: 0-30, 31-60, 61-90, 90+ days']},
-  'strike-queue':{title:'Human Strike Queue',desc:'Cases that have exceeded 31 days without payment and need direct human follow-up. The automated cadence has been exhausted — it\'s time for personal outreach.',actions:['Start phone calls with one-click dialing','Log call outcomes and follow-up notes','View full communication history before calling','Resolve or escalate cases after contact']},
-  'case-file':{title:'Case File',desc:'The complete 360° view of a single job. Everything you need — timeline, invoices, payments, disputes, contacts, and actions — in one place.',actions:['Review the full communication timeline','Track invoice status and payment history','Manage disputes with carrier/adjuster','Upload documents and take action on the case']},
-  'lien-zone':{title:'Lien Zone',desc:'Tracks statutory lien deadlines for all active jobs. Mechanics\' lien rights expire by state law — this screen ensures you never miss a filing deadline.',actions:['Monitor days remaining to lien deadline','Set Lien Mode: Regular (auto-alerts), Silent (track only), or None (no tracking)','Identify urgent cases under 10 days','Click a card to open the full Case File']},
-  'payments':{title:'Payments & Diversions',desc:'Tracks all incoming payments and flags diversions — when an insurance carrier sends payment directly to the homeowner instead of to 911 Restoration.',actions:['View payment history across all jobs','Monitor active payment diversion recoveries','Track the 8-step automated recovery cadence','Identify cases escalated to legal action']},
+  'strike-queue':{title:'Human Strike Queue',desc:'Cases that have exceeded 31 days without payment and need direct human follow-up. The automated cadence has been exhausted â it\'s time for personal outreach.',actions:['Start phone calls with one-click dialing','Log call outcomes and follow-up notes','View full communication history before calling','Resolve or escalate cases after contact']},
+  'case-file':{title:'Case File',desc:'The complete 360Â° view of a single job. Everything you need â timeline, invoices, payments, disputes, contacts, and actions â in one place.',actions:['Review the full communication timeline','Track invoice status and payment history','Manage disputes with carrier/adjuster','Upload documents and take action on the case']},
+  'lien-zone':{title:'Lien Zone',desc:'Tracks statutory lien deadlines for all active jobs. Mechanics\' lien rights expire by state law â this screen ensures you never miss a filing deadline.',actions:['Monitor days remaining to lien deadline','Set Lien Mode: Regular (auto-alerts), Silent (track only), or None (no tracking)','Identify urgent cases under 10 days','Click a card to open the full Case File']},
+  'payments':{title:'Payments & Diversions',desc:'Tracks all incoming payments and flags diversions â when an insurance carrier sends payment directly to the homeowner instead of to 911 Restoration.',actions:['View payment history across all jobs','Monitor active payment diversion recoveries','Track the 8-step automated recovery cadence','Identify cases escalated to legal action']},
   'error-log':{title:'Error Log',desc:'System health monitor. Shows errors from Make.com automations, Airtable sync failures, and other system issues that may need attention.',actions:['Review recent automation errors','Identify patterns in recurring failures','Check sync status between systems','Verify error resolution']},
   'ai-inbox':{title:'AI Inbox',desc:'Incoming emails from carriers and adjusters, automatically classified by AI. The system reads each email, identifies the intent, and routes it to the right workflow.',actions:['Review AI-classified carrier responses','Process full agreements, partial payments, and disputes','Handle carrier info requests','Approve or override AI classifications']},
-  'my-tasks':{title:'My Collection Tasks',desc:'Your personal task queue. Aggregates all pending action items across every screen — strike calls, lien alerts, disputes, diversions, and AI inbox items — prioritized by urgency.',actions:['See all your pending tasks in one place','Tasks grouped by urgency: Critical, Today, This Week, Upcoming','Click any task to jump to the relevant case','Clear tasks as you complete them']},
+  'my-tasks':{title:'My Collection Tasks',desc:'Your personal task queue. Aggregates all pending action items across every screen â strike calls, lien alerts, disputes, diversions, and AI inbox items â prioritized by urgency.',actions:['See all your pending tasks in one place','Tasks grouped by urgency: Critical, Today, This Week, Upcoming','Click any task to jump to the relevant case','Clear tasks as you complete them']},
   'settings':{title:'Settings',desc:'Configure your Command Center. Set your Airtable Personal Access Token (PAT), switch between demo and live data, and manage user preferences.',actions:['Enter or update your Airtable PAT','Toggle between Demo Data and Live Data modes','View connection status','Manage user role settings']}
 };
 function showScreenHelp(screenId){
@@ -1104,7 +1104,7 @@ function scrollToDiversions(){
 function renderDashboard(){
   var r=getRole();var jobs=filterByDashOffice(JOBS);var invoices=filterByDashOffice(INVOICES);
   var offSel=$('dashOfficeFilter');if(offSel){var opts='<option value="">All Locations</option>';r.offices.forEach(function(o){opts+='<option value="'+o+'"'+(o===_dashOffice?' selected':'')+'>'+o+'</option>'});offSel.innerHTML=opts;if(r.offices.length<=1)offSel.style.display='none';else offSel.style.display=''}
-  $('dashSubtitle').textContent=r.offices.join(' & ')+' · Updated just now';
+  $('dashSubtitle').textContent=r.offices.join(' & ')+' Â· Updated just now';
   var totalAR=jobs.reduce((s,j)=>s+(j.amtInvoiced-j.amtPaid),0);
   var totalInvoiced=jobs.reduce((s,j)=>s+j.amtInvoiced,0);
   var totalPaid=jobs.reduce((s,j)=>s+j.amtPaid,0);
@@ -1114,17 +1114,17 @@ function renderDashboard(){
   var allPayments=filterByDashOffice(PAYMENTS);
   var activeDiversions=allPayments.filter(p=>p.diversion&&p.recoveryStatus==='Active').length;
   var escalatedDiversions=allPayments.filter(p=>p.recoveryStatus==='Escalated to Legal').length;
-  var resolvedDiversions=allPayments.filter(p=>p.recoveryStatus==='Resolved — Payment Forwarded').length;
+  var resolvedDiversions=allPayments.filter(p=>p.recoveryStatus==='Resolved â Payment Forwarded').length;
   var totalDiversionAmt=allPayments.filter(p=>p.diversion&&p.recoveryStatus==='Active').reduce((s,p)=>s+p.amount,0);
   var lienAlerts=jobs.filter(j=>j.lienDaysLeft<=30&&j.lienDaysLeft<999).length;
 
   $('dashKPIs').innerHTML=[
-    kpiCard('Total AR Outstanding',fmt(totalAR),'↑ 3.2% vs last week','down','💰','rgba(74,124,255,.15) 0%,rgba(74,124,255,.05) 100%'),
-    kpiCard('Collection Rate',collRate+'%','↑ 1.5% vs last month','up','🎯','rgba(52,211,153,.15) 0%,rgba(52,211,153,.05) 100%'),
-    kpiCard('Avg DSO',avgDSO+' days','↓ 2 days vs prior','up','⏱️','rgba(34,211,238,.15) 0%,rgba(34,211,238,.05) 100%'),
-    kpiCard('Open Invoices',openInv,openInv>0?openInv+' need follow-up':'',null,'📄','rgba(167,139,250,.15) 0%,rgba(167,139,250,.05) 100%','navigate(\'ar-aging\')'),
-    kpiCard('Active Diversions',activeDiversions,activeDiversions>0?fmt(totalDiversionAmt)+' at risk':'All clear',activeDiversions>0?'down':'up','🚨','rgba(239,68,68,.15) 0%,rgba(239,68,68,.05) 100%','scrollToDiversions()'),
-    kpiCard('Lien Alerts',lienAlerts,lienAlerts>0?'Within 30 days':'None pending',lienAlerts>0?'down':'up','⚖️','rgba(251,191,36,.15) 0%,rgba(251,191,36,.05) 100%','navigate(\'lien-zone\')')
+    kpiCard('Total AR Outstanding',fmt(totalAR),'â 3.2% vs last week','down','ð°','rgba(74,124,255,.15) 0%,rgba(74,124,255,.05) 100%'),
+    kpiCard('Collection Rate',collRate+'%','â 1.5% vs last month','up','ð¯','rgba(52,211,153,.15) 0%,rgba(52,211,153,.05) 100%'),
+    kpiCard('Avg DSO',avgDSO+' days','â 2 days vs prior','up','â±ï¸','rgba(34,211,238,.15) 0%,rgba(34,211,238,.05) 100%'),
+    kpiCard('Open Invoices',openInv,openInv>0?openInv+' need follow-up':'',null,'ð','rgba(167,139,250,.15) 0%,rgba(167,139,250,.05) 100%','navigate(\'ar-aging\')'),
+    kpiCard('Active Diversions',activeDiversions,activeDiversions>0?fmt(totalDiversionAmt)+' at risk':'All clear',activeDiversions>0?'down':'up','ð¨','rgba(239,68,68,.15) 0%,rgba(239,68,68,.05) 100%','scrollToDiversions()'),
+    kpiCard('Lien Alerts',lienAlerts,lienAlerts>0?'Within 30 days':'None pending',lienAlerts>0?'down':'up','âï¸','rgba(251,191,36,.15) 0%,rgba(251,191,36,.05) 100%','navigate(\'lien-zone\')')
   ].join('');
 
   var buckets={'0-30':0,'31-60':0,'61-90':0,'90+':0};
@@ -1146,16 +1146,16 @@ function renderDashboard(){
   // Diversion Recovery Tracker
   var divRecoveries=allPayments.filter(p=>p.diversion&&(p.recoveryStatus==='Active'||p.recoveryStatus==='Escalated to Legal'));
   if(divRecoveries.length>0){
-    var stepLabels={1:'Day 0 — Detected',2:'Day 3 — Follow-up',3:'Day 7 — Firm',4:'Day 10 — Contract',5:'Day 14 — CC Adjuster',6:'Day 21 — Pre-Legal',7:'Day 28 — Final Notice',8:'Day 30 — Escalation',9:'Escalated to Legal'};
-    $('diversionTracker').innerHTML='<div class="card" style="margin-top:20px"><div class="card-header accordion-header" onclick="toggleAccordion(this)"><span class="card-title" style="cursor:pointer">&#128680; Payment Diversion Recovery</span><span class="card-subtitle">'+activeDiversions+' active · '+escalatedDiversions+' escalated · '+resolvedDiversions+' recovered</span></div><div class="accordion-body"><div class="table-container"><table><thead><tr><th style="width:10%">Job</th><th style="width:12%">Amount</th><th style="width:22%">Recovery Step</th><th style="width:18%">Progress</th><th style="width:14%">Next Action</th><th style="width:12%">Status</th><th style="width:8%"></th></tr></thead><tbody>'+divRecoveries.map(function(p){var j=JOBS.find(function(x){return x.id===p.jobId})||{};var stepNum=p.recoveryStep||0;var stepPct=Math.min(Math.round(stepNum/8*100),100);var stepColor=stepNum<=3?'var(--accent-green)':stepNum<=5?'var(--accent-yellow)':stepNum<=7?'var(--accent-orange)':'var(--accent-red)';var statusBadge=p.recoveryStatus==='Escalated to Legal'?'<span class="badge badge-red">LEGAL</span>':'<span class="badge badge-yellow">Step '+stepNum+'/8</span>';return '<tr><td><a href="#" onclick="openCaseFile(\''+p.jobId+'\');return false" style="color:var(--accent-blue);text-decoration:none">'+(j.jobNum||p.jobNum||'—')+'</a></td><td style="font-weight:700;color:var(--accent-red)">'+fmt(p.amount)+'</td><td>'+(stepLabels[stepNum]||'Step '+stepNum)+'</td><td><div style="background:var(--bg-input);border-radius:4px;height:8px;width:120px;position:relative"><div style="background:'+stepColor+';border-radius:4px;height:8px;width:'+stepPct+'%"></div></div></td><td>'+formatDate(p.recoveryNextDate)+'</td><td>'+statusBadge+'</td><td><button class="btn btn-secondary btn-sm" onclick="openCaseFile(\''+p.jobId+'\')">View</button></td></tr>'}).join('')+'</tbody></table></div></div></div>';
+    var stepLabels={1:'Day 0 â Detected',2:'Day 3 â Follow-up',3:'Day 7 â Firm',4:'Day 10 â Contract',5:'Day 14 â CC Adjuster',6:'Day 21 â Pre-Legal',7:'Day 28 â Final Notice',8:'Day 30 â Escalation',9:'Escalated to Legal'};
+    $('diversionTracker').innerHTML='<div class="card" style="margin-top:20px"><div class="card-header accordion-header" onclick="toggleAccordion(this)"><span class="card-title" style="cursor:pointer">&#128680; Payment Diversion Recovery</span><span class="card-subtitle">'+activeDiversions+' active Â· '+escalatedDiversions+' escalated Â· '+resolvedDiversions+' recovered</span></div><div class="accordion-body"><div class="table-container"><table><thead><tr><th style="width:10%">Job</th><th style="width:12%">Amount</th><th style="width:22%">Recovery Step</th><th style="width:18%">Progress</th><th style="width:14%">Next Action</th><th style="width:12%">Status</th><th style="width:8%"></th></tr></thead><tbody>'+divRecoveries.map(function(p){var j=JOBS.find(function(x){return x.id===p.jobId})||{};var stepNum=p.recoveryStep||0;var stepPct=Math.min(Math.round(stepNum/8*100),100);var stepColor=stepNum<=3?'var(--accent-green)':stepNum<=5?'var(--accent-yellow)':stepNum<=7?'var(--accent-orange)':'var(--accent-red)';var statusBadge=p.recoveryStatus==='Escalated to Legal'?'<span class="badge badge-red">LEGAL</span>':'<span class="badge badge-yellow">Step '+stepNum+'/8</span>';return '<tr><td><a href="#" onclick="openCaseFile(\''+p.jobId+'\');return false" style="color:var(--accent-blue);text-decoration:none">'+(j.jobNum||p.jobNum||'â')+'</a></td><td style="font-weight:700;color:var(--accent-red)">'+fmt(p.amount)+'</td><td>'+(stepLabels[stepNum]||'Step '+stepNum)+'</td><td><div style="background:var(--bg-input);border-radius:4px;height:8px;width:120px;position:relative"><div style="background:'+stepColor+';border-radius:4px;height:8px;width:'+stepPct+'%"></div></div></td><td>'+formatDate(p.recoveryNextDate)+'</td><td>'+statusBadge+'</td><td><button class="btn btn-secondary btn-sm" onclick="openCaseFile(\''+p.jobId+'\')">View</button></td></tr>'}).join('')+'</tbody></table></div></div></div>';
   }else{$('diversionTracker').innerHTML=''}
 
   // Dispute Tracker
-  var disputedJobs=jobs.filter(j=>j.disputeStatus&&j.disputeStatus!=='No Dispute'&&j.disputeStatus!=='Dispute Won'&&j.disputeStatus!=='Dispute Lost — Adjusted'&&j.disputeStatus!=='Settled — Compromise');
+  var disputedJobs=jobs.filter(j=>j.disputeStatus&&j.disputeStatus!=='No Dispute'&&j.disputeStatus!=='Dispute Won'&&j.disputeStatus!=='Dispute Lost â Adjusted'&&j.disputeStatus!=='Settled â Compromise');
   if(disputedJobs.length>0){
     var totalAtStake=disputedJobs.reduce((s,j)=>s+(j.disputeGap||0),0);
     var dsColors={'Active Dispute':'red','Supplement Sent':'orange','Re-inspection Requested':'yellow','Appraisal Invoked':'purple'};
-    $('disputeTracker').innerHTML='<div class="card" style="margin-top:20px"><div class="card-header"><span class="card-title">&#9878; Active Estimate Disputes</span><span class="card-subtitle">'+disputedJobs.length+' disputes · '+fmt(totalAtStake)+' at stake</span></div><div class="table-container"><table><thead><tr><th>Job</th><th>Carrier</th><th>Category</th><th>Our Estimate</th><th>Adjuster</th><th>Gap</th><th>Status</th><th>Days Open</th><th></th></tr></thead><tbody>'+disputedJobs.map(function(j){var daysOpen=j.disputeDate?daysBetween(j.disputeDate):0;var sc=dsColors[j.disputeStatus]||'gray';return '<tr><td><a href="#" onclick="openCaseFile(\''+j.id+'\');return false" style="color:var(--accent-blue);text-decoration:none">'+j.jobNum+'</a></td><td>'+j.carrier+'</td><td>'+(j.disputeCategory||'—')+'</td><td>'+fmt(j.ourEstimate)+'</td><td>'+fmt(j.adjEstimate)+'</td><td style="font-weight:700;color:var(--accent-yellow)">'+fmt(j.disputeGap)+'</td><td><span class="badge badge-'+sc+'">'+j.disputeStatus+'</span></td><td>'+daysOpen+'</td><td><button class="btn btn-secondary btn-sm" onclick="selectedCaseJob=JOBS.find(x=>x.id===\''+j.id+'\');caseFileTab=\'disputes\';navigate(\'case-file\')">Manage</button></td></tr>'}).join('')+'</tbody></table></div></div>';
+    $('disputeTracker').innerHTML='<div class="card" style="margin-top:20px"><div class="card-header"><span class="card-title">&#9878; Active Estimate Disputes</span><span class="card-subtitle">'+disputedJobs.length+' disputes Â· '+fmt(totalAtStake)+' at stake</span></div><div class="table-container"><table><thead><tr><th>Job</th><th>Carrier</th><th>Category</th><th>Our Estimate</th><th>Adjuster</th><th>Gap</th><th>Status</th><th>Days Open</th><th></th></tr></thead><tbody>'+disputedJobs.map(function(j){var daysOpen=j.disputeDate?daysBetween(j.disputeDate):0;var sc=dsColors[j.disputeStatus]||'gray';return '<tr><td><a href="#" onclick="openCaseFile(\''+j.id+'\');return false" style="color:var(--accent-blue);text-decoration:none">'+j.jobNum+'</a></td><td>'+j.carrier+'</td><td>'+(j.disputeCategory||'â')+'</td><td>'+fmt(j.ourEstimate)+'</td><td>'+fmt(j.adjEstimate)+'</td><td style="font-weight:700;color:var(--accent-yellow)">'+fmt(j.disputeGap)+'</td><td><span class="badge badge-'+sc+'">'+j.disputeStatus+'</span></td><td>'+daysOpen+'</td><td><button class="btn btn-secondary btn-sm" onclick="selectedCaseJob=JOBS.find(x=>x.id===\''+j.id+'\');caseFileTab=\'disputes\';navigate(\'case-file\')">Manage</button></td></tr>'}).join('')+'</tbody></table></div></div>';
   }else{$('disputeTracker').innerHTML=''}
   try{updateMyTasksBadge();}catch(e){}
 
@@ -1218,7 +1218,7 @@ function applyARFilters(){
   var totalCount=filtered.length;var totalPages=Math.max(1,Math.ceil(totalCount/AR_PAGE_SIZE));
   if(arPage>=totalPages)arPage=totalPages-1;if(arPage<0)arPage=0;
   var paged=filtered.slice(arPage*AR_PAGE_SIZE,(arPage+1)*AR_PAGE_SIZE);
-  var pager=totalCount>AR_PAGE_SIZE?'<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;font-size:.95rem"><span>Showing '+(arPage*AR_PAGE_SIZE+1)+'–'+Math.min((arPage+1)*AR_PAGE_SIZE,totalCount)+' of '+totalCount+'</span><div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="arPage--;applyARFilters()" '+(arPage<=0?'disabled':'')+'>&#9664; Prev</button><button class="btn btn-secondary btn-sm" onclick="arPage++;applyARFilters()" '+(arPage>=totalPages-1?'disabled':'')+'>Next &#9654;</button></div></div>':'';
+  var pager=totalCount>AR_PAGE_SIZE?'<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;font-size:.95rem"><span>Showing '+(arPage*AR_PAGE_SIZE+1)+'â'+Math.min((arPage+1)*AR_PAGE_SIZE,totalCount)+' of '+totalCount+'</span><div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="arPage--;applyARFilters()" '+(arPage<=0?'disabled':'')+'>&#9664; Prev</button><button class="btn btn-secondary btn-sm" onclick="arPage++;applyARFilters()" '+(arPage>=totalPages-1?'disabled':'')+'>Next &#9654;</button></div></div>':'';
   if(isGuided){
     $('arTableContainer').innerHTML=pager+'<table><thead><tr><th>Job #</th><th>Carrier</th><th>Status</th><th>Days Out</th><th>Amount Due</th><th>Action</th></tr></thead><tbody>'+paged.map(inv=>'<tr class="row-'+agingColor(inv.effectiveDaysOut||inv.daysOut)+'"><td>'+inv.jobNum+'</td><td>'+inv.carrier+'</td><td><span class="badge badge-'+agingColor(inv.effectiveDaysOut||inv.daysOut)+'">'+inv.status+'</span></td><td data-sort="'+(inv.effectiveDaysOut||inv.daysOut)+'">'+(inv.effectiveDaysOut||inv.daysOut)+' days'+(inv.agingPaused?' <span title="Aging paused" style="color:var(--accent-yellow)">&#9208;</span>':'')+' </td><td data-sort="'+inv.amtDue+'">'+fmt(inv.amtDue)+'</td><td><button class="btn btn-primary btn-sm" onclick="openCaseFile(\''+inv.jobId+'\')">View Case</button></td></tr>').join('')+'</tbody></table>'+pager;
   }else{
@@ -1235,7 +1235,7 @@ function renderStrikeQueue(){
   const r=getRole();
   // Inject escalated diversion recoveries as virtual P1 strike tasks
   var escalatedDivs=filterByOffice(PAYMENTS).filter(p=>p.recoveryStatus==='Escalated to Legal');
-  var divTasks=escalatedDivs.map(function(p){var j=JOBS.find(function(x){return x.id===p.jobId})||{};return{id:'DIV-'+p.id,jobId:p.jobId,jobNum:j.jobNum||p.jobNum||'',taskType:'Payment Diversion — Legal Escalation',priority:'P1',status:'Pending',assignedTo:'Collections Manager',amount:p.amount,description:'Insurance payment of '+fmt(p.amount)+' diverted to homeowner. 8-step automated recovery exhausted (30 days). Paid to: '+p.paidTo+', Expected: '+p.expectedPayee+'. Ready for legal action / lien filing.',callNotes:'',daysOpen:p.diversionDetectedDate?Math.round((Date.now()-new Date(p.diversionDetectedDate))/(1000*60*60*24)):30,office:j.office||'Portland'}});
+  var divTasks=escalatedDivs.map(function(p){var j=JOBS.find(function(x){return x.id===p.jobId})||{};return{id:'DIV-'+p.id,jobId:p.jobId,jobNum:j.jobNum||p.jobNum||'',taskType:'Payment Diversion â Legal Escalation',priority:'P1',status:'Pending',assignedTo:'Collections Manager',amount:p.amount,description:'Insurance payment of '+fmt(p.amount)+' diverted to homeowner. 8-step automated recovery exhausted (30 days). Paid to: '+p.paidTo+', Expected: '+p.expectedPayee+'. Ready for legal action / lien filing.',callNotes:'',daysOpen:p.diversionDetectedDate?Math.round((Date.now()-new Date(p.diversionDetectedDate))/(1000*60*60*24)):30,office:j.office||'Portland'}});
   const tasks=filterByOffice(STRIKE_QUEUE).concat(divTasks).sort((a,b)=>{const p={P1:0,P2:1,P3:2};return(p[a.priority]||9)-(p[b.priority]||9)});
   const isGuided=r.mode==='Guided';
   if(isGuided){$('strikeGuidedMode').innerHTML='<div class="guided-highlight"><div class="guided-title">&#128161; Guided Mode - Follow these steps</div><p style="font-size:1rem;color:var(--text-secondary)">Tasks sorted by priority. Click each task to see details, then use buttons to complete the workflow.</p></div>'}
@@ -1244,7 +1244,7 @@ function renderStrikeQueue(){
   $('strikeQueueList').innerHTML=tasks.map(t=>{
     const sb=t.status==='In Progress'?'badge-blue':'badge-gray';
     const pc=t.priority==='P1'?'red':t.priority==='P2'?'orange':'blue';
-    return '<div class="task-card" id="task-'+t.id+'" onclick="toggleTask(\''+t.id+'\')"><div class="task-card-header"><div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0"><span class="priority-'+(t.priority||'P3').toLowerCase()+'">'+t.priority+'</span><div style="min-width:0"><strong>'+t.taskType+'</strong><div style="font-size:.95rem;color:var(--text-muted)">'+t.id+' · '+t.jobNum+'</div></div></div><div style="display:flex;align-items:center;gap:12px"><span class="badge '+sb+'">'+t.status+'</span><span style="font-size:1.1rem;font-weight:700;color:var(--accent-'+pc+')">'+fmt(t.amount)+'</span></div></div><div class="task-card-meta"><span>&#128100; '+t.assignedTo+'</span><span>&#128197; '+t.daysOpen+' days open</span><span>&#127970; '+t.office+'</span></div><div class="task-card-body"><p style="font-size:1rem;color:var(--text-secondary);margin-bottom:12px">'+t.description+'</p>'+(t.callNotes?'<div style="margin-bottom:12px"><strong style="font-size:.95rem">Call Notes:</strong><p style="font-size:1rem;color:var(--text-secondary)">'+t.callNotes+'</p></div>':'')+'<div style="display:flex;gap:8px;flex-wrap:wrap">'+(t.status!=='In Progress'?'<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();startTask(\''+t.id+'\')">&#9742; Start Call</button>':'')+'<button class="btn btn-success btn-sm" onclick="event.stopPropagation();resolveTask(\''+t.id+'\')">&#10003; Resolve</button><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openCaseFile(\''+t.jobId+'\')">&#128193; View Case</button>'+(isGuided?'<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();showGuidedHelp(\''+t.id+'\')">&#128161; What Should I Do?</button>':'')+'</div></div></div>';
+    return '<div class="task-card" id="task-'+t.id+'" onclick="toggleTask(\''+t.id+'\')"><div class="task-card-header"><div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0"><span class="priority-'+(t.priority||'P3').toLowerCase()+'">'+t.priority+'</span><div style="min-width:0"><strong>'+t.taskType+'</strong><div style="font-size:.95rem;color:var(--text-muted)">'+t.id+' Â· '+t.jobNum+'</div></div></div><div style="display:flex;align-items:center;gap:12px"><span class="badge '+sb+'">'+t.status+'</span><span style="font-size:1.1rem;font-weight:700;color:var(--accent-'+pc+')">'+fmt(t.amount)+'</span></div></div><div class="task-card-meta"><span>&#128100; '+t.assignedTo+'</span><span>&#128197; '+t.daysOpen+' days open</span><span>&#127970; '+t.office+'</span></div><div class="task-card-body"><p style="font-size:1rem;color:var(--text-secondary);margin-bottom:12px">'+t.description+'</p>'+(t.callNotes?'<div style="margin-bottom:12px"><strong style="font-size:.95rem">Call Notes:</strong><p style="font-size:1rem;color:var(--text-secondary)">'+t.callNotes+'</p></div>':'')+'<div style="display:flex;gap:8px;flex-wrap:wrap">'+(t.status!=='In Progress'?'<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();startTask(\''+t.id+'\')">&#9742; Start Call</button>':'')+'<button class="btn btn-success btn-sm" onclick="event.stopPropagation();resolveTask(\''+t.id+'\')">&#10003; Resolve</button><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openCaseFile(\''+t.jobId+'\')">&#128193; View Case</button>'+(isGuided?'<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();showGuidedHelp(\''+t.id+'\')">&#128161; What Should I Do?</button>':'')+'</div></div></div>';
   }).join('');
 }
 function toggleTask(id){var el=document.getElementById('task-'+id);if(el)el.classList.toggle('expanded')}
@@ -1289,7 +1289,7 @@ function startTask(id){
     +'<div class="call-talking-points">'+talkingPts+'</div>'
     +'<div class="call-section-label">Call Notes</div>'
     +'<div class="form-group" style="margin-bottom:0"><textarea id="callNotes" rows="4" placeholder="Log what happened on the call..." style="width:100%;font-size:1rem"></textarea></div>'
-    +'<div class="form-group" style="margin-top:12px"><label>Outcome</label><select id="callOutcome" style="width:100%;font-size:1rem"><option value="">— Select —</option><option>Left Voicemail</option><option>Spoke with Adjuster</option><option>Spoke with Homeowner</option><option>No Answer</option><option>Callback Scheduled</option><option>Payment Promised</option><option>Dispute Discussed</option><option>Escalated</option></select></div>'
+    +'<div class="form-group" style="margin-top:12px"><label>Outcome</label><select id="callOutcome" style="width:100%;font-size:1rem"><option value="">â Select â</option><option>Left Voicemail</option><option>Spoke with Adjuster</option><option>Spoke with Homeowner</option><option>No Answer</option><option>Callback Scheduled</option><option>Payment Promised</option><option>Dispute Discussed</option><option>Escalated</option></select></div>'
     +'<div class="form-actions" style="flex-wrap:wrap"><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button><button class="btn btn-primary" onclick="saveCallAndLog(\''+id+'\')">&#128190; Save &amp; Log Call</button></div>'
   );
   t.status='In Progress';
@@ -1308,19 +1308,19 @@ function saveCallAndLog(taskId){
   var pat=getAirtablePAT();
   if(pat&&t){
     var j=JOBS.find(x=>x.id===t.jobId)||{};
-    var logMsg='CALL — '+t.taskType+' — '+(t.jobNum||'NO-JOB')+'\nOutcome: '+(outcome||'Not set')+'\nNotes: '+(notes||'None');
+    var logMsg='CALL â '+t.taskType+' â '+(t.jobNum||'NO-JOB')+'\nOutcome: '+(outcome||'Not set')+'\nNotes: '+(notes||'None');
     var fields={
       'Message':logMsg,
       'Channel':'Phone',
       'Direction':'Outbound',
       'Source':'Command Center',
-      'Log Entry':new Date().toISOString().slice(0,10)+' — Phone — '+(t.jobNum||'NO-JOB'),
+      'Log Entry':new Date().toISOString().slice(0,10)+' â Phone â '+(t.jobNum||'NO-JOB'),
       'Date':new Date().toISOString(),
       'Logged By':'Command Center'
     };
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{
       method:'POST',
-      headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
+      headers:{'X-Proxy-Token':pat,'Content-Type':'application/json'},
       body:JSON.stringify({fields:fields})
     }).then(function(r){
       if(r.ok){showToast('Call logged to Airtable','success');return r.json();}
@@ -1331,7 +1331,7 @@ function saveCallAndLog(taskId){
           id:data.id,jobId:t.jobId,jobNum:t.jobNum||'',
           office:(JOBS.find(x=>x.id===t.jobId)||{}).office||'Portland',
           channel:'phone',direction:'Outbound',
-          subject:new Date().toISOString().slice(0,10)+' — Phone — '+(t.jobNum||''),
+          subject:new Date().toISOString().slice(0,10)+' â Phone â '+(t.jobNum||''),
           summary:logMsg,date:new Date().toISOString(),agent:'Command Center'
         });
       }
@@ -1364,14 +1364,14 @@ function openCaseFile(jobId,tab){selectedCaseJob=JOBS.find(j=>j.id===jobId)||JOB
 function showStepDetail(jobId,stepNum,stepLabel,stepChannel,stepDate){
   // Expected outbound message templates for each recovery step
   var stepTemplates={
-    1:{subject:'Payment Diversion Detected — Internal Alert',body:'Internal alert: Payment diversion detected. Insurance carrier sent payment directly to homeowner instead of 911 Restoration. Recovery sequence initiated.'},
+    1:{subject:'Payment Diversion Detected â Internal Alert',body:'Internal alert: Payment diversion detected. Insurance carrier sent payment directly to homeowner instead of 911 Restoration. Recovery sequence initiated.'},
     2:{subject:'Payment Forwarding Request',body:'Dear Homeowner,\n\nWe hope this message finds you well. Our records show that the insurance payment for your recent restoration work (performed by 911 Restoration) was sent directly to you. Per the service agreement, this payment is owed to 911 Restoration for completed work.\n\nPlease forward the payment at your earliest convenience. If you have questions, we\'re happy to help.\n\nThank you for your cooperation.'},
-    3:{subject:'Important: Payment Forwarding — Action Required',body:'Dear Homeowner,\n\nThis is a follow-up regarding the insurance payment for restoration services completed at your property. Per your signed service agreement, the payment from your insurance carrier is owed to 911 Restoration.\n\nPlease forward the payment within 7 days. If you have already sent it, please disregard this message.\n\nWe appreciate your prompt attention to this matter.'},
-    4:{subject:'Payment Obligation — Contract Reference',body:'Dear Homeowner,\n\nThis letter references the service agreement signed on [date], specifically the payment assignment clause. The insurance proceeds for claim [#] are contractually assigned to 911 Restoration for work completed.\n\nPlease remit payment within 5 business days to avoid further action.'},
-    5:{subject:'Payment Recovery Notice — Adjuster CC\'d',body:'Dear Homeowner,\n\nWe are writing regarding the outstanding insurance payment that was sent to you in error. Your insurance adjuster has been copied on this correspondence for transparency.\n\nImmediate payment forwarding is requested. Please contact us if you need to arrange a payment plan.'},
-    6:{subject:'Pre-Legal Notice — Lien Rights',body:'Dear Homeowner,\n\nThis is a formal notice regarding unpaid restoration services. Under state law, 911 Restoration retains lien rights on the serviced property for unpaid work.\n\nYou have 7 days to forward the insurance payment before we proceed with filing a mechanics lien. Please contact us immediately to resolve this matter.'},
-    7:{subject:'FINAL NOTICE — Payment Required Within 48 Hours',body:'Dear Homeowner,\n\nThis is your final notice. If payment is not received or forwarded within 48 hours, 911 Restoration will proceed with lien filing and potential litigation.\n\nPlease contact us immediately to avoid legal action.'},
-    8:{subject:'Legal Escalation — Internal',body:'All automated recovery attempts exhausted. Case escalated to legal team for lien filing and/or litigation proceedings. Full communication history attached.'}
+    3:{subject:'Important: Payment Forwarding â Action Required',body:'Dear Homeowner,\n\nThis is a follow-up regarding the insurance payment for restoration services completed at your property. Per your signed service agreement, the payment from your insurance carrier is owed to 911 Restoration.\n\nPlease forward the payment within 7 days. If you have already sent it, please disregard this message.\n\nWe appreciate your prompt attention to this matter.'},
+    4:{subject:'Payment Obligation â Contract Reference',body:'Dear Homeowner,\n\nThis letter references the service agreement signed on [date], specifically the payment assignment clause. The insurance proceeds for claim [#] are contractually assigned to 911 Restoration for work completed.\n\nPlease remit payment within 5 business days to avoid further action.'},
+    5:{subject:'Payment Recovery Notice â Adjuster CC\'d',body:'Dear Homeowner,\n\nWe are writing regarding the outstanding insurance payment that was sent to you in error. Your insurance adjuster has been copied on this correspondence for transparency.\n\nImmediate payment forwarding is requested. Please contact us if you need to arrange a payment plan.'},
+    6:{subject:'Pre-Legal Notice â Lien Rights',body:'Dear Homeowner,\n\nThis is a formal notice regarding unpaid restoration services. Under state law, 911 Restoration retains lien rights on the serviced property for unpaid work.\n\nYou have 7 days to forward the insurance payment before we proceed with filing a mechanics lien. Please contact us immediately to resolve this matter.'},
+    7:{subject:'FINAL NOTICE â Payment Required Within 48 Hours',body:'Dear Homeowner,\n\nThis is your final notice. If payment is not received or forwarded within 48 hours, 911 Restoration will proceed with lien filing and potential litigation.\n\nPlease contact us immediately to avoid legal action.'},
+    8:{subject:'Legal Escalation â Internal',body:'All automated recovery attempts exhausted. Case escalated to legal team for lien filing and/or litigation proceedings. Full communication history attached.'}
   };
   var comms=COMMS_LOG.filter(function(c){return c.jobId===jobId}).sort(function(a,b){return new Date(b.date)-new Date(a.date)});
   // For recovery steps, only show OUTBOUND comms (not inbound carrier emails)
@@ -1423,7 +1423,7 @@ function showStepDetail(jobId,stepNum,stepLabel,stepChannel,stepDate){
       body+='<div style="padding:10px 12px;background:var(--bg-input);border-radius:var(--radius);margin-bottom:8px;border-left:3px solid var(--accent-green)">';
       body+='<div style="display:flex;justify-content:space-between"><strong style="font-size:.9rem">'+c.subject+'</strong><span style="font-size:.8rem;color:var(--text-muted)">'+formatDateTime(c.date)+'</span></div>';
       if(c.summary){body+='<div style="font-size:.85rem;color:var(--text-secondary);margin-top:4px;white-space:pre-wrap;max-height:120px;overflow-y:auto">'+c.summary+'</div>'}
-      body+='<div style="font-size:.8rem;color:var(--text-muted);margin-top:4px">'+c.channel+' · '+(c.direction||'Outbound')+' · '+c.agent+'</div>';
+      body+='<div style="font-size:.8rem;color:var(--text-muted);margin-top:4px">'+c.channel+' Â· '+(c.direction||'Outbound')+' Â· '+c.agent+'</div>';
       body+='</div>';
     });
   } else {
@@ -1440,19 +1440,19 @@ function showStepDetail(jobId,stepNum,stepLabel,stepChannel,stepDate){
       body+='<div style="padding:20px;text-align:center;color:var(--text-muted)"><div style="font-size:1.5rem;margin-bottom:8px">&#128196;</div>No outbound communication records found for this step.<br>Messages are logged when the automation sends them.</div>';
     }
   }
-  showModal('Step '+stepNum+' Details — '+stepLabel,body);
+  showModal('Step '+stepNum+' Details â '+stepLabel,body);
 }
 function renderCaseFile(){
   if(!selectedCaseJob){$('caseFileTitle').textContent='Case File';$('caseFileSubtitle').textContent='Select a job from AR Aging Table';$('caseFileContent').innerHTML='<div class="empty-state"><div class="empty-icon">&#128193;</div><h3>No Case Selected</h3><p>Click on a job number from the AR Aging Table or Strike Queue to view the full case file.</p></div>';return}
   const j=selectedCaseJob;const r=getRole();
   if(!r.offices.some(function(o){return o.toLowerCase()===(j.office||'').toLowerCase()})){$('caseFileContent').innerHTML='<div class="no-permission"><div class="lock-icon">&#128274;</div><h3>Access Restricted</h3><p>You don\'t have permission to view '+j.office+' cases.</p></div>';return}
-  $('caseFileTitle').innerHTML='<button onclick="navigate(previousScreen||\'dashboard\')" style="background:none;border:1px solid var(--text-muted);color:var(--text-secondary);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:.85rem;margin-right:12px">&#8592; Back</button>Case: '+j.jobNum;$('caseFileSubtitle').textContent=j.claimNum+' · '+(j.carrier&&!j.carrier.startsWith('rec')?j.carrier:'')+' · '+j.office;
+  $('caseFileTitle').innerHTML='<button onclick="navigate(previousScreen||\'dashboard\')" style="background:none;border:1px solid var(--text-muted);color:var(--text-secondary);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:.85rem;margin-right:12px">&#8592; Back</button>Case: '+j.jobNum;$('caseFileSubtitle').textContent=j.claimNum+' Â· '+(j.carrier&&!j.carrier.startsWith('rec')?j.carrier:'')+' Â· '+j.office;
   const outstanding=j.amtInvoiced-j.amtPaid;const sc=agingColor(j.effectiveDaysOut||j.daysOut);
   let html='<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px"><div class="kpi-card" style="flex:1;min-width:140px"><div class="kpi-label">Amount Invoiced</div><div class="kpi-value">'+fmt(j.amtInvoiced)+'</div></div><div class="kpi-card" style="flex:1;min-width:140px"><div class="kpi-label">Amount Paid</div><div class="kpi-value" style="color:var(--accent-green)">'+fmt(j.amtPaid)+'</div></div><div class="kpi-card" style="flex:1;min-width:140px"><div class="kpi-label">Outstanding</div><div class="kpi-value" style="color:var(--accent-'+sc+')">'+fmt(outstanding)+'</div></div><div class="kpi-card" style="flex:1;min-width:140px"><div class="kpi-label">Days Outstanding</div><div class="kpi-value">'+(j.effectiveDaysOut||j.daysOut)+'<span style="font-size:.75rem;color:var(--accent-yellow)">'+(j.agingPaused?' &#9208; PAUSED':'')+' </span></div><span class="badge badge-'+sc+'">'+agingBucket(j.daysOut)+' days</span></div><div class="kpi-card" style="flex:1;min-width:140px"><div class="kpi-label">Status</div><div class="kpi-value" style="font-size:1.2rem"><span class="badge badge-'+sc+'">'+j.status+'</span></div></div></div>';
   // Communication Track badge
   var trackColors={'1 - Not Answering':'red','2 - Went Silent':'orange','3 - Fully Responding':'green','4 - Lowball/Escalation':'yellow','5 - Good Faith':'blue'};
   var trackWeek='';
-  if(j.communicationTrack&&j.trackAssignedDate){var wks=Math.floor((Date.now()-new Date(j.trackAssignedDate).getTime())/604800000)+1;trackWeek=' · Week '+wks}
+  if(j.communicationTrack&&j.trackAssignedDate){var wks=Math.floor((Date.now()-new Date(j.trackAssignedDate).getTime())/604800000)+1;trackWeek=' Â· Week '+wks}
   if(j.communicationTrack){html+='<div style="margin-bottom:12px;display:flex;align-items:center;gap:10px"><span style="color:var(--text-secondary);font-size:.9rem">Homeowner Track:</span><span class="badge badge-'+(trackColors[j.communicationTrack]||'blue')+'">'+j.communicationTrack+trackWeek+'</span></div>'}
   var disputeTabLabel=j.disputeStatus&&j.disputeStatus!=='No Dispute'?'&#9888; Disputes':'Disputes';
   html+='<div class="tabs"><div class="tab '+(caseFileTab==='timeline'?'active':'')+'" onclick="caseFileTab=\'timeline\';renderCaseFile()">Timeline</div><div class="tab '+(caseFileTab==='invoices'?'active':'')+'" onclick="caseFileTab=\'invoices\';renderCaseFile()">Invoices</div><div class="tab '+(caseFileTab==='payments'?'active':'')+'" onclick="caseFileTab=\'payments\';renderCaseFile()">Payments</div><div class="tab '+(caseFileTab==='disputes'?'active':'')+'" onclick="caseFileTab=\'disputes\';renderCaseFile()" style="'+(j.disputeStatus==='Active Dispute'?'color:var(--accent-red);font-weight:700':'')+'">'+ disputeTabLabel +'</div><div class="tab '+(caseFileTab==='contacts'?'active':'')+'" onclick="caseFileTab=\'contacts\';renderCaseFile()">Contacts</div><div class="tab '+(caseFileTab==='actions'?'active':'')+'" onclick="caseFileTab=\'actions\';renderCaseFile()">Actions</div></div>';
@@ -1462,7 +1462,7 @@ function renderCaseFile(){
     var timelineHeader='';
     if(!logs.length){logs=COMMS_LOG.filter(l=>l.office===j.office).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,10);timelineHeader='<div style="padding:12px 16px;background:var(--bg-input);border-radius:var(--radius);margin-bottom:12px;color:var(--accent-yellow);font-size:.95rem">&#9888; Recent communications (no entries matched this job):</div>'}
     const icons={email:'&#9993;',phone:'&#9742;',sms:'&#128172;',system:'&#9881;',portal:'&#127760;'};
-    html+=logs.length?timelineHeader+logs.map(l=>'<div class="activity-item"><div class="activity-icon '+l.channel+'">'+(icons[l.channel]||'')+'</div><div style="flex:1"><div style="display:flex;justify-content:space-between"><strong style="font-size:1rem">'+l.subject+'</strong><span class="badge badge-'+(l.direction==='Inbound'?'green':'blue')+'">'+l.direction+'</span></div><div class="activity-text" style="margin-top:4px">'+l.summary+'</div><div class="activity-meta">'+formatDateTime(l.date)+' · '+l.agent+' · '+l.channel+'</div></div></div>').join(''):'<div class="empty-state"><p>No communications logged.</p></div>';
+    html+=logs.length?timelineHeader+logs.map(l=>'<div class="activity-item"><div class="activity-icon '+l.channel+'">'+(icons[l.channel]||'')+'</div><div style="flex:1"><div style="display:flex;justify-content:space-between"><strong style="font-size:1rem">'+l.subject+'</strong><span class="badge badge-'+(l.direction==='Inbound'?'green':'blue')+'">'+l.direction+'</span></div><div class="activity-text" style="margin-top:4px">'+l.summary+'</div><div class="activity-meta">'+formatDateTime(l.date)+' Â· '+l.agent+' Â· '+l.channel+'</div></div></div>').join(''):'<div class="empty-state"><p>No communications logged.</p></div>';
   }else if(caseFileTab==='invoices'){
     const invs=INVOICES.filter(i=>i.jobId===j.id);
     html+=invs.length?'<div class="table-container"><table><thead><tr><th>Invoice ID</th><th>Status</th><th>Amount</th><th>Paid</th><th>Due</th><th>Escalation</th></tr></thead><tbody>'+invs.map(i=>'<tr><td>'+i.id+'</td><td><span class="badge badge-'+agingColor(i.daysOut)+'">'+i.status+'</span></td><td>'+fmt(i.amtInvoiced)+'</td><td>'+fmt(i.amtPaid)+'</td><td>'+fmt(i.amtDue)+'</td><td>'+i.escalationLevel+'</td></tr>').join('')+'</tbody></table></div>':'<div class="empty-state"><p>No invoices found.</p></div>';
@@ -1472,7 +1472,7 @@ function renderCaseFile(){
     var divPmts=pmts.filter(p=>p.diversion&&p.recoveryStatus);
     if(divPmts.length>0){
       var dp=divPmts[0];var stepNum=dp.recoveryStep||0;
-      var statusColor=dp.recoveryStatus==='Active'?'var(--accent-yellow)':dp.recoveryStatus==='Escalated to Legal'?'var(--accent-red)':dp.recoveryStatus==='Resolved — Payment Forwarded'?'var(--accent-green)':'var(--text-muted)';
+      var statusColor=dp.recoveryStatus==='Active'?'var(--accent-yellow)':dp.recoveryStatus==='Escalated to Legal'?'var(--accent-red)':dp.recoveryStatus==='Resolved â Payment Forwarded'?'var(--accent-green)':'var(--text-muted)';
       // Calculate dates for each step from detection date
       var detDate=dp.diversionDetectedDate?new Date(dp.diversionDetectedDate):null;
       var stepDayOffsets=[0,0,3,7,10,14,21,28,30];
@@ -1492,7 +1492,7 @@ function renderCaseFile(){
       html+='<div><div style="font-size:.8rem;color:var(--text-muted)">Amount at Risk</div><div style="font-size:1.2rem;font-weight:700;color:var(--accent-red)">'+fmt(dp.amount)+'</div></div>';
       html+='<div><div style="font-size:.8rem;color:var(--text-muted)">Paid To</div><div style="font-size:1rem;font-weight:600">'+dp.paidTo+'</div></div>';
       html+='<div><div style="font-size:.8rem;color:var(--text-muted)">Should Have Gone To</div><div style="font-size:1rem;font-weight:600">'+dp.expectedPayee+'</div></div>';
-      html+='<div><div style="font-size:.8rem;color:var(--text-muted)">Detected</div><div style="font-size:1rem;font-weight:600">'+(detDate?formatDate(dp.diversionDetectedDate):'—')+'</div></div>';
+      html+='<div><div style="font-size:.8rem;color:var(--text-muted)">Detected</div><div style="font-size:1rem;font-weight:600">'+(detDate?formatDate(dp.diversionDetectedDate):'â')+'</div></div>';
       html+='</div>';
       // Step-by-step timeline
       html+='<div style="position:relative;padding-left:32px">';
@@ -1515,7 +1515,7 @@ function renderCaseFile(){
         if(isCurrent){html+=' <span class="badge badge-yellow" style="font-size:.7rem;vertical-align:middle">CURRENT</span>'}
         if(isDone){html+=' <span class="badge badge-green" style="font-size:.7rem;vertical-align:middle">SENT</span>'}
         html+='</div>';
-        html+='<span style="font-size:.85rem;color:var(--text-muted)">'+(stepDate?formatDate(stepDate):'')+(isDone||isCurrent?' · Day '+stepDayOffsets[s.n]:' · Day '+stepDayOffsets[s.n])+'</span>';
+        html+='<span style="font-size:.85rem;color:var(--text-muted)">'+(stepDate?formatDate(stepDate):'')+(isDone||isCurrent?' Â· Day '+stepDayOffsets[s.n]:' Â· Day '+stepDayOffsets[s.n])+'</span>';
         html+='</div>';
         html+='<div style="font-size:.85rem;color:var(--text-secondary);margin-top:2px">'+s.desc+'</div>';
         html+='<div style="font-size:.8rem;color:var(--text-muted);margin-top:2px">'+s.channel+'</div>';
@@ -1527,18 +1527,18 @@ function renderCaseFile(){
   }else if(caseFileTab==='disputes'){
     var ds=j.disputeStatus||'No Dispute';
     var isActive=ds==='Active Dispute'||ds==='Supplement Sent'||ds==='Re-inspection Requested'||ds==='Appraisal Invoked';
-    var isResolved=ds==='Dispute Won'||ds==='Dispute Lost — Adjusted'||ds==='Settled — Compromise';
+    var isResolved=ds==='Dispute Won'||ds==='Dispute Lost â Adjusted'||ds==='Settled â Compromise';
     var dsColor=ds==='Active Dispute'?'red':ds==='Supplement Sent'?'orange':ds==='Re-inspection Requested'?'yellow':ds==='Appraisal Invoked'?'purple':isResolved?'green':'gray';
 
     if(ds==='No Dispute'||!ds){
       var hasCarrierResponse=j.carrierResponseStatus&&j.carrierResponseStatus!==''&&j.carrierResponseStatus!=='Pending';
       if(hasCarrierResponse){
-        html+='<div class="empty-state"><div class="empty-icon">&#9878;</div><h3>No Active Dispute</h3><p>Carrier/adjuster responded — you can open a dispute if their answer is unsatisfactory.</p><button class="btn btn-primary" onclick="openDisputeFromInbox(\''+j.id+'\',\''+j.adjuster+'\',\''+j.adjEmail+'\',\'\')">&#9888; Open New Dispute</button></div>';
+        html+='<div class="empty-state"><div class="empty-icon">&#9878;</div><h3>No Active Dispute</h3><p>Carrier/adjuster responded â you can open a dispute if their answer is unsatisfactory.</p><button class="btn btn-primary" onclick="openDisputeFromInbox(\''+j.id+'\',\''+j.adjuster+'\',\''+j.adjEmail+'\',\'\')">&#9888; Open New Dispute</button></div>';
       } else {
         html+='<div class="empty-state"><div class="empty-icon">&#9878;</div><h3>No Active Dispute</h3><p>Disputes can be opened after a carrier/adjuster responds to the claim. Monitor the <strong>AI Inbox</strong> for incoming responses.</p></div>';
       }
     } else {
-      // Dispute Financial Summary — top card with visual gap indicator
+      // Dispute Financial Summary â top card with visual gap indicator
       var ourEst = j.ourEstimate || j.amtInvoiced || 0;
       var adjEst = j.adjEstimate || 0;
       var gap = j.disputeGap || (ourEst - adjEst);
@@ -1564,7 +1564,7 @@ function renderCaseFile(){
 
       // Details row
       html+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px">';
-      html+='<div><span style="font-size:.8rem;color:var(--text-muted)">Category</span><div style="font-weight:600;font-size:.95rem">'+(j.disputeCategory||'—')+'</div></div>';
+      html+='<div><span style="font-size:.8rem;color:var(--text-muted)">Category</span><div style="font-weight:600;font-size:.95rem">'+(j.disputeCategory||'â')+'</div></div>';
       html+='<div><span style="font-size:.8rem;color:var(--text-muted)">Opened</span><div style="font-size:.95rem">'+formatDate(j.disputeDate)+'</div></div>';
       if(j.supplementSentDate) html+='<div><span style="font-size:.8rem;color:var(--text-muted)">Supplement Sent</span><div style="font-size:.95rem">'+formatDate(j.supplementSentDate)+'</div></div>';
       var daysInDispute = j.disputeDate ? Math.floor((Date.now() - new Date(j.disputeDate).getTime())/(86400000)) : 0;
@@ -1577,7 +1577,7 @@ function renderCaseFile(){
         {name:'Dispute Opened',desc:'Carrier/adjuster response disagrees with estimate',status:ds},
         {name:'Documentation Gathered',desc:'Photos, moisture readings, IICRC standards compiled for rebuttal',status:ds==='Active Dispute'?'current':'done'},
         {name:'Supplement Sent',desc:'Rebuttal package with supporting documentation sent to adjuster',status:ds==='Supplement Sent'?'current':(ds==='Active Dispute'?'future':'done')},
-        {name:'Adjuster Review',desc:'Awaiting adjuster review of supplement — follow up if no response in 7 days',status:ds==='Supplement Sent'?'current':(ds==='Re-inspection Requested'||ds==='Appraisal Invoked'||isResolved?'done':'future')},
+        {name:'Adjuster Review',desc:'Awaiting adjuster review of supplement â follow up if no response in 7 days',status:ds==='Supplement Sent'?'current':(ds==='Re-inspection Requested'||ds==='Appraisal Invoked'||isResolved?'done':'future')},
         {name:'Negotiation / Escalation',desc:'Re-inspection requested, umpire selected, or appraisal clause invoked per policy',status:ds==='Re-inspection Requested'||ds==='Appraisal Invoked'?'current':(isResolved?'done':'future')},
         {name:'Resolution',desc:'Final agreed amount settled and payment expected',status:isResolved?'done':'future'}
       ];
@@ -1595,7 +1595,7 @@ function renderCaseFile(){
       });
       html+='</div></div>';
 
-      // Notes (only if different from raw email body — user-entered notes)
+      // Notes (only if different from raw email body â user-entered notes)
       if(j.disputeNotes){
         html+='<div class="card" style="margin-bottom:16px"><div style="padding:16px"><h3 style="margin:0 0 8px;font-size:1rem">&#128221; Dispute Notes</h3><pre style="white-space:pre-wrap;font-family:inherit;margin:0;color:var(--text-secondary);font-size:.9rem;line-height:1.5;max-height:200px;overflow-y:auto">'+j.disputeNotes+'</pre></div></div>';
       }
@@ -1650,13 +1650,13 @@ function sendEmailAndLog(jobId){
   var subject=subjectEl?subjectEl.value:'RE: Claim '+j.claimNum;
   var body=bodyEl?bodyEl.value:'';
   window.open('mailto:'+encodeURIComponent(to)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body));
-  var logMsg='EMAIL — Claim '+j.claimNum+' — '+j.jobNum+'\nTo: '+to+'\nSubject: '+subject+'\n\n'+body.slice(0,400);
-  var newEntry={id:'local-'+Date.now(),jobId:j.id,jobNum:j.jobNum||'',office:j.office||'Portland',channel:'email',direction:'Outbound',subject:new Date().toISOString().slice(0,10)+' — Email — '+(j.jobNum||''),summary:logMsg,date:new Date().toISOString(),agent:'Command Center'};
+  var logMsg='EMAIL â Claim '+j.claimNum+' â '+j.jobNum+'\nTo: '+to+'\nSubject: '+subject+'\n\n'+body.slice(0,400);
+  var newEntry={id:'local-'+Date.now(),jobId:j.id,jobNum:j.jobNum||'',office:j.office||'Portland',channel:'email',direction:'Outbound',subject:new Date().toISOString().slice(0,10)+' â Email â '+(j.jobNum||''),summary:logMsg,date:new Date().toISOString(),agent:'Command Center'};
   COMMS_LOG.unshift(newEntry);
   var pat=getAirtablePAT();
   if(pat){
     var fields={'Message':logMsg,'Channel':'Email','Direction':'Outbound','Source':'Command Center','Log Entry':newEntry.subject,'Date':newEntry.date,'Logged By':'Command Center'};
-    fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{method:'POST',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},body:JSON.stringify({fields:fields})}).then(function(r){if(r.ok){return r.json();}else{showToast('Airtable log failed ('+r.status+')','error');}}).then(function(data){if(data&&data.id){newEntry.id=data.id;}}).catch(function(e){showToast('Network error logging email','error');});
+    fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{method:'POST',headers:{'X-Proxy-Token':pat,'Content-Type':'application/json'},body:JSON.stringify({fields:fields})}).then(function(r){if(r.ok){return r.json();}else{showToast('Airtable log failed ('+r.status+')','error');}}).then(function(data){if(data&&data.id){newEntry.id=data.id;}}).catch(function(e){showToast('Network error logging email','error');});
   }
   closeModalForce();
   showToast('Email opened in mail client + logged to CommsLog','success');
@@ -1718,7 +1718,7 @@ function generateStatement(jobId){
   function addFooter(){
     doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(150,150,160);
     doc.text('Generated by 911 Restoration Collections Copilot | '+new Date().toLocaleString(),W/2,pageH-10,{align:'center'});
-    doc.text('INTERNAL USE ONLY — NOT FOR DISTRIBUTION TO CARRIERS',W/2,pageH-6,{align:'center'});
+    doc.text('INTERNAL USE ONLY â NOT FOR DISTRIBUTION TO CARRIERS',W/2,pageH-6,{align:'center'});
   }
   function addHeaderBar(){
     doc.setFillColor(15,16,35);
@@ -1768,11 +1768,11 @@ function generateStatement(jobId){
   // Two-column job info
   var leftCol=marginL;var rightCol=W/2+5;
   var fields=[
-    ['Job Number',j.jobNum||'—','Claim Number',j.claimNum||'—'],
-    ['Office',j.office||'—','Status',j.collectionsStatus||j.status||'Active'],
-    ['Carrier',j.carrier||'—','Adjuster',j.adjuster||'—'],
-    ['Homeowner',j.homeowner||'—','Property State',j.propState||'—'],
-    ['Invoice Date',j.invoicedDate?formatDate(j.invoicedDate):'—','Days Outstanding',String(j.daysOut||0)],
+    ['Job Number',j.jobNum||'â','Claim Number',j.claimNum||'â'],
+    ['Office',j.office||'â','Status',j.collectionsStatus||j.status||'Active'],
+    ['Carrier',j.carrier||'â','Adjuster',j.adjuster||'â'],
+    ['Homeowner',j.homeowner||'â','Property State',j.propState||'â'],
+    ['Invoice Date',j.invoicedDate?formatDate(j.invoicedDate):'â','Days Outstanding',String(j.daysOut||0)],
     ['Lien Deadline',j.lienDeadline?formatDate(j.lienDeadline):'N/A','Lien Days Left',j.lienDaysLeft<999?String(j.lienDaysLeft):'N/A']
   ];
   fields.forEach(function(row){
@@ -1829,7 +1829,7 @@ function generateStatement(jobId){
       margin:{left:marginL,right:marginR},
       head:[['Invoice ID','Date','Total','Paid','Due','Status','Aging']],
       body:jobInvoices.map(function(inv){
-        return [inv.id||'—',inv.sentDate?formatDate(inv.sentDate):'—',fmt(inv.total),fmt(inv.amtPaid||0),fmt(inv.amtDue||inv.total),inv.status||'Open',inv.agingBucket||'—'];
+        return [inv.id||'â',inv.sentDate?formatDate(inv.sentDate):'â',fmt(inv.total),fmt(inv.amtPaid||0),fmt(inv.amtDue||inv.total),inv.status||'Open',inv.agingBucket||'â'];
       }),
       styles:{fontSize:8,cellPadding:2,textColor:navy,lineColor:[220,220,230],lineWidth:0.2},
       headStyles:{fillColor:blue,textColor:[255,255,255],fontStyle:'bold',fontSize:8},
@@ -1855,7 +1855,7 @@ function generateStatement(jobId){
       margin:{left:marginL,right:marginR},
       head:[['Payment ID','Date','Amount','Paid To','Source','Diversion']],
       body:jobPayments.map(function(p){
-        return [p.id||'—',p.date?formatDate(p.date):'—',fmt(p.amount),p.paidTo||'—',p.source||'—',p.diversion?'YES - DIVERTED':'No'];
+        return [p.id||'â',p.date?formatDate(p.date):'â',fmt(p.amount),p.paidTo||'â',p.source||'â',p.diversion?'YES - DIVERTED':'No'];
       }),
       styles:{fontSize:8,cellPadding:2,textColor:navy,lineColor:[220,220,230],lineWidth:0.2},
       headStyles:{fillColor:blue,textColor:[255,255,255],fontStyle:'bold',fontSize:8},
@@ -1886,7 +1886,7 @@ function generateStatement(jobId){
       margin:{left:marginL,right:marginR},
       head:[['Date','Channel','Direction','Subject','Agent']],
       body:jobComms.map(function(c){
-        return [c.date?formatDate(c.date):'—',c.channel||'—',c.direction||'—',(c.subject||c.summary||'—').substring(0,60),c.agent||'—'];
+        return [c.date?formatDate(c.date):'â',c.channel||'â',c.direction||'â',(c.subject||c.summary||'â').substring(0,60),c.agent||'â'];
       }),
       styles:{fontSize:7.5,cellPadding:2,textColor:navy,lineColor:[220,220,230],lineWidth:0.2},
       headStyles:{fillColor:blue,textColor:[255,255,255],fontStyle:'bold',fontSize:7.5},
@@ -1936,7 +1936,7 @@ function renderLienZone(){
   if(urgent.length>0){$('lienAlerts').innerHTML='<div class="alert-banner alert-danger">&#9888; <strong>'+urgent.length+' job'+(urgent.length>1?'s':'')+' under 10 days to lien deadline!</strong> Immediate action required: '+urgent.map(j=>j.jobNum).join(', ')+'</div>'}
   $('lienGrid').innerHTML=jobs.map(j=>{
     const dc=j.lienDaysLeft>30?'var(--accent-green)':j.lienDaysLeft>20?'var(--accent-yellow)':'var(--accent-red)';
-    return '<div class="lien-card" style="border-left:4px solid '+dc+';cursor:pointer" onclick="openCaseFile(\''+j.id+'\')"><div style="display:flex;justify-content:space-between;align-items:start"><div><strong>'+j.jobNum+'</strong><div style="font-size:.95rem;color:var(--text-muted)">'+j.claimNum+'</div></div><div class="lien-days" style="color:'+dc+'">'+j.lienDaysLeft+'</div></div><div style="font-size:.95rem;color:var(--text-muted);margin:8px 0">days remaining</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.95rem;margin-bottom:8px"><div><span style="color:var(--text-muted)">State:</span> '+j.lienState+'</div><div><span style="color:var(--text-muted)">Deadline:</span> '+formatDate(j.lienDeadline)+'</div><div><span style="color:var(--text-muted)">Outstanding:</span> '+fmt(j.amtInvoiced-j.amtPaid)+'</div><div><span style="color:var(--text-muted)">Carrier:</span> '+(j.carrier&&!j.carrier.startsWith('rec')?j.carrier:'—')+'</div></div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Lien Mode</div><div class="lien-mode-selector"><div class="lien-mode-btn '+(j.lienMode==='Regular'?'active-regular':'')+'" onclick="event.stopPropagation();setLienMode(\''+j.id+'\',\'Regular\')">Regular</div><div class="lien-mode-btn '+(j.lienMode==='Silent'?'active-silent':'')+'" onclick="event.stopPropagation();setLienMode(\''+j.id+'\',\'Silent\')">Silent</div><div class="lien-mode-btn '+(j.lienMode==='None'?'active-none':'')+'" onclick="event.stopPropagation();setLienMode(\''+j.id+'\',\'None\')">None</div></div></div>';
+    return '<div class="lien-card" style="border-left:4px solid '+dc+';cursor:pointer" onclick="openCaseFile(\''+j.id+'\')"><div style="display:flex;justify-content:space-between;align-items:start"><div><strong>'+j.jobNum+'</strong><div style="font-size:.95rem;color:var(--text-muted)">'+j.claimNum+'</div></div><div class="lien-days" style="color:'+dc+'">'+j.lienDaysLeft+'</div></div><div style="font-size:.95rem;color:var(--text-muted);margin:8px 0">days remaining</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.95rem;margin-bottom:8px"><div><span style="color:var(--text-muted)">State:</span> '+j.lienState+'</div><div><span style="color:var(--text-muted)">Deadline:</span> '+formatDate(j.lienDeadline)+'</div><div><span style="color:var(--text-muted)">Outstanding:</span> '+fmt(j.amtInvoiced-j.amtPaid)+'</div><div><span style="color:var(--text-muted)">Carrier:</span> '+(j.carrier&&!j.carrier.startsWith('rec')?j.carrier:'â')+'</div></div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Lien Mode</div><div class="lien-mode-selector"><div class="lien-mode-btn '+(j.lienMode==='Regular'?'active-regular':'')+'" onclick="event.stopPropagation();setLienMode(\''+j.id+'\',\'Regular\')">Regular</div><div class="lien-mode-btn '+(j.lienMode==='Silent'?'active-silent':'')+'" onclick="event.stopPropagation();setLienMode(\''+j.id+'\',\'Silent\')">Silent</div><div class="lien-mode-btn '+(j.lienMode==='None'?'active-none':'')+'" onclick="event.stopPropagation();setLienMode(\''+j.id+'\',\'None\')">None</div></div></div>';
   }).join('');
 }
 function setLienMode(jobId,mode){
@@ -1945,10 +1945,10 @@ function setLienMode(jobId,mode){
   j.lienMode=mode;
   renderLienZone();
   var pat=getAirtablePAT();
-  if(!pat){showToast('Lien mode saved locally only — no PAT','warning');return;}
+  if(!pat){showToast('Lien mode saved locally only â no PAT','warning');return;}
   fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.jobs+'/'+jobId,{
     method:'PATCH',
-    headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
+    headers:{'X-Proxy-Token':pat,'Content-Type':'application/json'},
     body:JSON.stringify({fields:{'Lien Mode':mode},typecast:true})
   }).then(function(resp){
     if(!resp.ok) throw new Error('Airtable update failed ('+resp.status+')');
@@ -1956,7 +1956,7 @@ function setLienMode(jobId,mode){
   }).then(function(){
     showToast(j.jobNum+' lien mode: '+mode,'success');
   }).catch(function(err){
-    showToast('Lien mode saved locally — Airtable write failed: '+err.message,'warning');
+    showToast('Lien mode saved locally â Airtable write failed: '+err.message,'warning');
   });
 }
 
@@ -1974,7 +1974,7 @@ function renderPayments(){
     if(!p.diversion) return '<span class="badge badge-green">&#10003; Matched</span>';
     if(p.recoveryStatus==='Active') return '<span class="badge badge-yellow">Step '+p.recoveryStep+'/8</span>';
     if(p.recoveryStatus==='Escalated to Legal') return '<span class="badge badge-red">&#9878; Legal</span>';
-    if(p.recoveryStatus==='Resolved — Payment Forwarded') return '<span class="badge badge-green">&#10003; Recovered</span>';
+    if(p.recoveryStatus==='Resolved â Payment Forwarded') return '<span class="badge badge-green">&#10003; Recovered</span>';
     return '<span class="badge badge-red">&#9888; DIVERTED</span>';
   };
   var actionCell=function(p){
@@ -1983,13 +1983,13 @@ function renderPayments(){
     if(p.diversion&&p.recoveryStatus==='Active') btns+='<button class="btn btn-primary btn-sm" onclick="openCaseFile(\''+p.jobId+'\');setTimeout(function(){caseFileTab=\'payments\';renderCaseFile()},100)" style="padding:4px 8px;font-size:.8rem">&#128260; Recovery</button> ';
     if(p.diversion&&!p.recoveryStatus) btns+='<button class="btn btn-primary btn-sm" onclick="showToast(\'Recovery cadence will start on next S-04 run\',\'info\')" style="padding:4px 8px;font-size:.8rem">&#9888; Pending</button> ';
     if(p.diversion) btns+='<button class="btn btn-success btn-sm" onclick="markPaymentResolved(\''+p.id+'\')" style="padding:4px 8px;font-size:.8rem">&#10003; Resolve</button>';
-    return btns||'—';
+    return btns||'â';
   };
   $('paymentTableContainer').innerHTML='<table><thead><tr><th>Payment ID</th><th>Amount</th><th>Date</th><th>Job #</th><th>Paid To</th><th>Expected</th><th>Source</th><th>Status</th><th>Actions</th></tr></thead><tbody>'+payments.map(p=>'<tr'+(p.diversion?' style="background:rgba(239,68,68,.08)"':'')+'><td>'+p.id+'</td><td data-sort="'+p.amount+'">'+fmt(p.amount)+'</td><td>'+formatDate(p.date)+'</td><td><a href="#" onclick="openCaseFile(\''+p.jobId+'\');return false" style="color:var(--accent-blue);text-decoration:none;font-weight:700">'+p.jobNum+'</a></td><td>'+p.paidTo+'</td><td>'+p.expectedPayee+'</td><td>'+p.source+'</td><td>'+statusCell(p)+'</td><td style="white-space:nowrap">'+actionCell(p)+'</td></tr>').join('')+'</tbody></table>';
   makeSortable('paymentTableContainer');
 }
 function markPaymentResolved(paymentId){
-  openModal('<div class="modal-header"><h2>&#10003; Resolve Diversion</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>Resolution</label><select id="resolveType"><option value="Resolved — Payment Forwarded">Payment Forwarded by Homeowner</option><option value="Closed — No Action">Closed — No Action Needed</option></select></div><div class="form-group"><label>Notes</label><textarea id="resolveNotes" placeholder="How was this resolved?"></textarea></div><div class="form-actions"><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button><button class="btn btn-success" onclick="confirmResolvePayment(\''+paymentId+'\')">&#10003; Confirm Resolution</button></div>');
+  openModal('<div class="modal-header"><h2>&#10003; Resolve Diversion</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>Resolution</label><select id="resolveType"><option value="Resolved â Payment Forwarded">Payment Forwarded by Homeowner</option><option value="Closed â No Action">Closed â No Action Needed</option></select></div><div class="form-group"><label>Notes</label><textarea id="resolveNotes" placeholder="How was this resolved?"></textarea></div><div class="form-actions"><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button><button class="btn btn-success" onclick="confirmResolvePayment(\''+paymentId+'\')">&#10003; Confirm Resolution</button></div>');
 }
 function confirmResolvePayment(paymentId){
   var resolution=document.getElementById('resolveType').value;
@@ -2000,7 +2000,7 @@ function confirmResolvePayment(paymentId){
     // Write to Airtable if connected
     var pat=getAirtablePAT();
     if(pat&&p.id.startsWith('rec')){
-      fetch('https://api.airtable.com/v0/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.payments+'/'+p.id,{method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},body:JSON.stringify({fields:{'Recovery Status':resolution,'Recovery Step':9},typecast:true})}).then(function(){showToast('Airtable updated','success')}).catch(function(){showToast('Local only — Airtable update failed','warning')});
+      fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.payments+'/'+p.id,{method:'PATCH',headers:{'X-Proxy-Token':pat,'Content-Type':'application/json'},body:JSON.stringify({fields:{'Recovery Status':resolution,'Recovery Step':9},typecast:true})}).then(function(){showToast('Airtable updated','success')}).catch(function(){showToast('Local only â Airtable update failed','warning')});
     }
   }
   closeModalForce();
@@ -2033,7 +2033,7 @@ function applyErrFilters(){
   var totalCount=filtered.length;var totalPages=Math.max(1,Math.ceil(totalCount/ERR_PAGE_SIZE));
   if(errPage>=totalPages)errPage=totalPages-1;if(errPage<0)errPage=0;
   var paged=filtered.slice(errPage*ERR_PAGE_SIZE,(errPage+1)*ERR_PAGE_SIZE);
-  var pager=totalCount>ERR_PAGE_SIZE?'<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;font-size:.95rem"><span>Showing '+(errPage*ERR_PAGE_SIZE+1)+'–'+Math.min((errPage+1)*ERR_PAGE_SIZE,totalCount)+' of '+totalCount+'</span><div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="errPage--;applyErrFilters()" '+(errPage<=0?'disabled':'')+'>&#9664; Prev</button><button class="btn btn-secondary btn-sm" onclick="errPage++;applyErrFilters()" '+(errPage>=totalPages-1?'disabled':'')+'>Next &#9654;</button></div></div>':'';
+  var pager=totalCount>ERR_PAGE_SIZE?'<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;font-size:.95rem"><span>Showing '+(errPage*ERR_PAGE_SIZE+1)+'â'+Math.min((errPage+1)*ERR_PAGE_SIZE,totalCount)+' of '+totalCount+'</span><div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="errPage--;applyErrFilters()" '+(errPage<=0?'disabled':'')+'>&#9664; Prev</button><button class="btn btn-secondary btn-sm" onclick="errPage++;applyErrFilters()" '+(errPage>=totalPages-1?'disabled':'')+'>Next &#9654;</button></div></div>':'';
   const sc={CRITICAL:'red',HIGH:'orange',MEDIUM:'yellow',LOW:'gray'};
   $('errorTableContainer').innerHTML=pager+'<table><thead><tr><th>Error ID</th><th>Timestamp</th><th>Scenario</th><th>Module</th><th>Severity</th><th>Message</th><th>Resolved</th></tr></thead><tbody>'+paged.map(e=>'<tr><td>'+e.id+'</td><td style="white-space:nowrap">'+formatDateTime(e.timestamp)+'</td><td>'+e.scenario+'</td><td>'+e.module+'</td><td><span class="badge badge-'+sc[e.severity]+'">'+e.severity+'</span></td><td style="max-width:300px;font-size:.95rem">'+e.message+'</td><td><label class="toggle"><input type="checkbox" '+(e.resolved?'checked':'')+' onchange="toggleError(\''+e.id+'\',this.checked)"><span class="toggle-slider"></span></label></td></tr>').join('')+'</tbody></table>'+pager;
   makeSortable('errorTableContainer');
@@ -2049,7 +2049,7 @@ function renderSettings(){
   var currentPAT = getAirtablePAT();
   var maskedPAT = currentPAT ? currentPAT.substring(0,6) + '...' + currentPAT.substring(currentPAT.length-4) : 'Not set';
   var isLive = currentPAT && _liveDataLoaded && !_dataLoadError;
-  $('settingsContent').innerHTML='<div class="card"><div class="card-header"><span class="card-title">&#128273; Airtable Connection</span></div><div style="padding:4px 0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span class="status-dot '+(currentPAT?'active':'')+'"></span><span style="font-size:.95rem">'+(currentPAT?'PAT configured: <code style="background:var(--bg-tertiary);padding:2px 6px;border-radius:4px">'+maskedPAT+'</code>':'No PAT configured — enter your Airtable Personal Access Token below')+'</span></div><div style="display:flex;gap:8px;align-items:center"><input type="password" id="settingsPATInput" placeholder="pat-xxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" value="'+currentPAT+'" style="flex:1;padding:10px 12px;border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border-color);font-family:monospace;font-size:.9rem"><button class="btn btn-secondary btn-sm" onclick="var i=$(\'settingsPATInput\');i.type=i.type===\'password\'?\'text\':\'password\'">&#128065; Show</button><button class="btn btn-primary btn-sm" onclick="var v=$(\'settingsPATInput\').value.trim();if(!v){showToast(\'Please enter a PAT\',\'error\');return}setAirtablePAT(v);showToast(\'PAT saved successfully\',\'success\');renderSettings()">Save PAT</button></div><div style="margin-top:8px;font-size:.85rem;color:var(--text-muted)">Your PAT is stored locally in this browser. Get one from <a href=\'https://airtable.com/create/tokens\' target=\'_blank\' style=\'color:var(--accent-blue)\'>airtable.com/create/tokens</a> with read access to the 911 base.</div></div></div><div class="card"><div class="card-header"><span class="card-title">&#128268; Data Mode</span></div><div style="padding:4px 0"><div style="display:flex;align-items:center;gap:16px;margin-bottom:12px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 16px;border-radius:8px;border:2px solid '+(!isLive?'var(--accent-blue)':'var(--border-color)')+';background:'+(!isLive?'rgba(59,130,246,.08)':'transparent')+'"><input type="radio" name="dataMode" value="demo" '+(isLive?'':'checked')+' onchange="switchDataMode(\'demo\')"> <span style="font-weight:600">&#127922; Demo Data</span></label><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 16px;border-radius:8px;border:2px solid '+(isLive?'var(--accent-green)':'var(--border-color)')+';background:'+(isLive?'rgba(34,197,94,.08)':'transparent')+'"><input type="radio" name="dataMode" value="live" '+(isLive?'checked':'')+' onchange="switchDataMode(\'live\')"> <span style="font-weight:600">&#128994; Live Airtable</span></label></div><div style="font-size:.9rem;color:var(--text-muted)">'+(_dataLoadError?'<span style="color:var(--accent-red)">&#9888;&#65039; Last sync error: '+_dataLoadError+'</span>':isLive?'<span style="color:var(--accent-green)">&#9989; Connected — showing live Airtable data</span>':'Showing built-in demo data. Save a valid PAT and switch to Live to pull from Airtable.')+'</div></div></div><div class="card"><div class="card-header"><span class="card-title">Authorized Senders</span><button class="btn btn-primary btn-sm" onclick="openAddSender()">+ Add Domain</button></div><div class="table-container"><table><thead><tr><th>Domain</th><th>Name</th><th>Type</th><th>Added</th><th>Status</th><th>Actions</th></tr></thead><tbody>'+AUTHORIZED_SENDERS.map(s=>'<tr><td><strong>@'+s.domain+'</strong></td><td>'+s.name+'</td><td><span class="badge badge-'+(s.type==='Carrier'?'blue':s.type==='Internal'?'purple':'cyan')+'">'+s.type+'</span></td><td>'+formatDate(s.addedDate)+'</td><td><span class="badge badge-green">'+s.status+'</span></td><td><button class="btn btn-ghost btn-sm" onclick="showToast(\'Edit '+s.domain+'\',\'info\')">Edit</button> <button class="btn btn-ghost btn-sm" style="color:var(--accent-red)" onclick="showToast(\'Remove '+s.domain+'\',\'info\')">Remove</button></td></tr>').join('')+'</tbody></table></div></div><div class="card"><div class="card-header"><span class="card-title">Holiday Calendar 2026</span><button class="btn btn-primary btn-sm" onclick="openAddHoliday()">+ Add Holiday</button></div><div class="table-container"><table><thead><tr><th>Holiday</th><th>Date</th><th>Type</th></tr></thead><tbody>'+HOLIDAYS_2026.map(h=>'<tr><td>'+h.name+'</td><td>'+formatDate(h.date)+'</td><td><span class="badge badge-blue">'+h.type+'</span></td></tr>').join('')+'</tbody></table></div></div><div class="card"><div class="card-header"><span class="card-title">System Status</span></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px"><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Airtable Connection</div><div style="display:flex;align-items:center;gap:6px"><span class="status-dot active"></span> Connected</div></div><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Make.com Status</div><div style="display:flex;align-items:center;gap:6px"><span class="status-dot active"></span> Operational</div></div><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Last Sync</div><div style="font-size:1rem">May 19, 2026 9:15 AM</div></div></div></div><div class="card"><div class="card-header"><span class="card-title">User Roles</span></div><div class="table-container"><table><thead><tr><th>User</th><th>Mode</th><th>Offices</th><th>Permissions</th></tr></thead><tbody><tr><td><strong>Moshe</strong></td><td><span class="badge badge-green">Full Access</span></td><td>Portland, Seattle</td><td>All features, settings, admin</td></tr><tr><td><strong>Christina</strong></td><td><span class="badge badge-blue">Full Mode</span></td><td>Portland</td><td>Collections, payments, errors, ops</td></tr><tr><td><strong>Hannah</strong></td><td><span class="badge badge-yellow">Guided Mode</span></td><td>Seattle</td><td>Guided AR, Strike Queue, Lien Zone</td></tr></tbody></table></div></div>';
+  $('settingsContent').innerHTML='<div class="card"><div class="card-header"><span class="card-title">&#128273; Airtable Connection</span></div><div style="padding:4px 0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span class="status-dot '+(currentPAT?'active':'')+'"></span><span style="font-size:.95rem">'+(currentPAT?'PAT configured: <code style="background:var(--bg-tertiary);padding:2px 6px;border-radius:4px">'+maskedPAT+'</code>':'No PAT configured â enter your Airtable Personal Access Token below')+'</span></div><div style="display:flex;gap:8px;align-items:center"><input type="password" id="settingsPATInput" placeholder="pat-xxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" value="'+currentPAT+'" style="flex:1;padding:10px 12px;border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border-color);font-family:monospace;font-size:.9rem"><button class="btn btn-secondary btn-sm" onclick="var i=$(\'settingsPATInput\');i.type=i.type===\'password\'?\'text\':\'password\'">&#128065; Show</button><button class="btn btn-primary btn-sm" onclick="var v=$(\'settingsPATInput\').value.trim();if(!v){showToast(\'Please enter a PAT\',\'error\');return}setAirtablePAT(v);showToast(\'PAT saved successfully\',\'success\');renderSettings()">Save PAT</button></div><div style="margin-top:8px;font-size:.85rem;color:var(--text-muted)">Your PAT is stored locally in this browser. Get one from <a href=\'https://airtable.com/create/tokens\' target=\'_blank\' style=\'color:var(--accent-blue)\'>airtable.com/create/tokens</a> with read access to the 911 base.</div></div></div><div class="card"><div class="card-header"><span class="card-title">&#128268; Data Mode</span></div><div style="padding:4px 0"><div style="display:flex;align-items:center;gap:16px;margin-bottom:12px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 16px;border-radius:8px;border:2px solid '+(!isLive?'var(--accent-blue)':'var(--border-color)')+';background:'+(!isLive?'rgba(59,130,246,.08)':'transparent')+'"><input type="radio" name="dataMode" value="demo" '+(isLive?'':'checked')+' onchange="switchDataMode(\'demo\')"> <span style="font-weight:600">&#127922; Demo Data</span></label><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 16px;border-radius:8px;border:2px solid '+(isLive?'var(--accent-green)':'var(--border-color)')+';background:'+(isLive?'rgba(34,197,94,.08)':'transparent')+'"><input type="radio" name="dataMode" value="live" '+(isLive?'checked':'')+' onchange="switchDataMode(\'live\')"> <span style="font-weight:600">&#128994; Live Airtable</span></label></div><div style="font-size:.9rem;color:var(--text-muted)">'+(_dataLoadError?'<span style="color:var(--accent-red)">&#9888;&#65039; Last sync error: '+_dataLoadError+'</span>':isLive?'<span style="color:var(--accent-green)">&#9989; Connected â showing live Airtable data</span>':'Showing built-in demo data. Save a valid PAT and switch to Live to pull from Airtable.')+'</div></div></div><div class="card"><div class="card-header"><span class="card-title">Authorized Senders</span><button class="btn btn-primary btn-sm" onclick="openAddSender()">+ Add Domain</button></div><div class="table-container"><table><thead><tr><th>Domain</th><th>Name</th><th>Type</th><th>Added</th><th>Status</th><th>Actions</th></tr></thead><tbody>'+AUTHORIZED_SENDERS.map(s=>'<tr><td><strong>@'+s.domain+'</strong></td><td>'+s.name+'</td><td><span class="badge badge-'+(s.type==='Carrier'?'blue':s.type==='Internal'?'purple':'cyan')+'">'+s.type+'</span></td><td>'+formatDate(s.addedDate)+'</td><td><span class="badge badge-green">'+s.status+'</span></td><td><button class="btn btn-ghost btn-sm" onclick="showToast(\'Edit '+s.domain+'\',\'info\')">Edit</button> <button class="btn btn-ghost btn-sm" style="color:var(--accent-red)" onclick="showToast(\'Remove '+s.domain+'\',\'info\')">Remove</button></td></tr>').join('')+'</tbody></table></div></div><div class="card"><div class="card-header"><span class="card-title">Holiday Calendar 2026</span><button class="btn btn-primary btn-sm" onclick="openAddHoliday()">+ Add Holiday</button></div><div class="table-container"><table><thead><tr><th>Holiday</th><th>Date</th><th>Type</th></tr></thead><tbody>'+HOLIDAYS_2026.map(h=>'<tr><td>'+h.name+'</td><td>'+formatDate(h.date)+'</td><td><span class="badge badge-blue">'+h.type+'</span></td></tr>').join('')+'</tbody></table></div></div><div class="card"><div class="card-header"><span class="card-title">System Status</span></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px"><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Airtable Connection</div><div style="display:flex;align-items:center;gap:6px"><span class="status-dot active"></span> Connected</div></div><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Make.com Status</div><div style="display:flex;align-items:center;gap:6px"><span class="status-dot active"></span> Operational</div></div><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Last Sync</div><div style="font-size:1rem">May 19, 2026 9:15 AM</div></div></div></div><div class="card"><div class="card-header"><span class="card-title">User Roles</span></div><div class="table-container"><table><thead><tr><th>User</th><th>Mode</th><th>Offices</th><th>Permissions</th></tr></thead><tbody><tr><td><strong>Moshe</strong></td><td><span class="badge badge-green">Full Access</span></td><td>Portland, Seattle</td><td>All features, settings, admin</td></tr><tr><td><strong>Christina</strong></td><td><span class="badge badge-blue">Full Mode</span></td><td>Portland</td><td>Collections, payments, errors, ops</td></tr><tr><td><strong>Hannah</strong></td><td><span class="badge badge-yellow">Guided Mode</span></td><td>Seattle</td><td>Guided AR, Strike Queue, Lien Zone</td></tr></tbody></table></div></div>';
 }
 function openAddSender(){openModal('<div class="modal-header"><h2>Add Authorized Sender</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>Domain</label><input type="text" placeholder="e.g., progressive.com"></div><div class="form-group"><label>Organization Name</label><input type="text" placeholder="e.g., Progressive Insurance"></div><div class="form-group"><label>Type</label><select><option>Carrier</option><option>Vendor</option><option>Internal</option></select></div><div class="form-actions"><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button><button class="btn btn-primary" onclick="closeModalForce();showToast(\'Sender added\',\'success\')">Add Sender</button></div>')}
 function openAddHoliday(){openModal('<div class="modal-header"><h2>Add Holiday</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>Holiday Name</label><input type="text" placeholder="e.g., Company Holiday"></div><div class="form-group"><label>Date</label><input type="date"></div><div class="form-group"><label>Type</label><select><option>Federal</option><option>Company</option><option>State</option></select></div><div class="form-actions"><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button><button class="btn btn-primary" onclick="closeModalForce();showToast(\'Holiday added\',\'success\')">Add Holiday</button></div>')}
@@ -2137,10 +2137,10 @@ function renderAIInbox(){
 
     html += '<tr style="cursor:pointer" onclick="openAIEmailDetail(\'' + e.id + '\')">' +
       '<td>' + formatDate(e.date) + '</td>' +
-      '<td><strong>' + (e.jobNum || '—') + '</strong></td>' +
-      '<td>' + (e.carrier || '—') + '</td>' +
-      '<td>' + (e.senderName || e.senderEmail || '—') + '<br><small style="color:var(--text-muted)">' + (e.senderRole || '') + '</small></td>' +
-      '<td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (e.subject || '—') + '</td>' +
+      '<td><strong>' + (e.jobNum || 'â') + '</strong></td>' +
+      '<td>' + (e.carrier || 'â') + '</td>' +
+      '<td>' + (e.senderName || e.senderEmail || 'â') + '<br><small style="color:var(--text-muted)">' + (e.senderRole || '') + '</small></td>' +
+      '<td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (e.subject || 'â') + '</td>' +
       '<td><span class="badge ' + badgeClass + '">' + badgeText + '</span></td>' +
       '<td>' + statusBadge + '</td>' +
       '<td>' + (outcomeLower.indexOf('disput') !== -1 && e.jobId ? '<button class="btn btn-sm" style="background:var(--accent-red);color:#fff;padding:4px 8px;font-size:.8rem" onclick="event.stopPropagation();openDisputeFromEmail(\'' + e.id + '\')">&#9888; Dispute</button>' : '<button class="btn btn-sm btn-secondary" style="padding:4px 8px;font-size:.8rem" onclick="event.stopPropagation();openAIEmailDetail(\'' + e.id + '\')">View</button>') + '</td>' +
@@ -2169,19 +2169,19 @@ function openAIEmailDetail(id) {
     '<span class="badge ' + badgeClass + '" style="font-size:14px;padding:6px 14px">' + badgeText + '</span></div>' +
     '<div class="card" style="margin-bottom:16px"><div style="padding:16px">' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
-    '<div><strong>Job:</strong> ' + (entry.jobNum || '—') + '</div>' +
-    '<div><strong>Carrier:</strong> ' + (entry.carrier || '—') + '</div>' +
-    '<div><strong>From:</strong> ' + (entry.senderName || '—') + ' &lt;' + (entry.senderEmail || '') + '&gt;</div>' +
-    '<div><strong>Role:</strong> ' + (entry.senderRole || '—') + '</div>' +
+    '<div><strong>Job:</strong> ' + (entry.jobNum || 'â') + '</div>' +
+    '<div><strong>Carrier:</strong> ' + (entry.carrier || 'â') + '</div>' +
+    '<div><strong>From:</strong> ' + (entry.senderName || 'â') + ' &lt;' + (entry.senderEmail || '') + '&gt;</div>' +
+    '<div><strong>Role:</strong> ' + (entry.senderRole || 'â') + '</div>' +
     '<div><strong>Date:</strong> ' + formatDateTime(entry.date) + '</div>' +
-    '<div><strong>Delivery:</strong> ' + (entry.deliveryStatus || '—') + '</div>' +
+    '<div><strong>Delivery:</strong> ' + (entry.deliveryStatus || 'â') + '</div>' +
     '</div></div></div>' +
     '<div class="card" style="margin-bottom:16px"><div style="padding:16px">' +
-    '<h3 style="margin:0 0 8px">Subject</h3><p style="margin:0">' + (entry.subject || '—') + '</p>' +
+    '<h3 style="margin:0 0 8px">Subject</h3><p style="margin:0">' + (entry.subject || 'â') + '</p>' +
     '</div></div>' +
     '<div class="card"><div style="padding:16px">' +
     '<h3 style="margin:0 0 8px">AI Summary / Body Preview</h3>' +
-    '<p style="margin:0;white-space:pre-wrap">' + (entry.bodyPreview || '—') + '</p>' +
+    '<p style="margin:0;white-space:pre-wrap">' + (entry.bodyPreview || 'â') + '</p>' +
     '</div></div>' +
     '<div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">' +
     (entry.jobId || entry.jobNum ? '<button class="btn btn-primary" onclick="closeModal();openCaseFile(\'' + (entry.jobNum || entry.jobId) + '\')">Open Case File</button>' : '') +
@@ -2194,7 +2194,7 @@ function openAIEmailDetail(id) {
 }
 
 // ============================================================
-// AI INBOX → ACTION BRIDGE FUNCTIONS (safe ID-based lookups)
+// AI INBOX â ACTION BRIDGE FUNCTIONS (safe ID-based lookups)
 // Resolves jobId using both id and jobNum to handle demo IDs (J-001)
 // and live Airtable IDs (recXXX) transparently.
 // ============================================================
@@ -2283,8 +2283,8 @@ function openDisputeFromInbox(jobId, adjusterName, adjusterEmail, bodyPreview) {
     // Job + Financial Summary Row
     '<div class="card" style="margin-bottom:16px;border-left:4px solid var(--accent-blue)"><div style="padding:16px">' +
     '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;font-size:.95rem">' +
-    '<div><span style="color:var(--text-muted)">Adjuster:</span> <strong>' + (adjusterName||job.adjuster||'—') + '</strong></div>' +
-    '<div><span style="color:var(--text-muted)">Email:</span> ' + (adjusterEmail||job.adjEmail||'—') + '</div>' +
+    '<div><span style="color:var(--text-muted)">Adjuster:</span> <strong>' + (adjusterName||job.adjuster||'â') + '</strong></div>' +
+    '<div><span style="color:var(--text-muted)">Email:</span> ' + (adjusterEmail||job.adjEmail||'â') + '</div>' +
     '<div><span style="color:var(--text-muted)">Invoice Total:</span> <strong style="color:var(--accent-green)">$' + fmtNum(invoiced) + '</strong></div>' +
     (parsedAdjEst > 0 ? '<div><span style="color:var(--text-muted)">Carrier Approved:</span> <strong style="color:var(--accent-yellow)">$' + fmtNum(parsedAdjEst) + '</strong></div>' : '') +
     (gapDisplay > 0 ? '<div style="grid-column:span 2"><span style="color:var(--text-muted)">Amount in Dispute:</span> <strong style="color:var(--accent-red);font-size:1.1rem">$' + fmtNum(gapDisplay) + '</strong>' +
@@ -2321,7 +2321,7 @@ function openDisputeFromInbox(jobId, adjusterName, adjusterEmail, bodyPreview) {
 
     // Dispute Notes (NOT pre-filled with email body)
     '<div style="grid-column:span 2"><label style="display:block;margin-bottom:4px;font-weight:600;font-size:.85rem;color:var(--text-muted)">Dispute Notes <span style="font-weight:400;color:var(--text-muted)">(your position &amp; key arguments)</span></label>' +
-    '<textarea id="disputeNotes" rows="3" placeholder="e.g., Depreciation holdback of $15,200 is recoverable — see policy section 12.3, supplemental documentation attached..." style="width:100%;padding:10px 12px;border-radius:8px;background:var(--bg-input);color:var(--text-primary);border:1px solid var(--border-color);font-size:.95rem;resize:vertical"></textarea></div>' +
+    '<textarea id="disputeNotes" rows="3" placeholder="e.g., Depreciation holdback of $15,200 is recoverable â see policy section 12.3, supplemental documentation attached..." style="width:100%;padding:10px 12px;border-radius:8px;background:var(--bg-input);color:var(--text-primary);border:1px solid var(--border-color);font-size:.95rem;resize:vertical"></textarea></div>' +
 
     '</div></div></div>' +
 
@@ -2371,7 +2371,7 @@ function confirmOpenDispute(jobId) {
 
   fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
     method: 'PATCH',
-    headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+    headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
     body: JSON.stringify({ fields: fields, typecast: true })
   }).then(function(resp) {
     if (!resp.ok) throw new Error('Airtable update failed');
@@ -2395,7 +2395,7 @@ function updateDisputeStatus(jobId, newStatus) {
 
   fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
     method: 'PATCH',
-    headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+    headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
     body: JSON.stringify({ fields: fields, typecast: true })
   }).then(function(resp) {
     if (!resp.ok) return resp.text().then(function(t){ throw new Error('Update failed (' + resp.status + '): ' + t); });
@@ -2415,12 +2415,12 @@ function resolveDispute(jobId) {
   var job = JOBS.find(function(j){ return j.id === jobId; });
   if (!job) return;
   var html = '<div style="padding:20px">' +
-    '<h2 style="margin:0 0 16px">Resolve Dispute — ' + job.jobNum + '</h2>' +
+    '<h2 style="margin:0 0 16px">Resolve Dispute â ' + job.jobNum + '</h2>' +
     '<div style="margin-bottom:12px"><label style="display:block;margin-bottom:4px;font-weight:600">Resolution</label>' +
     '<select id="resolveDisputeType" style="width:100%;padding:8px;border-radius:6px;background:var(--bg-input);color:var(--text-primary);border:1px solid var(--border-color)">' +
-    '<option value="Dispute Won">Dispute Won — Full Amount Approved</option>' +
-    '<option value="Settled — Compromise">Settled — Compromise Amount</option>' +
-    '<option value="Dispute Lost — Adjusted">Dispute Lost — Adjusted Down</option>' +
+    '<option value="Dispute Won">Dispute Won â Full Amount Approved</option>' +
+    '<option value="Settled â Compromise">Settled â Compromise Amount</option>' +
+    '<option value="Dispute Lost â Adjusted">Dispute Lost â Adjusted Down</option>' +
     '</select></div>' +
     '<div style="margin-bottom:12px"><label style="display:block;margin-bottom:4px;font-weight:600">Final Agreed Amount</label>' +
     '<input type="number" id="resolveDisputeAmount" placeholder="' + job.amtInvoiced + '" style="width:100%;padding:8px;border-radius:6px;background:var(--bg-input);color:var(--text-primary);border:1px solid var(--border-color)"></div>' +
@@ -2450,7 +2450,7 @@ function confirmResolveDispute(jobId) {
 
   fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
     method: 'PATCH',
-    headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+    headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
     body: JSON.stringify({ fields: fields, typecast: true })
   }).then(function(resp) {
     if (!resp.ok) return resp.text().then(function(t){ throw new Error('Update failed (' + resp.status + '): ' + t); });
@@ -2512,7 +2512,7 @@ function renderOps(){
 // ============================================================
 const AIRTABLE_CONFIG = {
   baseId: 'app5yjgGXTznjT0Or',
-  apiUrl: 'https://api.airtable.com/v0',
+  apiUrl: 'https://collections-airtable-proxy.911rcollection.workers.dev/api',
   tables: {
     jobs: 'tblwuJAsF1d8F2hk1',
     invoices: 'tblGIhyzpiHfCSjHB',
@@ -2533,8 +2533,11 @@ const AIRTABLE_CONFIG = {
 let _liveDataLoaded = false;
 let _dataLoadError = null;
 
-function getAirtablePAT() { return localStorage.getItem('airtable_pat') || ''; }
-function setAirtablePAT(pat) { localStorage.setItem('airtable_pat', pat); }
+// SECURITY: app no longer holds the Airtable PAT. It sends the Cloudflare Worker proxy token (X-Proxy-Token).
+// Replace PASTE_PROXY_TOKEN_HERE below with the PROXY_TOKEN value you set as a Worker secret, OR set it at runtime via Settings (stored in localStorage 'proxy_token').
+var PROXY_TOKEN_PLACEHOLDER = 'PASTE_PROXY_TOKEN_HERE';
+function getAirtablePAT() { return localStorage.getItem('proxy_token') || (PROXY_TOKEN_PLACEHOLDER === 'PASTE_PROXY_TOKEN_HERE' ? '' : PROXY_TOKEN_PLACEHOLDER); }
+function setAirtablePAT(pat) { localStorage.setItem('proxy_token', pat); }
 
 function switchDataMode(mode) {
   if (mode === 'live') {
@@ -2561,7 +2564,7 @@ async function fetchAllRecords(tableId, fields, pat) {
   do {
     if (offset) params.set('offset', offset);
     var url = AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + tableId + '?' + params;
-    var resp = await fetch(url, { headers: { 'Authorization': 'Bearer ' + pat } });
+    var resp = await fetch(url, { headers: { 'X-Proxy-Token': pat } });
     if (!resp.ok) throw new Error('Airtable API error ' + resp.status + ': ' + resp.statusText);
     var data = await resp.json();
     allRecords.push.apply(allRecords, data.records);
@@ -2764,7 +2767,7 @@ async function loadLiveData() {
       });
     }
 
-    // Update SCENARIOS status from live Error Log — use last 24h errors only
+    // Update SCENARIOS status from live Error Log â use last 24h errors only
     var now24 = new Date(Date.now() - 86400000);
     SCENARIOS.forEach(function(s) {
       var recentErrs = ERROR_LOG.filter(function(e) {
@@ -2823,19 +2826,19 @@ async function loadLiveData() {
 }
 
 // ============================================================
-// FEATURE 3: CARRIER INFO REQUEST — PAUSE AGING
+// FEATURE 3: CARRIER INFO REQUEST â PAUSE AGING
 // ============================================================
 function openCarrierInfoRequestModal(jobId, prefillText) {
   var j = JOBS.find(function(x){ return x.id === jobId; }) || JOBS.find(function(x){ return x.jobNum === jobId; }) || (typeof DEMO_JOBS!=='undefined' ? DEMO_JOBS.find(function(x){ return x.id === jobId || x.jobNum === jobId; }) : null);
   if (!j) { showToast('Job not found: ' + jobId, 'error'); return; }
   var today = new Date().toISOString().split('T')[0];
   var defaultDeadline = new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0];
-  var html = '<div class="modal-header"><h2>&#128196; Log Carrier Info Request — ' + j.jobNum + '</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div>' +
+  var html = '<div class="modal-header"><h2>&#128196; Log Carrier Info Request â ' + j.jobNum + '</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div>' +
     '<div class="card" style="margin-bottom:16px;background:var(--bg-tertiary)"><div style="padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.9rem">' +
     '<div><strong>Current Days Out:</strong> ' + (j.effectiveDaysOut||j.daysOut) + (j.agingPaused ? ' <span style="color:var(--accent-yellow)">&#9208; PAUSED</span>' : '') + '</div>' +
     '<div><strong>Outstanding:</strong> ' + fmt(j.amtInvoiced - j.amtPaid) + '</div>' +
-    '<div><strong>Carrier:</strong> ' + (j.carrier||'—') + '</div>' +
-    '<div><strong>Adjuster:</strong> ' + (j.adjuster||'—') + '</div>' +
+    '<div><strong>Carrier:</strong> ' + (j.carrier||'â') + '</div>' +
+    '<div><strong>Adjuster:</strong> ' + (j.adjuster||'â') + '</div>' +
     '</div></div>' +
     '<div class="form-group"><label>What did the carrier request?</label><textarea id="irRequestedItems" rows="4" placeholder="Paste from email or describe what the carrier asked for..." style="width:100%;padding:8px;border-radius:6px;background:var(--bg-input);color:var(--text-primary);border:1px solid var(--border-color)">' + (prefillText||'') + '</textarea></div>' +
     '<div class="form-group"><label>Response Deadline</label><input type="date" id="irResponseDeadline" value="' + defaultDeadline + '" style="width:100%;padding:8px;border-radius:6px;background:var(--bg-input);color:var(--text-primary);border:1px solid var(--border-color)"><div style="font-size:.8rem;color:var(--text-muted);margin-top:4px">If carrier does not respond by this date, aging resumes and we escalate.</div></div>' +
@@ -2854,7 +2857,7 @@ function confirmCarrierInfoRequest(jobId) {
   var pat = getAirtablePAT();
 
   // Update local state immediately
-  j.carrierInfoRequestStatus = 'Pending — Gathering Docs';
+  j.carrierInfoRequestStatus = 'Pending â Gathering Docs';
   j.infoRequestDate = today;
   j.infoRequestedItems = requestedItems;
   j.infoResponseDeadline = deadline;
@@ -2865,7 +2868,7 @@ function confirmCarrierInfoRequest(jobId) {
 
   if (pat) {
     var jobFields = {
-      'Carrier Info Request Status': 'Pending — Gathering Docs',
+      'Carrier Info Request Status': 'Pending â Gathering Docs',
       'Info Request Date': today,
       'Info Requested Items': requestedItems,
       'Info Response Deadline': deadline
@@ -2876,7 +2879,7 @@ function confirmCarrierInfoRequest(jobId) {
     }
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
       method: 'PATCH',
-      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ typecast: true, fields: jobFields })
     }).then(function(r){ if (!r.ok) throw new Error('Jobs PATCH failed ' + r.status); })
       .catch(function(e){ showToast('Airtable update failed: ' + e.message, 'error'); });
@@ -2885,9 +2888,9 @@ function confirmCarrierInfoRequest(jobId) {
     var taskDesc = 'Carrier ' + (j.carrier||'') + ' requested: ' + (requestedItems||'documents').substring(0,200) + (deadline ? '. Send by ' + deadline + '.' : '.');
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.hsq, {
       method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ typecast: true, fields: {
-        'Task Type': 'Carrier Info Request — Gather & Send Docs',
+        'Task Type': 'Carrier Info Request â Gather & Send Docs',
         'Priority': 'P2',
         'Description': taskDesc,
         'Status': 'Open',
@@ -2913,7 +2916,7 @@ function openMarkDocsSentModal(jobId) {
   if (!j) return;
   var today = new Date().toISOString().split('T')[0];
   var defaultFollowUp = new Date(Date.now() + 10 * 86400000).toISOString().split('T')[0];
-  var html = '<div class="modal-header"><h2>&#128229; Mark Documents Sent — ' + j.jobNum + '</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div>' +
+  var html = '<div class="modal-header"><h2>&#128229; Mark Documents Sent â ' + j.jobNum + '</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div>' +
     '<div class="form-group"><label>Documents Sent</label><textarea id="docsSentDescription" rows="3" placeholder="Describe what was sent..." style="width:100%;padding:8px;border-radius:6px;background:var(--bg-input);color:var(--text-primary);border:1px solid var(--border-color)"></textarea></div>' +
     '<div class="form-group"><label>Sent Date</label><input type="date" id="docsSentDate" value="' + today + '" style="width:100%;padding:8px;border-radius:6px;background:var(--bg-input);color:var(--text-primary);border:1px solid var(--border-color)"></div>' +
     '<div class="form-group"><label>Sent Via</label><select id="docsSentVia" style="width:100%;padding:8px;border-radius:6px;background:var(--bg-input);color:var(--text-primary);border:1px solid var(--border-color)"><option>Email</option><option>Portal Upload</option><option>Mail</option><option>Fax</option></select></div>' +
@@ -2940,7 +2943,7 @@ function confirmMarkDocsSent(jobId) {
 
   // Update local state
   j.infoDocsSentDate = sentDate;
-  j.carrierInfoRequestStatus = 'Docs Sent — Awaiting Response';
+  j.carrierInfoRequestStatus = 'Docs Sent â Awaiting Response';
   j.agingPaused = false;
   j.agingPauseDays = newPauseDays;
   j.infoResponseDeadline = responseExpected;
@@ -2949,7 +2952,7 @@ function confirmMarkDocsSent(jobId) {
   if (pat) {
     var jobFields = {
       'Info Docs Sent Date': sentDate,
-      'Carrier Info Request Status': 'Docs Sent — Awaiting Response',
+      'Carrier Info Request Status': 'Docs Sent â Awaiting Response',
       'Aging Paused': false,
       'Aging Pause Days': newPauseDays
     };
@@ -2957,19 +2960,19 @@ function confirmMarkDocsSent(jobId) {
 
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
       method: 'PATCH',
-      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ typecast: true, fields: jobFields })
     }).then(function(r){ if (!r.ok) throw new Error('Jobs PATCH failed'); })
       .catch(function(e){ showToast('Airtable update failed: ' + e.message, 'error'); });
 
     // Log to CommsLog
-    var logMsg = 'DOCS SENT — ' + j.jobNum + '\nSent via: ' + sentVia + '\nDescription: ' + sentDesc + '\nResponse expected: ' + responseExpected;
+    var logMsg = 'DOCS SENT â ' + j.jobNum + '\nSent via: ' + sentVia + '\nDescription: ' + sentDesc + '\nResponse expected: ' + responseExpected;
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.commsLog, {
       method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ fields: {
         'Message': logMsg, 'Channel': sentVia, 'Direction': 'Outbound',
-        'Source': 'Command Center', 'Log Entry': sentDate + ' — Docs Sent — ' + j.jobNum,
+        'Source': 'Command Center', 'Log Entry': sentDate + ' â Docs Sent â ' + j.jobNum,
         'Date': new Date().toISOString(), 'Logged By': 'Command Center', 'Linked Job': [jobId]
       }})
     }).catch(function(e){ console.warn('CommsLog failed:', e); });
@@ -2978,9 +2981,9 @@ function confirmMarkDocsSent(jobId) {
     if (responseExpected) {
       fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.hsq, {
         method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+        headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
         body: JSON.stringify({ typecast: true, fields: {
-          'Task Type': 'Carrier Info Request — Follow Up',
+          'Task Type': 'Carrier Info Request â Follow Up',
           'Priority': 'P2',
           'Description': 'Follow up with carrier on docs sent ' + sentDate + ' via ' + sentVia + '. Response expected by ' + responseExpected,
           'Status': 'Open', 'Due Date': responseExpected,
@@ -3001,16 +3004,16 @@ function confirmMarkDocsSent(jobId) {
 function renderInfoRequestCard(j) {
   if (!j || !j.carrierInfoRequestStatus || j.carrierInfoRequestStatus === 'None' || j.carrierInfoRequestStatus === '') return '';
   var statusColors = {
-    'Pending — Gathering Docs': 'var(--accent-yellow)',
-    'Docs Sent — Awaiting Response': 'var(--accent-blue)',
-    'Resolved — Docs Accepted': 'var(--accent-green)',
-    'Escalated — Carrier Unresponsive': 'var(--accent-red)'
+    'Pending â Gathering Docs': 'var(--accent-yellow)',
+    'Docs Sent â Awaiting Response': 'var(--accent-blue)',
+    'Resolved â Docs Accepted': 'var(--accent-green)',
+    'Escalated â Carrier Unresponsive': 'var(--accent-red)'
   };
   var sc = statusColors[j.carrierInfoRequestStatus] || 'var(--text-muted)';
   var actionBtn = '';
-  if (j.carrierInfoRequestStatus === 'Pending — Gathering Docs') {
+  if (j.carrierInfoRequestStatus === 'Pending â Gathering Docs') {
     actionBtn = '<button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="openMarkDocsSentModal(&#39;' + j.id + '&#39;)">&#128229; Mark Docs Sent</button>';
-  } else if (j.carrierInfoRequestStatus === 'Docs Sent — Awaiting Response') {
+  } else if (j.carrierInfoRequestStatus === 'Docs Sent â Awaiting Response') {
     actionBtn = '<button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="openCarrierResponseModal(&#39;' + j.id + '&#39;)">&#10003; Log Carrier Response</button>';
   }
   return '<div class="card" style="margin-bottom:16px;border-left:4px solid ' + sc + '">' +
@@ -3171,7 +3174,7 @@ function confirmCarrierFullAgreement(jobId) {
   var pat = getAirtablePAT();
 
   // Update local state
-  j.carrierResponseStatus = 'Agreed — Full';
+  j.carrierResponseStatus = 'Agreed â Full';
   j.carrierAgreedAmount = amount;
   j.carrierResponseDate = date;
   j.carrierResponseNotes = notes;
@@ -3180,7 +3183,7 @@ function confirmCarrierFullAgreement(jobId) {
 
   if (pat) {
     var jobFields = {
-      'Carrier Response Status': 'Agreed — Full',
+      'Carrier Response Status': 'Agreed â Full',
       'Carrier Agreed Amount': amount,
       'Carrier Response Date': date,
       'Carrier Response Notes': notes + (refNum ? '\nReference #: ' + refNum : ''),
@@ -3191,19 +3194,19 @@ function confirmCarrierFullAgreement(jobId) {
 
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
       method: 'PATCH',
-      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ typecast: true, fields: jobFields })
     }).then(function(r){ if (!r.ok) throw new Error('Jobs PATCH failed ' + r.status); })
       .catch(function(e){ showToast('Airtable update failed: ' + e.message, 'error'); });
 
     // Log to CommsLog
-    var logMsg = 'CARRIER RESPONSE: Full Agreement — ' + j.jobNum + '\nAgreed Amount: ' + fmt(amount) + '\nDate: ' + date + (refNum ? '\nRef #: ' + refNum : '') + (notes ? '\nNotes: ' + notes : '');
+    var logMsg = 'CARRIER RESPONSE: Full Agreement â ' + j.jobNum + '\nAgreed Amount: ' + fmt(amount) + '\nDate: ' + date + (refNum ? '\nRef #: ' + refNum : '') + (notes ? '\nNotes: ' + notes : '');
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.commsLog, {
       method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ fields: {
         'Message': logMsg, 'Channel': 'Email', 'Direction': 'Inbound',
-        'Source': 'Command Center', 'Log Entry': date + ' — Carrier Response: Full Agreement — ' + j.jobNum,
+        'Source': 'Command Center', 'Log Entry': date + ' â Carrier Response: Full Agreement â ' + j.jobNum,
         'Date': new Date().toISOString(), 'Logged By': 'Command Center', 'Linked Job': [jobId]
       }})
     }).catch(function(e){ console.warn('CommsLog failed:', e); });
@@ -3218,7 +3221,7 @@ function confirmCarrierFullAgreement(jobId) {
   setTimeout(function(){ showSendConfirmationModal(jobId, 'full', amount, 0, date, refNum, notes); }, 500);
 }
 
-// ── Outbound Confirmation to Carrier/Adjuster ──
+// ââ Outbound Confirmation to Carrier/Adjuster ââ
 function showSendConfirmationModal(jobId, responseType, agreedAmount, gap, respDate, refNum, notes) {
   var j = JOBS.find(function(x){ return x.id === jobId; });
   if (!j) return;
@@ -3228,50 +3231,50 @@ function showSendConfirmationModal(jobId, responseType, agreedAmount, gap, respD
   var subject = '', body = '';
 
   if (responseType === 'full') {
-    subject = 'Payment Confirmation — Claim ' + (j.claimNum||j.jobNum);
+    subject = 'Payment Confirmation â Claim ' + (j.claimNum||j.jobNum);
     body = 'Dear ' + adjName + ',\n\n' +
       'Thank you for confirming payment for the above-referenced claim.\n\n' +
       'This email confirms the following:\n' +
-      '• Job: ' + j.jobNum + '\n' +
-      '• Claim #: ' + (j.claimNum||'N/A') + '\n' +
-      '• Carrier: ' + carrier + '\n' +
-      '• Agreed Amount: ' + fmt(agreedAmount) + '\n' +
-      '• Confirmation Date: ' + respDate + '\n' +
-      (refNum ? '• Reference #: ' + refNum + '\n' : '') +
+      'â¢ Job: ' + j.jobNum + '\n' +
+      'â¢ Claim #: ' + (j.claimNum||'N/A') + '\n' +
+      'â¢ Carrier: ' + carrier + '\n' +
+      'â¢ Agreed Amount: ' + fmt(agreedAmount) + '\n' +
+      'â¢ Confirmation Date: ' + respDate + '\n' +
+      (refNum ? 'â¢ Reference #: ' + refNum + '\n' : '') +
       '\nWe kindly request payment be issued to 911 Restoration within 15 business days per the terms of our agreement.\n\n' +
       'Please do not hesitate to contact us if any additional documentation is required.\n\n' +
       'Best regards,\n' +
-      '911 Restoration — Collections Department';
+      '911 Restoration â Collections Department';
   } else if (responseType === 'partial') {
-    subject = 'Partial Payment Acknowledgment — Claim ' + (j.claimNum||j.jobNum);
+    subject = 'Partial Payment Acknowledgment â Claim ' + (j.claimNum||j.jobNum);
     body = 'Dear ' + adjName + ',\n\n' +
       'We are writing to acknowledge the partial payment agreement for the above-referenced claim.\n\n' +
       'Summary:\n' +
-      '• Job: ' + j.jobNum + '\n' +
-      '• Claim #: ' + (j.claimNum||'N/A') + '\n' +
-      '• Carrier: ' + carrier + '\n' +
-      '• Total Invoiced: ' + fmt(j.amtInvoiced) + '\n' +
-      '• Agreed Amount: ' + fmt(agreedAmount) + '\n' +
-      '• Remaining Gap: ' + fmt(gap) + '\n' +
-      '• Confirmation Date: ' + respDate + '\n' +
+      'â¢ Job: ' + j.jobNum + '\n' +
+      'â¢ Claim #: ' + (j.claimNum||'N/A') + '\n' +
+      'â¢ Carrier: ' + carrier + '\n' +
+      'â¢ Total Invoiced: ' + fmt(j.amtInvoiced) + '\n' +
+      'â¢ Agreed Amount: ' + fmt(agreedAmount) + '\n' +
+      'â¢ Remaining Gap: ' + fmt(gap) + '\n' +
+      'â¢ Confirmation Date: ' + respDate + '\n' +
       '\nRegarding the outstanding gap of ' + fmt(gap) + ', we will be in touch with supporting documentation and a request for review.\n\n' +
       'Please issue the agreed amount of ' + fmt(agreedAmount) + ' to 911 Restoration at your earliest convenience.\n\n' +
       'Best regards,\n' +
-      '911 Restoration — Collections Department';
+      '911 Restoration â Collections Department';
   } else if (responseType === 'dispute') {
-    subject = 'Estimate Dispute Notice — Claim ' + (j.claimNum||j.jobNum);
+    subject = 'Estimate Dispute Notice â Claim ' + (j.claimNum||j.jobNum);
     body = 'Dear ' + adjName + ',\n\n' +
       'We are writing to formally dispute the estimate for the above-referenced claim.\n\n' +
-      '• Job: ' + j.jobNum + '\n' +
-      '• Claim #: ' + (j.claimNum||'N/A') + '\n' +
-      '• Carrier: ' + carrier + '\n' +
-      '• Our Invoice Amount: ' + fmt(j.amtInvoiced) + '\n' +
-      '• Your Estimate: ' + fmt(j.adjEstimate||0) + '\n' +
-      '• Disputed Gap: ' + fmt(j.disputeGap||0) + '\n' +
+      'â¢ Job: ' + j.jobNum + '\n' +
+      'â¢ Claim #: ' + (j.claimNum||'N/A') + '\n' +
+      'â¢ Carrier: ' + carrier + '\n' +
+      'â¢ Our Invoice Amount: ' + fmt(j.amtInvoiced) + '\n' +
+      'â¢ Your Estimate: ' + fmt(j.adjEstimate||0) + '\n' +
+      'â¢ Disputed Gap: ' + fmt(j.disputeGap||0) + '\n' +
       '\nWe believe the scope of work performed justifies the invoiced amount. We will be submitting supplemental documentation, including detailed line-item justification, photos, and moisture readings for your review.\n\n' +
       'We respectfully request a meeting or re-inspection to resolve this matter promptly.\n\n' +
       'Best regards,\n' +
-      '911 Restoration — Collections Department';
+      '911 Restoration â Collections Department';
   }
 
   var modalHtml = '<div style="max-width:640px">' +
@@ -3285,7 +3288,7 @@ function showSendConfirmationModal(jobId, responseType, agreedAmount, gap, respD
     '<label style="font-weight:600;display:block;margin-bottom:4px">Message:</label>' +
     '<textarea id="confBody" rows="14" style="width:100%;padding:10px;border-radius:6px;border:1px solid var(--border-primary);background:var(--bg-input);color:var(--text-primary);font-family:inherit;font-size:.9rem;resize:vertical">' + body.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</textarea>' +
     '<div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">' +
-    '<button class="btn btn-secondary" onclick="closeModalForce()">Skip — Don\'t Send</button>' +
+    '<button class="btn btn-secondary" onclick="closeModalForce()">Skip â Don\'t Send</button>' +
     '<button class="btn btn-primary" onclick="sendAdjusterConfirmation(\'' + jobId + '\',\'' + responseType + '\')">&#9993; Send Email</button>' +
     '</div>' +
     '<p style="font-size:.8rem;color:var(--text-muted);margin-top:8px">This will log an outbound email to the CommsLog. Actual email delivery requires Make.com email integration.</p>' +
@@ -3306,10 +3309,10 @@ function sendAdjusterConfirmation(jobId, responseType) {
     var logMsg = 'OUTBOUND CONFIRMATION (' + responseType.toUpperCase() + ')\nTo: ' + to + '\nSubject: ' + subject + '\n\n' + body;
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.commsLog, {
       method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ fields: {
         'Message': logMsg, 'Channel': 'Email', 'Direction': 'Outbound',
-        'Source': 'Command Center', 'Log Entry': new Date().toISOString().split('T')[0] + ' — Sent ' + responseType + ' confirmation to ' + to,
+        'Source': 'Command Center', 'Log Entry': new Date().toISOString().split('T')[0] + ' â Sent ' + responseType + ' confirmation to ' + to,
         'Date': new Date().toISOString(), 'Logged By': 'Command Center', 'Linked Job': [jobId]
       }})
     }).then(function(){ showToast('Confirmation logged & queued for delivery', 'success'); })
@@ -3320,7 +3323,7 @@ function sendAdjusterConfirmation(jobId, responseType) {
   if (navigator.clipboard) {
     var emailText = 'To: ' + to + '\nSubject: ' + subject + '\n\n' + body;
     navigator.clipboard.writeText(emailText).then(function(){
-      showToast('Email copied to clipboard — paste into your email client to send', 'info');
+      showToast('Email copied to clipboard â paste into your email client to send', 'info');
     });
   }
 
@@ -3344,7 +3347,7 @@ function confirmCarrierPartialAgreement(jobId) {
   if (partial <= 0) { showToast('Please enter the agreed amount', 'error'); return; }
 
   // Update local state
-  j.carrierResponseStatus = 'Agreed — Partial';
+  j.carrierResponseStatus = 'Agreed â Partial';
   j.carrierAgreedAmount = partial;
   j.carrierResponseDate = date;
   j.carrierResponseNotes = notes;
@@ -3354,7 +3357,7 @@ function confirmCarrierPartialAgreement(jobId) {
 
   if (pat) {
     var jobFields = {
-      'Carrier Response Status': 'Agreed — Partial',
+      'Carrier Response Status': 'Agreed â Partial',
       'Carrier Agreed Amount': partial,
       'Carrier Response Date': date,
       'Carrier Response Notes': notes,
@@ -3364,18 +3367,18 @@ function confirmCarrierPartialAgreement(jobId) {
     };
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
       method: 'PATCH',
-      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ typecast: true, fields: jobFields })
     }).then(function(r){ if (!r.ok) throw new Error('Jobs PATCH failed ' + r.status); })
       .catch(function(e){ showToast('Airtable update failed: ' + e.message, 'error'); });
 
-    var logMsg = 'CARRIER RESPONSE: Partial Agreement — ' + j.jobNum + '\nAgreed: ' + fmt(partial) + ' of ' + fmt(j.amtInvoiced) + '\nGap: ' + fmt(gap) + '\nGap Decision: ' + gapDecision + (notes ? '\nNotes: ' + notes : '');
+    var logMsg = 'CARRIER RESPONSE: Partial Agreement â ' + j.jobNum + '\nAgreed: ' + fmt(partial) + ' of ' + fmt(j.amtInvoiced) + '\nGap: ' + fmt(gap) + '\nGap Decision: ' + gapDecision + (notes ? '\nNotes: ' + notes : '');
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.commsLog, {
       method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ fields: {
         'Message': logMsg, 'Channel': 'Email', 'Direction': 'Inbound',
-        'Source': 'Command Center', 'Log Entry': date + ' — Carrier Response: Partial Agreement — ' + j.jobNum,
+        'Source': 'Command Center', 'Log Entry': date + ' â Carrier Response: Partial Agreement â ' + j.jobNum,
         'Date': new Date().toISOString(), 'Logged By': 'Command Center', 'Linked Job': [jobId]
       }})
     }).catch(function(e){ console.warn('CommsLog failed:', e); });
@@ -3405,13 +3408,13 @@ function renderCommunicationTrackCard(j) {
   var tracks=['','1 - Not Answering','2 - Went Silent','3 - Fully Responding','4 - Lowball/Escalation','5 - Good Faith'];
   var tColors={'1 - Not Answering':'var(--accent-red)','2 - Went Silent':'var(--accent-orange)','3 - Fully Responding':'var(--accent-green)','4 - Lowball/Escalation':'var(--accent-yellow)','5 - Good Faith':'var(--accent-blue)'};
   var bc=tColors[j.communicationTrack]||'var(--border)';
-  var opts=tracks.map(function(t){return '<option value="'+t+'"'+(t===j.communicationTrack?' selected':'')+'>'+( t||'— Not Set —')+'</option>'}).join('');
+  var opts=tracks.map(function(t){return '<option value="'+t+'"'+(t===j.communicationTrack?' selected':'')+'>'+( t||'â Not Set â')+'</option>'}).join('');
   var weekInfo='';
-  if(j.communicationTrack&&j.trackAssignedDate){var wks=Math.floor((Date.now()-new Date(j.trackAssignedDate).getTime())/604800000)+1;weekInfo='<div style="margin-top:8px;font-size:.9rem;color:var(--text-secondary)">Currently on <strong>Week '+wks+'</strong> · Assigned '+j.trackAssignedDate+'</div>'}
+  if(j.communicationTrack&&j.trackAssignedDate){var wks=Math.floor((Date.now()-new Date(j.trackAssignedDate).getTime())/604800000)+1;weekInfo='<div style="margin-top:8px;font-size:.9rem;color:var(--text-secondary)">Currently on <strong>Week '+wks+'</strong> Â· Assigned '+j.trackAssignedDate+'</div>'}
   // Auto-suggestion based on carrier response
   var suggestion='';
   if(!j.communicationTrack&&j.carrierResponseStatus){
-    var sugMap={'Agreed — Full':'5 - Good Faith','Agreed — Partial':'4 - Lowball/Escalation'};
+    var sugMap={'Agreed â Full':'5 - Good Faith','Agreed â Partial':'4 - Lowball/Escalation'};
     var sug=sugMap[j.carrierResponseStatus]||'';
     if(sug){suggestion='<div style="margin-top:8px;padding:8px 12px;background:rgba(74,124,255,.1);border-radius:6px;font-size:.9rem"><span style="color:var(--accent-blue)">&#128161; Suggested:</span> <strong>'+sug+'</strong> based on carrier response <button class="btn btn-primary" style="padding:4px 12px;font-size:.85rem;margin-left:8px" onclick="setCommTrack(\''+j.id+'\',\''+sug+'\')">Apply</button></div>'}
   }
@@ -3428,14 +3431,14 @@ function setCommTrack(jobId, track) {
   if(pat&&jobId.startsWith('rec')){
     var fields={'Communication Track':track?{name:track}:null,'Track Assigned Date':j.trackAssignedDate||null};
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.jobs+'/'+jobId,{
-      method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
+      method:'PATCH',headers:{'X-Proxy-Token':pat,'Content-Type':'application/json'},
       body:JSON.stringify({typecast:true,fields:fields})
     }).then(function(r){if(!r.ok)throw new Error('PATCH failed '+r.status)})
       .catch(function(e){showToast('Airtable update failed: '+e.message,'error')});
     // Log track assignment to CommsLog
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{
-      method:'POST',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
-      body:JSON.stringify({fields:{'Message':'Communication Track set to: '+track+' for '+j.jobNum,'Channel':'system','Direction':'Outbound','Source':'Command Center','Log Entry':new Date().toISOString().split('T')[0]+' — Track assigned: '+track+' — '+j.jobNum,'Date':new Date().toISOString(),'Logged By':'Command Center','Linked Job':[jobId]}})
+      method:'POST',headers:{'X-Proxy-Token':pat,'Content-Type':'application/json'},
+      body:JSON.stringify({fields:{'Message':'Communication Track set to: '+track+' for '+j.jobNum,'Channel':'system','Direction':'Outbound','Source':'Command Center','Log Entry':new Date().toISOString().split('T')[0]+' â Track assigned: '+track+' â '+j.jobNum,'Date':new Date().toISOString(),'Logged By':'Command Center','Linked Job':[jobId]}})
     }).catch(function(e){console.warn('CommsLog failed:',e)});
   }
   showToast('Communication track set to: '+(track||'None'),'success');
@@ -3444,16 +3447,16 @@ function setCommTrack(jobId, track) {
 
 function renderCarrierResponseCard(j) {
   if (!j) return '';
-  var rColors = { 'Agreed — Full':'var(--accent-green)','Agreed — Partial':'var(--accent-blue)','Disputed':'var(--accent-red)','Requesting Info':'var(--accent-yellow)','Awaiting Response':'var(--text-muted)','No Response':'var(--text-muted)' };
+  var rColors = { 'Agreed â Full':'var(--accent-green)','Agreed â Partial':'var(--accent-blue)','Disputed':'var(--accent-red)','Requesting Info':'var(--accent-yellow)','Awaiting Response':'var(--text-muted)','No Response':'var(--text-muted)' };
   var status = j.carrierResponseStatus || '';
   var sc = rColors[status] || 'var(--text-muted)';
   var badge = status ? '<span class="badge" style="background:' + sc + ';color:#fff">' + status + '</span>' : '<span class="badge badge-gray">No response logged</span>';
   var summary = '';
-  if (status === 'Agreed — Full') {
+  if (status === 'Agreed â Full') {
     summary = '<div style="font-size:.9rem;margin-top:4px">Agreed: <strong>' + fmt(j.carrierAgreedAmount) + '</strong>' + (j.carrierResponseDate ? ' on ' + formatDate(j.carrierResponseDate) : '') + '</div>';
-  } else if (status === 'Agreed — Partial') {
+  } else if (status === 'Agreed â Partial') {
     var gap = j.amtInvoiced - (j.carrierAgreedAmount||0);
-    summary = '<div style="font-size:.9rem;margin-top:4px">Agreed: <strong>' + fmt(j.carrierAgreedAmount) + '</strong>, Gap: <strong style="color:var(--accent-yellow)">' + fmt(gap) + '</strong>' + (j.partialGapDecision ? ' — ' + j.partialGapDecision : '') + '</div>';
+    summary = '<div style="font-size:.9rem;margin-top:4px">Agreed: <strong>' + fmt(j.carrierAgreedAmount) + '</strong>, Gap: <strong style="color:var(--accent-yellow)">' + fmt(gap) + '</strong>' + (j.partialGapDecision ? ' â ' + j.partialGapDecision : '') + '</div>';
   }
   return '<div class="card" style="margin-bottom:16px;border-left:4px solid ' + sc + '">' +
     '<div class="card-header"><span class="card-title">Carrier Response</span>' + badge + '</div>' +
@@ -3484,7 +3487,7 @@ function getStrikeQueueTasks() {
           'LIEN_DECISION':'Lien Deadline Decision Needed',
           'EMAIL_ESCALATION':'Phone Follow-up Required',
           'PHONE_ESCALATION':'Escalated Phone Call Required',
-          'FINAL_NOTICE':'Final Notice — Urgent Collection',
+          'FINAL_NOTICE':'Final Notice â Urgent Collection',
           'LEGAL_REVIEW':'Legal Review Required',
           'Adjuster Follow-up Call':'Adjuster Follow-up Call',
           'Homeowner Contact':'Homeowner Contact',
@@ -3492,14 +3495,14 @@ function getStrikeQueueTasks() {
         };
         return labels[tt] || tt.replace(/_/g,' ');
       })(),
-      subtitle: (t.jobNum||'') + (t.assignedTo ? ' · Assigned: ' + t.assignedTo : ''),
+      subtitle: (t.jobNum||'') + (t.assignedTo ? ' Â· Assigned: ' + t.assignedTo : ''),
       amount: t.amount || 0,
       dueDate: null,
       nextAction: (function(){
         var tt = t.taskType || '';
         if (tt === 'LIEN_DECISION') return 'Review case and decide: file lien, extend deadline, or write off. ' + (t.description||'').substring(0,60);
         if (tt === 'EMAIL_ESCALATION') return 'Call the adjuster/homeowner to follow up on unanswered emails. Log the outcome.';
-        if (tt === 'PHONE_ESCALATION') return 'Escalated call — previous attempts failed. Try alternate contacts or supervisor.';
+        if (tt === 'PHONE_ESCALATION') return 'Escalated call â previous attempts failed. Try alternate contacts or supervisor.';
         if (tt === 'FINAL_NOTICE') return 'Send final demand notice before legal action. Last chance for voluntary payment.';
         if (tt === 'LEGAL_REVIEW') return 'Review with legal team. Prepare documentation for potential litigation.';
         return t.description ? t.description.substring(0, 120) : 'Review case file and take appropriate follow-up action.';
@@ -3522,13 +3525,13 @@ function getLienZoneTasks() {
       id: 'LZ-' + j.id,
       source: 'Lien Zone',
       icon: '&#9876;',
-      title: 'Lien Deadline — ' + j.jobNum,
-      subtitle: (j.carrier||'') + ' · ' + (j.lienState||'') + ' · ' + fmt(outstanding) + ' outstanding',
+      title: 'Lien Deadline â ' + j.jobNum,
+      subtitle: (j.carrier||'') + ' Â· ' + (j.lienState||'') + ' Â· ' + fmt(outstanding) + ' outstanding',
       amount: outstanding,
       dueDate: j.lienDeadline,
-      nextAction: j.lienDaysLeft <= 7 ? 'FILE LIEN NOW — deadline in ' + j.lienDaysLeft + ' days' :
-                  j.lienDaysLeft <= 14 ? 'Confirm lien filing prep — ' + j.lienDaysLeft + ' days left' :
-                  'Monitor — ' + j.lienDaysLeft + ' days to deadline',
+      nextAction: j.lienDaysLeft <= 7 ? 'FILE LIEN NOW â deadline in ' + j.lienDaysLeft + ' days' :
+                  j.lienDaysLeft <= 14 ? 'Confirm lien filing prep â ' + j.lienDaysLeft + ' days left' :
+                  'Monitor â ' + j.lienDaysLeft + ' days to deadline',
       urgency: j.lienDaysLeft <= 7 ? 0 : j.lienDaysLeft <= 14 ? 1 : j.lienDaysLeft <= 30 ? 2 : 3,
       navigateFn: "navigate('lien-zone')",
       jobId: j.id
@@ -3548,14 +3551,14 @@ function getDisputeTasks() {
       id: 'DS-' + j.id,
       source: 'Dispute',
       icon: '&#9878;',
-      title: 'Active Dispute — ' + j.jobNum,
-      subtitle: (j.carrier||'') + ' · Gap: ' + fmt(gap),
+      title: 'Active Dispute â ' + j.jobNum,
+      subtitle: (j.carrier||'') + ' Â· Gap: ' + fmt(gap),
       amount: gap,
       dueDate: null,
       nextAction: j.disputeStatus === 'Active Dispute' ? 'Gather documentation and send supplement' :
-                  j.disputeStatus === 'Supplement Sent' ? 'Follow up with adjuster — await review' :
+                  j.disputeStatus === 'Supplement Sent' ? 'Follow up with adjuster â await review' :
                   j.disputeStatus === 'Re-inspection Requested' ? 'Schedule re-inspection with adjuster' :
-                  'Invoke appraisal clause — find umpire',
+                  'Invoke appraisal clause â find umpire',
       urgency: gap > 20000 ? 0 : disputeDays > 14 ? 1 : 2,
       navigateFn: "openCaseFile('" + j.id + "','disputes')",
       jobId: j.id
@@ -3573,12 +3576,12 @@ function getDiversionTasks() {
       id: 'DV-' + p.id,
       source: 'Diversion Recovery',
       icon: '&#8617;',
-      title: 'Payment Diversion — ' + (p.jobNum||''),
-      subtitle: 'Paid to ' + (p.paidTo||'unknown') + ' · Step ' + (p.recoveryStep||1) + ' of 8',
+      title: 'Payment Diversion â ' + (p.jobNum||''),
+      subtitle: 'Paid to ' + (p.paidTo||'unknown') + ' Â· Step ' + (p.recoveryStep||1) + ' of 8',
       amount: p.amount || 0,
       dueDate: null,
-      nextAction: p.recoveryStatus === 'Escalated to Legal' ? 'LEGAL ACTION REQUIRED — file lien / initiate suit' :
-                  'Recovery Step ' + (p.recoveryStep||1) + ' in progress — monitor for response',
+      nextAction: p.recoveryStatus === 'Escalated to Legal' ? 'LEGAL ACTION REQUIRED â file lien / initiate suit' :
+                  'Recovery Step ' + (p.recoveryStep||1) + ' in progress â monitor for response',
       urgency: p.recoveryStatus === 'Escalated to Legal' ? 0 : (p.recoveryStep||0) >= 5 ? 2 : 3,
       navigateFn: "openCaseFile('" + (p.jobId||'') + "','payments')",
       jobId: p.jobId
@@ -3599,8 +3602,8 @@ function getAIInboxTasks() {
       id: 'AI-' + e.id,
       source: 'AI Inbox',
       icon: '&#129302;',
-      title: 'AI Email — ' + (e.outcome||'Unknown'),
-      subtitle: (e.senderName||e.senderEmail||'Unknown') + (e.jobNum ? ' · ' + e.jobNum : ''),
+      title: 'AI Email â ' + (e.outcome||'Unknown'),
+      subtitle: (e.senderName||e.senderEmail||'Unknown') + (e.jobNum ? ' Â· ' + e.jobNum : ''),
       amount: 0,
       dueDate: e.date,
       nextAction: outcomeLower.indexOf('payment confirmed') !== -1 ? 'Log confirmed payment in system' :
@@ -3617,7 +3620,7 @@ function getAIInboxTasks() {
 
 function getInfoRequestTasks() {
   var tasks = [];
-  var activeStatuses = ['Pending — Gathering Docs','Docs Sent — Awaiting Response'];
+  var activeStatuses = ['Pending â Gathering Docs','Docs Sent â Awaiting Response'];
   (JOBS||[]).forEach(function(j) {
     if (!j || activeStatuses.indexOf(j.carrierInfoRequestStatus) === -1) return;
     var daysToDeadline = j.infoResponseDeadline ? Math.ceil((new Date(j.infoResponseDeadline).getTime() - Date.now()) / 86400000) : 999;
@@ -3625,14 +3628,14 @@ function getInfoRequestTasks() {
       id: 'IR-' + j.id,
       source: 'Info Request',
       icon: '&#128196;',
-      title: 'Carrier Info Request — ' + j.jobNum,
-      subtitle: (j.carrier||'') + ' · Requested: ' + formatDate(j.infoRequestDate),
+      title: 'Carrier Info Request â ' + j.jobNum,
+      subtitle: (j.carrier||'') + ' Â· Requested: ' + formatDate(j.infoRequestDate),
       amount: j.amtInvoiced - j.amtPaid,
       dueDate: j.infoResponseDeadline,
-      nextAction: j.carrierInfoRequestStatus === 'Pending — Gathering Docs' ?
+      nextAction: j.carrierInfoRequestStatus === 'Pending â Gathering Docs' ?
                   'Gather: ' + (j.infoRequestedItems||'requested documents').substring(0,80) + ' and send to carrier' :
-                  'Carrier reviewing submitted docs — follow up if no response by ' + formatDate(j.infoResponseDeadline),
-      urgency: daysToDeadline <= 0 ? 0 : daysToDeadline <= 3 ? 1 : j.carrierInfoRequestStatus === 'Pending — Gathering Docs' ? 2 : 3,
+                  'Carrier reviewing submitted docs â follow up if no response by ' + formatDate(j.infoResponseDeadline),
+      urgency: daysToDeadline <= 0 ? 0 : daysToDeadline <= 3 ? 1 : j.carrierInfoRequestStatus === 'Pending â Gathering Docs' ? 2 : 3,
       navigateFn: "openCaseFile('" + j.id + "','actions')",
       jobId: j.id
     });
@@ -3675,7 +3678,7 @@ function renderMyTaskCard(item) {
     html += '<div style="font-size:.9rem;color:var(--text-muted);margin-bottom:6px">' + item.subtitle + '</div>';
   }
 
-  // Row 3: What to do — the most important part
+  // Row 3: What to do â the most important part
   html += '<div style="display:flex;align-items:flex-start;gap:6px;padding:8px 12px;background:rgba(255,255,255,.05);border-radius:8px;border-left:3px solid ' + srcColor + '">';
   html += '<span style="font-size:.85rem;font-weight:600;color:' + srcColor + ';white-space:nowrap">Action:</span>';
   html += '<span style="font-size:.85rem;color:var(--text-secondary)">' + item.nextAction + '</span>';
@@ -3724,7 +3727,7 @@ function renderMyTasks() {
 
   var critical = tiers[0].length, today = tiers[1].length;
   var total = allItems.length;
-  var subtitle = total + ' action item' + (total !== 1 ? 's' : '') + ' · ' + (critical + today) + ' urgent';
+  var subtitle = total + ' action item' + (total !== 1 ? 's' : '') + ' Â· ' + (critical + today) + ' urgent';
   var sub = document.getElementById('myTasksSubtitle');
   if (sub) sub.textContent = subtitle;
 
