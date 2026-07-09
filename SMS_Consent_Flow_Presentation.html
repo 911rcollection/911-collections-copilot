@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>911 Restoration — SMS Consent Flow</title>
+<style>
+  :root{
+    --navy:#00162C; --navy2:#0a2647; --orange:#EA7125; --orange2:#ff8a3d;
+    --ink:#1a2433; --muted:#6b7a90; --line:#e6eaf0; --bg:#eef2f7;
+    --green:#1f9d55; --red:#d64545; --card:#ffffff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ink);
+    background:radial-gradient(1200px 600px at 50% -10%, #12365f 0%, var(--navy) 55%);min-height:100vh}
+  .stage{max-width:1120px;margin:0 auto;padding:26px 20px 80px}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  .brand{color:#fff;font-weight:800;letter-spacing:.4px;font-size:18px}
+  .brand span{color:var(--orange2)}
+  h1{color:#fff;font-size:30px;margin:6px 0 2px;line-height:1.15}
+  .lead{color:#b9c6da;font-size:15px;margin:0 0 18px;max-width:720px}
+  .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:10px 16px;cursor:pointer;
+    background:var(--orange);color:#fff;box-shadow:0 6px 18px rgba(234,113,37,.35);transition:.15s}
+  button:hover{background:var(--orange2)}
+  button.ghost{background:rgba(255,255,255,.08);color:#dfe8f4;box-shadow:none;border:1px solid rgba(255,255,255,.18)}
+  button.ghost:hover{background:rgba(255,255,255,.16)}
+  .progresswrap{height:6px;background:rgba(255,255,255,.12);border-radius:6px;overflow:hidden;margin:16px 0 8px}
+  .progress{height:100%;width:0;background:linear-gradient(90deg,var(--orange),var(--orange2));transition:width .5s ease}
+  .stepname{color:#cdd8e8;font-size:13px;font-weight:600;letter-spacing:.3px;margin-bottom:16px;min-height:18px}
+
+  .board{position:relative;background:linear-gradient(180deg,#f7f9fc,#eef2f7);border-radius:18px;
+    padding:26px 22px;box-shadow:0 30px 60px rgba(0,0,0,.35);overflow:hidden}
+  .row{display:flex;gap:18px;justify-content:center;align-items:stretch;flex-wrap:wrap;margin:0 0 8px}
+  .col{flex:1;min-width:280px}
+
+  /* animated blocks */
+  .blk{opacity:0;transform:translateY(14px) scale(.98);transition:.55s cubic-bezier(.2,.7,.2,1);
+    background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;
+    box-shadow:0 8px 20px rgba(0,22,44,.06)}
+  .blk.on{opacity:1;transform:none}
+  .blk.dim{opacity:.35;filter:saturate(.6)}
+  .blk .tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
+    padding:3px 9px;border-radius:999px;margin-bottom:8px}
+  .t-pre{background:#eef4ff;color:#2456c6}
+  .t-a{background:#fff1e6;color:#c65a12}
+  .t-b{background:#e9f7ef;color:#137a3f}
+  .t-core{background:#eae6ff;color:#5b3ec6}
+  .t-end{background:#fdeaea;color:#b3352f}
+  .blk h3{margin:0 0 6px;font-size:16px;color:var(--navy)}
+  .blk p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.5}
+  .blk ul{margin:8px 0 0;padding-left:18px}
+  .blk li{font-size:13px;color:var(--ink);margin:4px 0}
+  .chk{color:var(--green);font-weight:800;margin-right:4px}
+  .mini{font-size:12px;color:var(--muted);margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
+
+  .lane-title{display:flex;align-items:center;gap:8px;font-weight:800;color:var(--navy);margin:2px 0 10px;font-size:14px}
+  .dotA{width:10px;height:10px;border-radius:50%;background:var(--orange)}
+  .dotB{width:10px;height:10px;border-radius:50%;background:var(--green)}
+
+  .arrow{display:flex;justify-content:center;align-items:center;height:34px;opacity:0;transition:.5s}
+  .arrow.on{opacity:1}
+  .arrow svg{width:26px;height:34px}
+  .arrow path{stroke:var(--orange);stroke-width:3;fill:none;stroke-linecap:round}
+  .arrow .head{fill:var(--orange);stroke:none}
+
+  .merge{text-align:center;color:#8a97a9;font-size:12px;font-weight:700;letter-spacing:.5px;margin:2px 0}
+
+  .pill{display:inline-flex;gap:6px;align-items:center;background:#0e2a49;color:#dbe8fb;border-radius:999px;
+    padding:6px 12px;font-size:12.5px;font-weight:600;margin:3px 4px 0 0}
+  .pill b{color:#fff}
+  .fieldbox{background:#0d2340;border-radius:12px;padding:12px 14px;margin-top:8px}
+  .fieldbox .r{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:#cfe0f5;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+  .fieldbox .r:last-child{border-bottom:0}
+  .fieldbox .v{color:#7ff0a8;font-weight:700}
+
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:16px;color:#b9c6da;font-size:12.5px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .foot{color:#8ea3bf;font-size:12px;margin-top:18px;text-align:center}
+  @media (max-width:720px){h1{font-size:23px}}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="top">
+    <div class="brand">911 <span>RESTORATION</span> · SMS Consent</div>
+    <div class="controls">
+      <button id="play">▶ Play flow</button>
+      <button class="ghost" id="prev">‹ Back</button>
+      <button class="ghost" id="next">Next ›</button>
+      <button class="ghost" id="replay">↻ Replay</button>
+    </div>
+  </div>
+  <h1>How a customer gives SMS consent</h1>
+  <p class="lead">Two ways to opt a customer in — a texted request they answer with <b>YES</b>, or a consent form (in person or by personalized link) — both write consent to the same Homeowner record, then gate every future text. Press <b>Play</b> or step through.</p>
+
+  <div class="progresswrap"><div class="progress" id="bar"></div></div>
+  <div class="stepname" id="stepname">Ready — 0 / 6</div>
+
+  <div class="board">
+
+    <!-- STAGE 1: prerequisites -->
+    <div class="row">
+      <div class="col" style="max-width:640px;margin:0 auto">
+        <div class="blk" data-step="0">
+          <span class="tag t-pre">Prerequisite · who is eligible to be asked</span>
+          <h3>The homeowner qualifies for an opt-in ask when…</h3>
+          <ul>
+            <li><span class="chk">✓</span> Linked to a Job with <b>Collections Status = Active</b></li>
+            <li><span class="chk">✓</span> Has a <b>mobile number</b> on file (the SMS opt-in path texts it)</li>
+            <li><span class="chk">✓</span> <b>SMS Consent ≠ true</b> — hasn't already opted in</li>
+            <li><span class="chk">✓</span> <b>Do Not Contact ≠ true</b> and <b>SMS Opt Out ≠ true</b></li>
+            <li><span class="chk">✓</span> Not asked in the last <b>14 days</b> (re-ask throttle)</li>
+          </ul>
+          <div class="mini">S-16 checks all of these automatically. A PM asking in person only needs a not-yet-consented customer.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow" data-step="1"><svg viewBox="0 0 26 34"><path d="M13 2 V24"/><path class="head" d="M13 32 L6 22 L20 22 Z"/></svg></div>
+
+    <!-- STAGE 2 & 3: two lanes -->
+    <div class="row">
+      <div class="col">
+        <div class="lane-title"><span class="dotA"></span> Option A · In person at onboarding</div>
+        <div class="blk" data-step="2">
+          <span class="tag t-a">Path A</span>
+          <h3>PM presents the form on a device</h3>
+          <ul>
+            <li>PM copies <b>“SMS Consent Form Link”</b> from the customer's Homeowner row</li>
+            <li>Opens it on a tablet / phone during work-authorization signing</li>
+            <li>Customer reads the consent statement <i>(box unchecked by default)</i></li>
+            <li>Checks the box, enters mobile, submits</li>
+          </ul>
+          <div class="mini">Consent is a <b>separate, optional</b> step from the service agreement — keeps it TCPA-clean.</div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="lane-title"><span class="dotB"></span> Option B · Remote link</div>
+        <div class="blk" data-step="3">
+          <span class="tag t-b">Path B</span>
+          <h3>S-16 texts the opt-in — customer replies YES</h3>
+          <ul>
+            <li>S-16 runs daily, finds eligible homeowners (prerequisites above)</li>
+            <li>Sends an SMS: <b>&ldquo;911 Restoration: reply YES to get claim updates by text. Reply STOP to opt out.&rdquo;</b> and stamps <i>Consent Request Sent = now</i></li>
+            <li>Customer replies <b>YES</b> &rarr; <b>S-15</b> matches their mobile and records consent</li>
+            <li>Prefer a documented form instead? Send the branded link <b>sms-optin.html?id=recXXXX</b> (same capture as Option A)</li>
+          </ul>
+          <div class="mini">US delivery requires the Twilio number's A2P 10DLC registration + US region enabled.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow" data-step="4"><svg viewBox="0 0 26 34"><path d="M13 2 V24"/><path class="head" d="M13 32 L6 22 L20 22 Z"/></svg></div>
+    <div class="merge" data-step="4">BOTH PATHS MERGE →</div>
+
+    <!-- STAGE 4: capture -->
+    <div class="row">
+      <div class="col" style="max-width:640px;margin:0 auto">
+        <div class="blk" data-step="4b">
+          <span class="tag t-core">Capture → Airtable</span>
+          <h3>Either path writes to that exact Homeowner record</h3>
+          <p><b>Reply YES</b> &rarr; S-15 matches the mobile and sets the fields directly. <b>Form</b> &rarr; the <b>?id=recXXXX</b> carried into the page tells Airtable which record to update — no duplicates.</p>
+          <div class="fieldbox">
+            <div class="r"><span>SMS Consent</span><span class="v">TRUE</span></div>
+            <div class="r"><span>Phone</span><span class="v">mobile entered</span></div>
+            <div class="r"><span>SMS Consent Date</span><span class="v">submission time</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow" data-step="5"><svg viewBox="0 0 26 34"><path d="M13 2 V24"/><path class="head" d="M13 32 L6 22 L20 22 Z"/></svg></div>
+
+    <!-- STAGE 5: downstream -->
+    <div class="row">
+      <div class="col">
+        <div class="blk" data-step="5">
+          <span class="tag t-core">Now allowed · consent gate</span>
+          <h3>Recovery texts can send</h3>
+          <p>Every homeowner SMS (S-04 / S-04B) passes only when
+          <b>SMS Consent = true</b> AND <b>SMS Opt Out ≠ true</b> AND <b>Do Not Contact ≠ true</b>.
+          This customer now qualifies (still held by <b>test_mode</b> until go-live).</p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="blk" data-step="5b">
+          <span class="tag t-end">Honored forever · STOP / START</span>
+          <h3>The customer stays in control</h3>
+          <p>Texting <b>STOP</b> → S-15 sets <b>SMS Opt Out = true</b> &amp; <b>SMS Consent = false</b>;
+          the gate immediately blocks all future texts. <b>START</b> re-enables. <b>HELP</b> replies with contact info.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span><i class="sw" style="background:var(--orange)"></i> Option A — in person</span>
+      <span><i class="sw" style="background:var(--green)"></i> Option B — remote link (S-16)</span>
+      <span><i class="sw" style="background:#5b3ec6"></i> Shared capture &amp; gating</span>
+      <span><i class="sw" style="background:var(--red)"></i> Opt-out handling (S-15)</span>
+    </div>
+  </div>
+
+  <div class="foot">Ask → Capture → Record → Send (gated) → Honor STOP · 911 Restoration Collections Copilot</div>
+</div>
+
+<script>
+  // Sequence of reveal steps. Each entry = list of [data-step] keys to activate.
+  const steps = [
+    { name:"1 · Prerequisites — who is eligible to be asked", show:["0"] },
+    { name:"2 · The two ways to present the consent form", show:["1","2","3"] },
+    { name:"3 · Customer submits — both paths merge", show:["4","4b"] },
+    { name:"4 · Consent written to the Homeowner record", show:["5"] , focus:["4b"]},
+    { name:"5 · Now allowed — the consent gate lets texts send", show:["5"] },
+    { name:"6 · Honored forever — STOP / START keep control", show:["5b"] },
+  ];
+  const all = Array.from(document.querySelectorAll('[data-step]'));
+  const bar = document.getElementById('bar');
+  const stepname = document.getElementById('stepname');
+  let i = -1, timer=null, revealed=new Set();
+
+  function applyUpTo(idx){
+    revealed = new Set();
+    for(let s=0;s<=idx;s++){ (steps[s].show||[]).forEach(k=>revealed.add(k)); }
+    all.forEach(el=>{
+      const k = el.getAttribute('data-step');
+      el.classList.toggle('on', revealed.has(k));
+      el.classList.remove('dim');
+    });
+    bar.style.width = ((idx+1)/steps.length*100)+'%';
+    stepname.textContent = idx<0 ? "Ready — 0 / "+steps.length : steps[idx].name;
+  }
+  function go(idx){ i=Math.max(-1,Math.min(steps.length-1,idx)); applyUpTo(i); }
+  function next(){ if(i<steps.length-1) go(i+1); else stop(); }
+  function prev(){ go(i-1); }
+  function play(){
+    stop(); if(i>=steps.length-1) go(-1);
+    document.getElementById('play').textContent='⏸ Playing…';
+    timer=setInterval(()=>{ if(i>=steps.length-1){stop();return;} next(); },1700);
+    next();
+  }
+  function stop(){ if(timer){clearInterval(timer);timer=null;} document.getElementById('play').textContent='▶ Play flow'; }
+
+  document.getElementById('play').onclick=()=>{ timer?stop():play(); };
+  document.getElementById('next').onclick=()=>{ stop(); next(); };
+  document.getElementById('prev').onclick=()=>{ stop(); prev(); };
+  document.getElementById('replay').onclick=()=>{ stop(); go(-1); play(); };
+
+  applyUpTo(-1);
+  // gentle auto-start
+  setTimeout(play, 700);
+</script>
+</body>
+</html>

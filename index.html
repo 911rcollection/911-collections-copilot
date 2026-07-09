@@ -507,6 +507,7 @@ td{font-size:1rem}
       <div class="nav-item" data-screen="my-tasks" onclick="navigate('my-tasks')"><span class="nav-icon">&#9989;</span><span>My Tasks <span id="myTasksBadge" class="nav-badge" style="display:none"></span></span></div>
       <div class="nav-item" data-screen="settings" onclick="navigate('settings')"><span class="nav-icon">&#9881;</span><span>Settings</span></div>
       <div class="nav-item" data-screen="ops" onclick="navigate('ops')"><span class="nav-icon">&#128200;</span><span>Ops Dashboard</span></div>
+      <div class="nav-item" data-screen="guides" onclick="navigate('guides')"><span class="nav-icon">&#128218;</span><span>Guides</span></div>
     </nav>
     <div class="sidebar-toggle" onclick="toggleSidebar()">
       <span id="toggleIcon">&#9664;</span> <span class="brand-text">Collapse</span>
@@ -600,6 +601,49 @@ td{font-size:1rem}
       <div class="page-header"><div><h1>Operational Dashboard</h1><div class="subtitle">System metrics and scenario health</div></div></div>
       <div id="opsNoPermission"></div>
       <div id="opsContent"></div>
+    </div>
+
+    <!-- GUIDES -->
+    <div class="screen" id="screen-guides">
+      <div class="page-header"><div><h1>Guides &amp; References</h1><div class="subtitle">Training, the SMS consent journey, and compliance references</div></div></div>
+
+      <div style="font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin:6px 0 10px">Training</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">
+        <a href="911_Collections_Copilot_Training_Presentation.html" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;display:block;background:#fff;border:1px solid #e4e8ee;border-left:4px solid #f97316;border-radius:14px;padding:18px 20px;box-shadow:0 1px 3px rgba(20,30,50,.05);transition:box-shadow .15s,transform .15s" onmouseover="this.style.boxShadow='0 8px 24px rgba(20,30,50,.12)';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='0 1px 3px rgba(20,30,50,.05)';this.style.transform='none'">
+          <div style="font-size:1.6rem;line-height:1">&#127891;</div>
+          <div style="font-weight:700;color:#12305a;margin:8px 0 4px">Team Training &amp; Onboarding</div>
+          <div style="font-size:.85rem;color:#5b6676;line-height:1.5">Full walkthrough of the Collections Copilot — the AR workflow, the daily screens, and how every team member uses it.</div>
+          <div style="margin-top:12px;font-size:.8rem;font-weight:700;color:#ea580c">Open guide &#8599;</div>
+        </a>
+      </div>
+
+      <div style="font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin:22px 0 10px">SMS Consent &amp; Compliance</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">
+        <a href="SMS_Consent_Flow_Presentation.html" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;display:block;background:#fff;border:1px solid #e4e8ee;border-left:4px solid #2563a8;border-radius:14px;padding:18px 20px;box-shadow:0 1px 3px rgba(20,30,50,.05);transition:box-shadow .15s,transform .15s" onmouseover="this.style.boxShadow='0 8px 24px rgba(20,30,50,.12)';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='0 1px 3px rgba(20,30,50,.05)';this.style.transform='none'">
+          <div style="font-size:1.6rem;line-height:1">&#128172;</div>
+          <div style="font-weight:700;color:#12305a;margin:8px 0 4px">SMS Consent — Customer Journey</div>
+          <div style="font-size:.85rem;color:#5b6676;line-height:1.5">How a homeowner gives SMS consent end-to-end: opt-in ask (text or form), capture to Airtable, the consent gate, and STOP/START handling.</div>
+          <div style="margin-top:12px;font-size:.8rem;font-weight:700;color:#2563a8">Open guide &#8599;</div>
+        </a>
+        <a href="sms-optin.html" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;display:block;background:#fff;border:1px solid #e4e8ee;border-left:4px solid #2563a8;border-radius:14px;padding:18px 20px;box-shadow:0 1px 3px rgba(20,30,50,.05);transition:box-shadow .15s,transform .15s" onmouseover="this.style.boxShadow='0 8px 24px rgba(20,30,50,.12)';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='0 1px 3px rgba(20,30,50,.05)';this.style.transform='none'">
+          <div style="font-size:1.6rem;line-height:1">&#9997;&#65039;</div>
+          <div style="font-weight:700;color:#12305a;margin:8px 0 4px">SMS Opt-In Consent Form</div>
+          <div style="font-size:.85rem;color:#5b6676;line-height:1.5">The branded opt-in page a customer completes to consent — present in person on a tablet, or send the personalized link.</div>
+          <div style="margin-top:12px;font-size:.8rem;font-weight:700;color:#2563a8">Open form &#8599;</div>
+        </a>
+        <a href="https://911rcollection.github.io/911-collections-copilot/sms-terms.html" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;display:block;background:#fff;border:1px solid #e4e8ee;border-left:4px solid #64748b;border-radius:14px;padding:18px 20px;box-shadow:0 1px 3px rgba(20,30,50,.05);transition:box-shadow .15s,transform .15s" onmouseover="this.style.boxShadow='0 8px 24px rgba(20,30,50,.12)';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='0 1px 3px rgba(20,30,50,.05)';this.style.transform='none'">
+          <div style="font-size:1.6rem;line-height:1">&#128196;</div>
+          <div style="font-weight:700;color:#12305a;margin:8px 0 4px">SMS Terms &amp; Conditions</div>
+          <div style="font-size:.85rem;color:#5b6676;line-height:1.5">The messaging program terms customers agree to (message frequency, rates, opt-out). Public reference page.</div>
+          <div style="margin-top:12px;font-size:.8rem;font-weight:700;color:#475569">Open reference &#8599;</div>
+        </a>
+        <a href="https://911rcollection.github.io/911-collections-copilot/sms-privacy.html" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;display:block;background:#fff;border:1px solid #e4e8ee;border-left:4px solid #64748b;border-radius:14px;padding:18px 20px;box-shadow:0 1px 3px rgba(20,30,50,.05);transition:box-shadow .15s,transform .15s" onmouseover="this.style.boxShadow='0 8px 24px rgba(20,30,50,.12)';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='0 1px 3px rgba(20,30,50,.05)';this.style.transform='none'">
+          <div style="font-size:1.6rem;line-height:1">&#128274;</div>
+          <div style="font-weight:700;color:#12305a;margin:8px 0 4px">SMS Privacy Policy</div>
+          <div style="font-size:.85rem;color:#5b6676;line-height:1.5">How customer mobile numbers and consent data are handled — no sharing of opt-in data with third parties. Public reference page.</div>
+          <div style="margin-top:12px;font-size:.8rem;font-weight:700;color:#475569">Open reference &#8599;</div>
+        </a>
+      </div>
     </div>
   </main>
 </div>
@@ -795,12 +839,10 @@ var CURRENT_USER=null;
 // SECURITY: passwords are NOT stored in client-side code. Authentication is performed against the
 // Airtable Users table via the admin-provided PAT. This list supplies identity/role ONLY and cannot
 // authenticate on its own.
-var FALLBACK_USERS=[
-  {email:'leoneld151174@gmail.com',name:'Leo Daniszewski',role:'Admin',offices:['Portland','Seattle'],settingsAccess:true,opsAccess:true},
-  {email:'shtilmanservices@gmail.com',name:'Moshe Shtilman',role:'Manager',offices:['Portland','Seattle'],settingsAccess:true,opsAccess:true},
-  {email:'officeassistant@911restoration.com',name:'Christina',role:'Manager',offices:['Portland','Seattle'],settingsAccess:true,opsAccess:true},
-  {email:'wa.admin@911restoration.com',name:'Hannah',role:'Staff',offices:['Seattle'],settingsAccess:false,opsAccess:false}
-];
+// NOTE: Identity/role now resolved exclusively from the Airtable Users table via the admin PAT.
+// Staff emails/names are intentionally NOT hardcoded here (public-repo safe). Add your team to the
+// Airtable Users table instead.
+var FALLBACK_USERS=[];
 
 const ROLES={
   moshe:{name:'Moshe',mode:'Full',offices:['Portland','Seattle'],canViewSettings:true,canViewErrors:true,canViewOps:true,canViewPayments:true,canViewLiens:true},
@@ -813,7 +855,7 @@ function saveAdminPat(){
   var v=(inp&&inp.value||'').trim();
   var s=document.getElementById('adminPatStatus');
   if(!v){if(s){s.textContent='Please paste an Airtable PAT.';s.style.color='#d33';}return;}
-  localStorage.setItem('proxy_token',v);
+  localStorage.setItem('airtable_pat',v);
   if(inp)inp.value='';
   if(s){s.textContent='✓ Airtable connection saved on this device. You can sign in now.';s.style.color='#2a8a5a';}
 }
@@ -826,7 +868,7 @@ function loginUser(emailOverride,passwordOverride){
   if(errorEl)errorEl.textContent='';
 
   // Try Airtable first, fall back to hardcoded list
-  var pat=localStorage.getItem('proxy_token')||'';
+  var pat=localStorage.getItem('airtable_pat')||'';
   var foundUser=null;
 
   function activateUser(user){
@@ -852,7 +894,7 @@ function loginUser(emailOverride,passwordOverride){
     // Update last login in Airtable if possible
     if(pat&&user.recordId){
       fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.users+'/'+user.recordId,{
-        method:'PATCH',headers:{'X-Proxy-Token':pat,'Content-Type':'application/json'},
+        method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
         body:JSON.stringify({fields:{'Last Login':new Date().toISOString()}})
       }).catch(function(){});
     }
@@ -869,7 +911,7 @@ function loginUser(emailOverride,passwordOverride){
   if(pat){
     var formula=encodeURIComponent('{Email}="'+email+'"');
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.users+'?filterByFormula='+formula+'&maxRecords=1',{
-      headers:{'X-Proxy-Token':pat}
+      headers:{'Authorization':'Bearer '+pat}
     }).then(function(r){if(!r.ok)throw new Error('API error');return r.json();})
     .then(function(data){
       if(data.records&&data.records.length>0){
@@ -1320,7 +1362,7 @@ function saveCallAndLog(taskId){
     };
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{
       method:'POST',
-      headers:{'X-Proxy-Token':pat,'Content-Type':'application/json'},
+      headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
       body:JSON.stringify({fields:fields})
     }).then(function(r){
       if(r.ok){showToast('Call logged to Airtable','success');return r.json();}
@@ -1656,7 +1698,7 @@ function sendEmailAndLog(jobId){
   var pat=getAirtablePAT();
   if(pat){
     var fields={'Message':logMsg,'Channel':'Email','Direction':'Outbound','Source':'Command Center','Log Entry':newEntry.subject,'Date':newEntry.date,'Logged By':'Command Center'};
-    fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{method:'POST',headers:{'X-Proxy-Token':pat,'Content-Type':'application/json'},body:JSON.stringify({fields:fields})}).then(function(r){if(r.ok){return r.json();}else{showToast('Airtable log failed ('+r.status+')','error');}}).then(function(data){if(data&&data.id){newEntry.id=data.id;}}).catch(function(e){showToast('Network error logging email','error');});
+    fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{method:'POST',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},body:JSON.stringify({fields:fields})}).then(function(r){if(r.ok){return r.json();}else{showToast('Airtable log failed ('+r.status+')','error');}}).then(function(data){if(data&&data.id){newEntry.id=data.id;}}).catch(function(e){showToast('Network error logging email','error');});
   }
   closeModalForce();
   showToast('Email opened in mail client + logged to CommsLog','success');
@@ -1948,7 +1990,7 @@ function setLienMode(jobId,mode){
   if(!pat){showToast('Lien mode saved locally only — no PAT','warning');return;}
   fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.jobs+'/'+jobId,{
     method:'PATCH',
-    headers:{'X-Proxy-Token':pat,'Content-Type':'application/json'},
+    headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
     body:JSON.stringify({fields:{'Lien Mode':mode},typecast:true})
   }).then(function(resp){
     if(!resp.ok) throw new Error('Airtable update failed ('+resp.status+')');
@@ -2000,7 +2042,7 @@ function confirmResolvePayment(paymentId){
     // Write to Airtable if connected
     var pat=getAirtablePAT();
     if(pat&&p.id.startsWith('rec')){
-      fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.payments+'/'+p.id,{method:'PATCH',headers:{'X-Proxy-Token':pat,'Content-Type':'application/json'},body:JSON.stringify({fields:{'Recovery Status':resolution,'Recovery Step':9},typecast:true})}).then(function(){showToast('Airtable updated','success')}).catch(function(){showToast('Local only — Airtable update failed','warning')});
+      fetch('https://api.airtable.com/v0/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.payments+'/'+p.id,{method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},body:JSON.stringify({fields:{'Recovery Status':resolution,'Recovery Step':9},typecast:true})}).then(function(){showToast('Airtable updated','success')}).catch(function(){showToast('Local only — Airtable update failed','warning')});
     }
   }
   closeModalForce();
@@ -2371,7 +2413,7 @@ function confirmOpenDispute(jobId) {
 
   fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
     method: 'PATCH',
-    headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
+    headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
     body: JSON.stringify({ fields: fields, typecast: true })
   }).then(function(resp) {
     if (!resp.ok) throw new Error('Airtable update failed');
@@ -2395,7 +2437,7 @@ function updateDisputeStatus(jobId, newStatus) {
 
   fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
     method: 'PATCH',
-    headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
+    headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
     body: JSON.stringify({ fields: fields, typecast: true })
   }).then(function(resp) {
     if (!resp.ok) return resp.text().then(function(t){ throw new Error('Update failed (' + resp.status + '): ' + t); });
@@ -2450,7 +2492,7 @@ function confirmResolveDispute(jobId) {
 
   fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
     method: 'PATCH',
-    headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
+    headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
     body: JSON.stringify({ fields: fields, typecast: true })
   }).then(function(resp) {
     if (!resp.ok) return resp.text().then(function(t){ throw new Error('Update failed (' + resp.status + '): ' + t); });
@@ -2512,7 +2554,7 @@ function renderOps(){
 // ============================================================
 const AIRTABLE_CONFIG = {
   baseId: 'app5yjgGXTznjT0Or',
-  apiUrl: 'https://collections-airtable-proxy.911rcollection.workers.dev/api',
+  apiUrl: 'https://api.airtable.com/v0',
   tables: {
     jobs: 'tblwuJAsF1d8F2hk1',
     invoices: 'tblGIhyzpiHfCSjHB',
@@ -2533,11 +2575,8 @@ const AIRTABLE_CONFIG = {
 let _liveDataLoaded = false;
 let _dataLoadError = null;
 
-// SECURITY: app no longer holds the Airtable PAT. It sends the Cloudflare Worker proxy token (X-Proxy-Token).
-// Replace PASTE_PROXY_TOKEN_HERE below with the PROXY_TOKEN value you set as a Worker secret, OR set it at runtime via Settings (stored in localStorage 'proxy_token').
-var PROXY_TOKEN_PLACEHOLDER = 'PASTE_PROXY_TOKEN_HERE';
-function getAirtablePAT() { return localStorage.getItem('proxy_token') || (PROXY_TOKEN_PLACEHOLDER === 'PASTE_PROXY_TOKEN_HERE' ? '' : PROXY_TOKEN_PLACEHOLDER); }
-function setAirtablePAT(pat) { localStorage.setItem('proxy_token', pat); }
+function getAirtablePAT() { return localStorage.getItem('airtable_pat') || ''; }
+function setAirtablePAT(pat) { localStorage.setItem('airtable_pat', pat); }
 
 function switchDataMode(mode) {
   if (mode === 'live') {
@@ -2564,7 +2603,7 @@ async function fetchAllRecords(tableId, fields, pat) {
   do {
     if (offset) params.set('offset', offset);
     var url = AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + tableId + '?' + params;
-    var resp = await fetch(url, { headers: { 'X-Proxy-Token': pat } });
+    var resp = await fetch(url, { headers: { 'Authorization': 'Bearer ' + pat } });
     if (!resp.ok) throw new Error('Airtable API error ' + resp.status + ': ' + resp.statusText);
     var data = await resp.json();
     allRecords.push.apply(allRecords, data.records);
@@ -2879,7 +2918,7 @@ function confirmCarrierInfoRequest(jobId) {
     }
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
       method: 'PATCH',
-      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
+      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ typecast: true, fields: jobFields })
     }).then(function(r){ if (!r.ok) throw new Error('Jobs PATCH failed ' + r.status); })
       .catch(function(e){ showToast('Airtable update failed: ' + e.message, 'error'); });
@@ -2888,7 +2927,7 @@ function confirmCarrierInfoRequest(jobId) {
     var taskDesc = 'Carrier ' + (j.carrier||'') + ' requested: ' + (requestedItems||'documents').substring(0,200) + (deadline ? '. Send by ' + deadline + '.' : '.');
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.hsq, {
       method: 'POST',
-      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
+      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ typecast: true, fields: {
         'Task Type': 'Carrier Info Request — Gather & Send Docs',
         'Priority': 'P2',
@@ -2960,7 +2999,7 @@ function confirmMarkDocsSent(jobId) {
 
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
       method: 'PATCH',
-      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
+      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ typecast: true, fields: jobFields })
     }).then(function(r){ if (!r.ok) throw new Error('Jobs PATCH failed'); })
       .catch(function(e){ showToast('Airtable update failed: ' + e.message, 'error'); });
@@ -2969,7 +3008,7 @@ function confirmMarkDocsSent(jobId) {
     var logMsg = 'DOCS SENT — ' + j.jobNum + '\nSent via: ' + sentVia + '\nDescription: ' + sentDesc + '\nResponse expected: ' + responseExpected;
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.commsLog, {
       method: 'POST',
-      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
+      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ fields: {
         'Message': logMsg, 'Channel': sentVia, 'Direction': 'Outbound',
         'Source': 'Command Center', 'Log Entry': sentDate + ' — Docs Sent — ' + j.jobNum,
@@ -2981,7 +3020,7 @@ function confirmMarkDocsSent(jobId) {
     if (responseExpected) {
       fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.hsq, {
         method: 'POST',
-        headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
+        headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
         body: JSON.stringify({ typecast: true, fields: {
           'Task Type': 'Carrier Info Request — Follow Up',
           'Priority': 'P2',
@@ -3194,7 +3233,7 @@ function confirmCarrierFullAgreement(jobId) {
 
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
       method: 'PATCH',
-      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
+      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ typecast: true, fields: jobFields })
     }).then(function(r){ if (!r.ok) throw new Error('Jobs PATCH failed ' + r.status); })
       .catch(function(e){ showToast('Airtable update failed: ' + e.message, 'error'); });
@@ -3203,7 +3242,7 @@ function confirmCarrierFullAgreement(jobId) {
     var logMsg = 'CARRIER RESPONSE: Full Agreement — ' + j.jobNum + '\nAgreed Amount: ' + fmt(amount) + '\nDate: ' + date + (refNum ? '\nRef #: ' + refNum : '') + (notes ? '\nNotes: ' + notes : '');
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.commsLog, {
       method: 'POST',
-      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
+      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ fields: {
         'Message': logMsg, 'Channel': 'Email', 'Direction': 'Inbound',
         'Source': 'Command Center', 'Log Entry': date + ' — Carrier Response: Full Agreement — ' + j.jobNum,
@@ -3309,7 +3348,7 @@ function sendAdjusterConfirmation(jobId, responseType) {
     var logMsg = 'OUTBOUND CONFIRMATION (' + responseType.toUpperCase() + ')\nTo: ' + to + '\nSubject: ' + subject + '\n\n' + body;
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.commsLog, {
       method: 'POST',
-      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
+      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ fields: {
         'Message': logMsg, 'Channel': 'Email', 'Direction': 'Outbound',
         'Source': 'Command Center', 'Log Entry': new Date().toISOString().split('T')[0] + ' — Sent ' + responseType + ' confirmation to ' + to,
@@ -3367,7 +3406,7 @@ function confirmCarrierPartialAgreement(jobId) {
     };
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
       method: 'PATCH',
-      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
+      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ typecast: true, fields: jobFields })
     }).then(function(r){ if (!r.ok) throw new Error('Jobs PATCH failed ' + r.status); })
       .catch(function(e){ showToast('Airtable update failed: ' + e.message, 'error'); });
@@ -3375,7 +3414,7 @@ function confirmCarrierPartialAgreement(jobId) {
     var logMsg = 'CARRIER RESPONSE: Partial Agreement — ' + j.jobNum + '\nAgreed: ' + fmt(partial) + ' of ' + fmt(j.amtInvoiced) + '\nGap: ' + fmt(gap) + '\nGap Decision: ' + gapDecision + (notes ? '\nNotes: ' + notes : '');
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.commsLog, {
       method: 'POST',
-      headers: { 'X-Proxy-Token': pat, 'Content-Type': 'application/json' },
+      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ fields: {
         'Message': logMsg, 'Channel': 'Email', 'Direction': 'Inbound',
         'Source': 'Command Center', 'Log Entry': date + ' — Carrier Response: Partial Agreement — ' + j.jobNum,
@@ -3431,13 +3470,13 @@ function setCommTrack(jobId, track) {
   if(pat&&jobId.startsWith('rec')){
     var fields={'Communication Track':track?{name:track}:null,'Track Assigned Date':j.trackAssignedDate||null};
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.jobs+'/'+jobId,{
-      method:'PATCH',headers:{'X-Proxy-Token':pat,'Content-Type':'application/json'},
+      method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
       body:JSON.stringify({typecast:true,fields:fields})
     }).then(function(r){if(!r.ok)throw new Error('PATCH failed '+r.status)})
       .catch(function(e){showToast('Airtable update failed: '+e.message,'error')});
     // Log track assignment to CommsLog
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{
-      method:'POST',headers:{'X-Proxy-Token':pat,'Content-Type':'application/json'},
+      method:'POST',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
       body:JSON.stringify({fields:{'Message':'Communication Track set to: '+track+' for '+j.jobNum,'Channel':'system','Direction':'Outbound','Source':'Command Center','Log Entry':new Date().toISOString().split('T')[0]+' — Track assigned: '+track+' — '+j.jobNum,'Date':new Date().toISOString(),'Logged By':'Command Center','Linked Job':[jobId]}})
     }).catch(function(e){console.warn('CommsLog failed:',e)});
   }
@@ -3717,132 +3756,4 @@ function renderMyTasks() {
     return (b.amount||0) - (a.amount||0);
   });
 
-  var tierLabels = ['&#128308; CRITICAL','&#128992; TODAY','&#128993; THIS WEEK','&#9898; UPCOMING'];
-  var tierColors = ['var(--accent-red)','var(--accent-orange)','var(--accent-yellow)','var(--text-muted)'];
-  var tiers = [[],[],[],[]];
-  allItems.forEach(function(item) {
-    var u = Math.min(3, Math.max(0, item.urgency||3));
-    tiers[u].push(item);
-  });
-
-  var critical = tiers[0].length, today = tiers[1].length;
-  var total = allItems.length;
-  var subtitle = total + ' action item' + (total !== 1 ? 's' : '') + ' · ' + (critical + today) + ' urgent';
-  var sub = document.getElementById('myTasksSubtitle');
-  if (sub) sub.textContent = subtitle;
-
-  var html = '';
-  tiers.forEach(function(items, idx) {
-    if (!items.length) return;
-    html += '<div style="margin-bottom:24px">' +
-      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">' +
-      '<span style="font-size:1rem;font-weight:700;color:' + tierColors[idx] + '">' + tierLabels[idx] + '</span>' +
-      '<span class="badge" style="background:' + tierColors[idx] + ';color:#fff">' + items.length + '</span>' +
-      '</div>';
-    items.forEach(function(item) { html += renderMyTaskCard(item); });
-    html += '</div>';
-  });
-
-  if (!html) {
-    html = '<div class="empty-state" style="text-align:center;padding:60px 20px"><div style="font-size:3rem;margin-bottom:16px">&#127881;</div><h3>All clear!</h3><p style="color:var(--text-muted)">No pending collection tasks. Great work!</p></div>';
-  }
-
-  var content = document.getElementById('myTasksContent');
-  if (content) content.innerHTML = html;
-  updateMyTasksBadge();
-}
-
-function updateMyTasksBadge() {
-  try {
-    var critical = 0, today = 0;
-    try { critical = getStrikeQueueTasks().filter(function(t){return t.urgency===0;}).length + getLienZoneTasks().filter(function(t){return t.urgency===0;}).length + getDisputeTasks().filter(function(t){return t.urgency===0;}).length + getDiversionTasks().filter(function(t){return t.urgency===0;}).length + getInfoRequestTasks().filter(function(t){return t.urgency===0;}).length; } catch(e){}
-    try { today = getStrikeQueueTasks().filter(function(t){return t.urgency===1;}).length + getLienZoneTasks().filter(function(t){return t.urgency===1;}).length + getDisputeTasks().filter(function(t){return t.urgency===1;}).length + getDiversionTasks().filter(function(t){return t.urgency===1;}).length + getAIInboxTasks().filter(function(t){return t.urgency===1;}).length + getInfoRequestTasks().filter(function(t){return t.urgency===1;}).length; } catch(e){}
-    var count = critical + today;
-    var badge = document.getElementById('myTasksBadge');
-    if (badge) {
-      badge.style.display = count > 0 ? '' : 'none';
-      badge.textContent = count;
-    }
-    var navItem = document.querySelector('.nav-item[data-screen="my-tasks"]');
-    if (navItem) navItem.classList.toggle('has-tasks', count > 0);
-  } catch(e){}
-}
-
-// Mobile sidebar toggle
-
-function toggleMobileSidebar() {
-  var sidebar = document.getElementById('sidebar');
-  var overlay = document.getElementById('mobileOverlay');
-  sidebar.classList.toggle('mobile-expanded');
-  overlay.classList.toggle('active');
-}
-
-// Click sidebar brand area to expand/collapse on mobile
-(function() {
-  if (window.innerWidth <= 768) {
-    var brand = document.querySelector('.sidebar-brand');
-    if (brand) {
-      brand.addEventListener('click', function(e) {
-        var sidebar = document.getElementById('sidebar');
-        if (!sidebar.classList.contains('mobile-expanded')) {
-          e.preventDefault();
-          toggleMobileSidebar();
-        }
-      });
-    }
-  }
-})();
-
-// Override navigate to close mobile sidebar
-var _origNavigate = navigate;
-navigate = function(screen) {
-  var sidebar = document.getElementById('sidebar');
-  var overlay = document.getElementById('mobileOverlay');
-  if (sidebar.classList.contains('mobile-expanded')) {
-    sidebar.classList.remove('mobile-expanded');
-    overlay.classList.remove('active');
-  }
-  _origNavigate(screen);
-  // Ensure help button is added (re-check after override)
-  setTimeout(function(){
-    var existingHelp=document.getElementById('screenHelpBtn');
-    if(!existingHelp && typeof screenHelp!=='undefined' && screenHelp[screen]){
-      var btn=document.createElement('button');
-      btn.id='screenHelpBtn';
-      btn.className='';
-      btn.style.cssText='position:fixed;bottom:20px;right:20px;z-index:1000;padding:10px 20px;font-size:.95rem;border-radius:24px;box-shadow:0 4px 16px rgba(249,115,22,.4);display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;border:none;font-weight:600;cursor:pointer';
-      btn.innerHTML='&#128712; What is this screen?';
-      btn.onclick=function(){showScreenHelp(screen)};
-      document.body.appendChild(btn);
-    }
-  },200);
-};
-
-// Init
-renderDashboard();
-loadLiveData();
-// Show help button on initial screen
-setTimeout(function(){
-  if(typeof screenHelp!=='undefined'&&screenHelp['dashboard']){
-    var btn=document.createElement('button');
-    btn.id='screenHelpBtn';
-    btn.className='';
-    btn.style.cssText='position:fixed;bottom:20px;right:20px;z-index:1000;padding:10px 20px;font-size:.95rem;border-radius:24px;box-shadow:0 4px 16px rgba(249,115,22,.4);display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;border:none;font-weight:600;cursor:pointer';
-    btn.innerHTML='&#128712; What is this screen?';
-    btn.onclick=function(){showScreenHelp('dashboard')};
-    document.body.appendChild(btn);
-  }
-},300);
-if(typeof logoData!=='undefined')document.getElementById('sidebarLogo').src=logoData;
-
-
-function toggleAccordion(headerEl){
-  headerEl.classList.toggle('open');
-  var body=headerEl.nextElementSibling;
-  if(body&&body.classList.contains('accordion-body')){
-    body.classList.toggle('open');
-  }
-}
-</script>
-</body>
-</html>
+  var tierLabels = ['&#128308; CRITICAL','&#128992; TODAY','
