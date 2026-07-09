@@ -996,27 +996,157 @@ function filterByOffice(arr){
 // ============================================================
 
 var screenHelp={
-  'dashboard':{title:'Dashboard',desc:'Your collections command center at a glance. Shows key performance indicators (KPIs) like total outstanding, DSO, collection rate, and active cases across all offices.',actions:['Monitor overall AR health','Track DSO trends over time','View recent activity and urgent alerts','Spot payment diversions and escalated disputes']},
-  'ar-aging':{title:'AR Aging Table',desc:'The master list of all open invoices, organized by how long payment has been outstanding. This is where you track every active collection case.',actions:['Sort and filter invoices by age, office, or status','Click any row to open the full Case File','Switch between Guided (simplified) and Full (detailed) views','Track aging buckets: 0-30, 31-60, 61-90, 90+ days']},
-  'strike-queue':{title:'Human Strike Queue',desc:'Cases that have exceeded 31 days without payment and need direct human follow-up. The automated cadence has been exhausted — it\'s time for personal outreach.',actions:['Start phone calls with one-click dialing','Log call outcomes and follow-up notes','View full communication history before calling','Resolve or escalate cases after contact']},
-  'case-file':{title:'Case File',desc:'The complete 360° view of a single job. Everything you need — timeline, invoices, payments, disputes, contacts, and actions — in one place.',actions:['Review the full communication timeline','Track invoice status and payment history','Manage disputes with carrier/adjuster','Upload documents and take action on the case']},
-  'lien-zone':{title:'Lien Zone',desc:'Tracks statutory lien deadlines for all active jobs. Mechanics\' lien rights expire by state law — this screen ensures you never miss a filing deadline.',actions:['Monitor days remaining to lien deadline','Set Lien Mode: Regular (auto-alerts), Silent (track only), or None (no tracking)','Identify urgent cases under 10 days','Click a card to open the full Case File']},
-  'payments':{title:'Payments & Diversions',desc:'Tracks all incoming payments and flags diversions — when an insurance carrier sends payment directly to the homeowner instead of to 911 Restoration.',actions:['View payment history across all jobs','Monitor active payment diversion recoveries','Track the 8-step automated recovery cadence','Identify cases escalated to legal action']},
-  'error-log':{title:'Error Log',desc:'System health monitor. Shows errors from Make.com automations, Airtable sync failures, and other system issues that may need attention.',actions:['Review recent automation errors','Identify patterns in recurring failures','Check sync status between systems','Verify error resolution']},
-  'ai-inbox':{title:'AI Inbox',desc:'Incoming emails from carriers and adjusters, automatically classified by AI. The system reads each email, identifies the intent, and routes it to the right workflow.',actions:['Review AI-classified carrier responses','Process full agreements, partial payments, and disputes','Handle carrier info requests','Approve or override AI classifications']},
-  'my-tasks':{title:'My Collection Tasks',desc:'Your personal task queue. Aggregates all pending action items across every screen — strike calls, lien alerts, disputes, diversions, and AI inbox items — prioritized by urgency.',actions:['See all your pending tasks in one place','Tasks grouped by urgency: Critical, Today, This Week, Upcoming','Click any task to jump to the relevant case','Clear tasks as you complete them']},
-  'settings':{title:'Settings',desc:'Configure your Command Center. Set your Airtable Personal Access Token (PAT), switch between demo and live data, and manage user preferences.',actions:['Enter or update your Airtable PAT','Toggle between Demo Data and Live Data modes','View connection status','Manage user role settings']}
+  'dashboard':{title:'Dashboard',desc:'Your collections cockpit at a glance. Shows the key numbers (KPIs) for your offices: total outstanding (AR), average days-to-pay (DSO), collection rate, open invoices, active diversions and disputes. It is a read-only overview — you act from the other screens.',
+    buttons:[
+      {b:'&#8635; Refresh (top-right)',d:'Reloads live data from Airtable and redraws the Dashboard. Use it after something changes in Airtable or Make to see current numbers.'},
+      {b:'&#128680; Payment Diversion Recovery banner',d:'Appears when active diversions exist. Takes you to the Payments &amp; Diversions screen to work those recoveries.'},
+      {b:'&#128712; Help (the ? on every screen)',d:'Opens this guide for the screen you are on.'},
+      {b:'KPI cards',d:'Read-only indicators. To act on a number, open AR Aging, Strike Queue, Payments or My Tasks.'}
+    ],
+    actions:['Monitor overall AR health for your offices','Track DSO trends','Spot diversions and escalated disputes','Jump to the screen where the work happens'],
+    tips:['Numbers are scoped to the offices your role covers.','While the system is in TEST MODE, no messages are actually sent — safe to explore.']},
+  'ar-aging':{title:'AR Aging Table',desc:'The master list of every open invoice, organised by how long payment has been outstanding (0-30, 31-60, 61-90, 90+ days). This is where you track and open each active collection case.',
+    buttons:[
+      {b:'Guided / Full view toggle',d:'Switches between a simplified column set (Guided) and the full detail (Full).'},
+      {b:'Age / Office / Status filters',d:'Narrow the list to what you want to work.'},
+      {b:'&#128190; Export CSV',d:'Downloads the current filtered list as a CSV file to your computer (opens in Excel/Sheets).'},
+      {b:'Invoice row / job number',d:'Opens that job Case File — the full 360 view.'},
+      {b:'&#128196; Generate Statement',d:'Builds a printable PDF account statement for that job.'},
+      {b:'&#9664; Prev / Next &#9654;',d:'Pages through a long list.'}
+    ],
+    actions:['Find the invoices that need chasing','Open any case in one click','Export a working list','Read aging by bucket'],
+    tips:['Sorting/aging is driven by Days Outstanding.','A paused case (carrier info request) is skipped by the automated cadence.']},
+  'strike-queue':{title:'Human Strike Queue',desc:'Cases past 31 days where the automated cadence is exhausted and a person must make contact. These need a call or a decision.',
+    buttons:[
+      {b:'&#9742; Start Call',d:'Opens the call workflow (with one-click dial) for that case.'},
+      {b:'&#128161; What Should I Do?',d:'Opens step-by-step guidance for handling that specific case.'},
+      {b:'&#128193; View Case',d:'Opens the full Case File.'},
+      {b:'&#9742; Log Call',d:'Opens the form to record the call outcome and set the next follow-up.'},
+      {b:'&#128190; Save &amp; Log Call',d:'Saves the call notes to the CommsLog and advances the follow-up.'},
+      {b:'&#10003; Resolve',d:'Marks the task done and removes it from the queue.'},
+      {b:'&#8635; Refresh',d:'Reloads the queue.'}
+    ],
+    actions:['Call the cases the automation could not close','Record every call outcome','Resolve or escalate after contact'],
+    tips:['Everything here is 31+ days old — treat as priority.','Logging the call keeps the audit trail complete.']},
+  'case-file':{title:'Case File',desc:'The complete 360 view of a single job: timeline, invoices, payments, disputes, contacts and actions in one place.',
+    buttons:[
+      {b:'&#8592; Back',d:'Returns to the screen you came from.'},
+      {b:'Tabs: Timeline / Invoices / Payments / Disputes / Contacts / Actions',d:'Switch the section you are viewing for this job.'},
+      {b:'&#128196; Generate Statement',d:'Creates a printable PDF statement for this job.'},
+      {b:'&#9993; Draft Email',d:'Composes an email to the adjuster; the send is logged to the CommsLog.'},
+      {b:'&#9742; Log Call',d:'Records a phone call against this job.'},
+      {b:'Manage (dispute)',d:'Opens the Disputes tab to work the dispute.'},
+      {b:'&#128196; Mark Supplement Sent',d:'Records that the supplement went to the adjuster. Requires an email to the adjuster first.'},
+      {b:'&#9878; Invoke Appraisal Clause / &#128269; Request Re-inspection',d:'Updates the dispute status and sets the next step.'},
+      {b:'&#10003; Resolve Dispute / Confirm Resolution',d:'Closes the dispute with an outcome (won, adjusted, settled).'},
+      {b:'&#10003; Log Carrier Response',d:'Records how the carrier/adjuster responded and creates any follow-up task.'},
+      {b:'Star rating',d:'Rates the adjuster for future reference.'}
+    ],
+    actions:['See the entire history of a job','Take the next action on it','Manage disputes and supplements','Produce a statement'],
+    tips:['Send/Draft actions are suppressed while TEST MODE is on.','The Timeline shows suppressed sends too, so you can verify what would have gone out.']},
+  'lien-zone':{title:'Lien Zone',desc:'Tracks statutory lien deadlines for active jobs. Lien rights expire by state law (Oregon and Washington differ) — this screen makes sure a filing deadline is never missed.',
+    buttons:[
+      {b:'Lien Mode: Regular',d:'Full tracking with automated alert emails and the decision task as the deadline nears.'},
+      {b:'Lien Mode: Silent',d:'Tracks the deadline and shows it here, but sends no alerts.'},
+      {b:'Lien Mode: None',d:'Stops lien tracking for that job.'},
+      {b:'Deadline card',d:'Click to open the job Case File.'}
+    ],
+    actions:['Watch days-remaining to each deadline','Set how each job is tracked','Spot urgent cases (under 10 days)'],
+    tips:['Oregon and Washington have different lien deadlines — the system applies the right one by job state.','Cards under 10 days are the ones to act on first.']},
+  'payments':{title:'Payments &amp; Diversions',desc:'All incoming payments, and diversions — when a carrier pays the homeowner directly instead of 911 Restoration. Diversions run an 8-step recovery cadence.',
+    buttons:[
+      {b:'&#10003; Resolve / Confirm Resolution',d:'Marks a diversion recovery resolved and stops the cadence.'},
+      {b:'&#128260; Recovery',d:'Opens the job Case File on the Payments tab to see the 8-step recovery progress.'},
+      {b:'&#128193; Case / View',d:'Opens the Case File.'},
+      {b:'&#9888; Pending',d:'Information only — recovery starts on the next S-04 automation run.'}
+    ],
+    actions:['See payments across all jobs','Track active diversion recoveries','Resolve a recovery once money is secured'],
+    tips:['A diversion means the carrier sent the check to the wrong party.','The 8-step cadence (Day 0/7/14/21/28 + escalation) is automated; you only step in to resolve or escalate.']},
+  'error-log':{title:'Error Log',desc:'System-health monitor. Shows failures from Make automations and Airtable sync so issues get caught early.',
+    buttons:[
+      {b:'Filters',d:'Narrow to a scenario, severity, or date.'},
+      {b:'&#9664; Prev / Next &#9654;',d:'Pages through the log.'},
+      {b:'&#10003; Resolve',d:'Marks an error handled once addressed.'}
+    ],
+    actions:['Review recent automation errors','Spot recurring failures','Confirm sync health'],
+    tips:['Sourced from Make and Airtable.','Staff-role users may not see this screen by design.']},
+  'ai-inbox':{title:'AI Inbox',desc:'Incoming carrier/adjuster emails, auto-classified by AI into 7 intents (payment, dispute, partial agreement, info request, out-of-office, will-respond, other) and routed to the right workflow.',
+    buttons:[
+      {b:'View',d:'Opens the email detail with the AI classification.'},
+      {b:'&#9888; Dispute / Open New Dispute',d:'Opens a dispute from that email and starts the dispute cadence.'},
+      {b:'&#10004; Log Carrier Response',d:'Records the carrier response and creates the matching task.'},
+      {b:'&#128196; Log Info Request',d:'Logs that the carrier asked for documents and pauses the aging clock.'},
+      {b:'Open Case File',d:'Jumps to the related job.'},
+      {b:'&#8635; Refresh',d:'Reloads the inbox.'}
+    ],
+    actions:['Review what the AI classified','Open disputes or log responses','Handle carrier document requests','Override the AI when needed'],
+    tips:['The AI suggests; you decide — you can always override.','Logging an info request pauses aging so the case is not chased unfairly.']},
+  'my-tasks':{title:'My Collection Tasks',desc:'Your personal to-do queue. Pulls every pending item across all screens — strike calls, lien decisions, disputes, diversions and inbox items — grouped by urgency (Critical, Today, This Week, Upcoming).',
+    buttons:[
+      {b:'&#8594; Take Action',d:'Does NOT send anything — it deep-links you to the exact screen/tab where you complete that task (lien decision to Lien Zone, dispute to the Disputes tab, and so on).'},
+      {b:'&#128193; View Case',d:'Opens the Case File for that task.'},
+      {b:'&#10003; Resolve',d:'Marks the task done and removes it from your queue.'},
+      {b:'&#128161; What Should I Do?',d:'Opens guided advice for the task.'},
+      {b:'&#9742; Start Call',d:'Begins the call workflow for a call task.'},
+      {b:'&#8635; Refresh',d:'Rebuilds the list.'}
+    ],
+    actions:['See everything waiting on you in one place','Jump straight to where each task is completed','Clear tasks as you finish them'],
+    tips:['Tasks are ordered Critical to Upcoming.','Take Action is navigation only — nothing is sent by clicking it.']},
+  'settings':{title:'Settings',desc:'Configure the Command Center: connect Airtable, choose demo vs live data, and manage the authorized senders and holiday calendar the automations use.',
+    buttons:[
+      {b:'Save PAT',d:'Stores your Airtable Personal Access Token in this browser so the app can read your live data.'},
+      {b:'&#128065; Show / hide',d:'Reveals or masks the PAT field.'},
+      {b:'+ Add Domain',d:'Adds an authorized sender domain — the email domains the AI parser is allowed to trust.'},
+      {b:'+ Add Holiday',d:'Adds a non-business day the cadences skip.'},
+      {b:'Edit / Remove (sender)',d:'Changes or deletes an authorized sender.'},
+      {b:'Demo / Live data toggle',d:'Switches between sample data and your real Airtable data.'}
+    ],
+    actions:['Connect Airtable (one-time per device)','Manage authorized senders','Manage the holiday calendar','Switch demo and live data'],
+    tips:['Your PAT is stored only in this browser (localStorage) and never in the code — you connect once per device/URL.','Authorized senders control which inbound emails the AI will act on.']},
+  'ops':{title:'Ops Dashboard',desc:'Cross-office operational view for managers — volume, throughput and health across both locations.',
+    buttons:[
+      {b:'&#8635; Refresh',d:'Reloads the operational metrics.'}
+    ],
+    actions:['Compare offices','Watch operational throughput and health'],
+    tips:['Visible to Manager and Admin roles only.']},
+  'guides':{title:'Guides',desc:'Training and reference material for the team and for customer-facing SMS compliance.',
+    buttons:[
+      {b:'Team Training &amp; Onboarding',d:'Opens the full training deck (roles, screens, workflows) in a new tab.'},
+      {b:'SMS Consent Customer Journey',d:'Opens the deck explaining how homeowner SMS consent is captured.'},
+      {b:'SMS Opt-In Form',d:'Opens the public Fillout opt-in page customers use to consent.'},
+      {b:'SMS Terms &amp; Conditions / Privacy Policy',d:'Opens the published compliance pages (required for A2P).'}
+    ],
+    actions:['Train new team members','Review the SMS consent flow','Reach the opt-in form and legal pages'],
+    tips:['Each card opens in a new browser tab.']}
 };
 function showScreenHelp(screenId){
   var h=screenHelp[screenId];
   if(!h) return;
-  var body='<div style="margin-bottom:16px;font-size:1.05rem;color:var(--text-secondary);line-height:1.6">'+h.desc+'</div>';
-  body+='<div style="font-size:.9rem;font-weight:600;margin-bottom:8px;color:var(--text-primary)">What you can do here:</div>';
-  body+='<div style="display:flex;flex-direction:column;gap:6px">';
-  h.actions.forEach(function(a){
-    body+='<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 10px;background:var(--bg-input);border-radius:var(--radius);font-size:.9rem"><span style="color:var(--accent-green);flex-shrink:0">&#10003;</span><span>'+a+'</span></div>';
-  });
-  body+='</div>';
+  var body='<div style="margin-bottom:14px;font-size:1.02rem;color:var(--text-secondary);line-height:1.6">'+h.desc+'</div>';
+  if(h.buttons&&h.buttons.length){
+    body+='<div style="font-size:.9rem;font-weight:700;margin:14px 0 8px;color:var(--text-primary)">Buttons on this screen</div>';
+    body+='<div style="display:flex;flex-direction:column;gap:8px">';
+    h.buttons.forEach(function(bt){
+      body+='<div style="padding:8px 10px;background:var(--bg-input);border-radius:var(--radius);font-size:.88rem;line-height:1.5"><span style="font-weight:700;color:var(--text-primary)">'+bt.b+'</span><br><span style="color:var(--text-secondary)">'+bt.d+'</span></div>';
+    });
+    body+='</div>';
+  }
+  if(h.actions&&h.actions.length){
+    body+='<div style="font-size:.9rem;font-weight:700;margin:16px 0 8px;color:var(--text-primary)">What you can do here</div>';
+    body+='<div style="display:flex;flex-direction:column;gap:6px">';
+    h.actions.forEach(function(a){
+      body+='<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 10px;background:var(--bg-input);border-radius:var(--radius);font-size:.88rem"><span style="color:var(--accent-green);flex-shrink:0">&#10003;</span><span>'+a+'</span></div>';
+    });
+    body+='</div>';
+  }
+  if(h.tips&&h.tips.length){
+    body+='<div style="font-size:.9rem;font-weight:700;margin:16px 0 8px;color:var(--text-primary)">Good to know</div>';
+    body+='<div style="display:flex;flex-direction:column;gap:6px">';
+    h.tips.forEach(function(t){
+      body+='<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 10px;background:var(--bg-input);border-radius:var(--radius);font-size:.88rem"><span style="flex-shrink:0">&#128161;</span><span>'+t+'</span></div>';
+    });
+    body+='</div>';
+  }
   showModal('&#128712; '+h.title,body);
 }
 
