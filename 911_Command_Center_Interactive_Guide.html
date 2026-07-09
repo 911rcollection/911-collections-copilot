@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Collections Copilot — The Friendly Guide</title>
+<style>
+  :root{
+    --bg:#fbf7f2; --card:#ffffff; --ink:#2a2320; --muted:#7b7168; --line:#ece4da;
+    --red:#c1272d; --red-d:#8f1d21; --amber:#e08a1e; --green:#1f9d57; --blue:#2f74c0;
+    --purple:#7a45c9; --teal:#128a92; --pink:#d84f8c;
+    --sun:#ffd25a; --mint:#d8f3e3; --sky:#e3effb; --lav:#efe7fb; --peach:#ffe8d6;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;line-height:1.55}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 18px 90px}
+  /* hero */
+  header.hero{background:linear-gradient(135deg,#1c6dd0,#0a3f86 65%,#0a2f6b);color:#fff;border-radius:0 0 26px 26px;
+    padding:26px 30px 28px;text-align:center;box-shadow:0 12px 34px rgba(10,47,107,.32)}
+  header.hero .k{font-size:12px;letter-spacing:.18em;text-transform:uppercase;opacity:.9;font-weight:700}
+  header.hero h1{margin:10px 0 6px;font-size:32px}
+  header.hero p{margin:0 auto;max-width:600px;font-size:15.5px;opacity:.96}
+  .logo911{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;
+    border-radius:16px;padding:9px 18px 7px;box-shadow:0 8px 20px rgba(0,0,0,.22)}
+  .logo911 b{font-size:30px;font-weight:900;letter-spacing:1px;line-height:1;color:#c1272d}
+  .logo911 small{font-size:8.5px;font-weight:800;letter-spacing:3px;color:#0a2f6b;margin-top:1px}
+  /* how-it-works cards */
+  .how3{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:16px 0}
+  .howc{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px 14px;width:180px;text-align:center;box-shadow:0 3px 12px rgba(40,30,20,.05)}
+  .howc .he{font-size:38px}
+  .howc b{display:block;margin-top:6px;font-size:16px}
+  .howc span{display:block;color:var(--muted);font-size:13px;margin-top:3px}
+  .arrowrow{text-align:center;font-size:22px;color:#1c6dd0;margin:-4px 0 0}
+  /* tabs */
+  nav.tabs{position:sticky;top:0;z-index:20;background:rgba(251,247,242,.92);backdrop-filter:blur(8px);
+    display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:12px 10px;margin-bottom:8px;border-bottom:1px solid var(--line)}
+  nav.tabs button{border:2px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:9px 16px;
+    font-size:14px;font-weight:700;cursor:pointer;transition:.15s;font-family:inherit}
+  nav.tabs button:hover{border-color:#1c6dd0}
+  nav.tabs button.on{background:#1c6dd0;border-color:#1c6dd0;color:#fff}
+  .panel{display:none;animation:fade .25s ease}
+  .panel.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  h2.big{font-size:24px;margin:26px 4px 4px;text-align:center}
+  .sub{text-align:center;color:var(--muted);margin:0 auto 14px;max-width:660px}
+  /* legend */
+  .legend{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 0}
+  .lg{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600}
+  /* screen picker */
+  .pills{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0}
+  .pill{border:2px solid var(--line);background:#fff;border-radius:14px;padding:10px 14px;cursor:pointer;font-weight:700;font-size:14px;transition:.15s;display:flex;align-items:center;gap:7px}
+  .pill:hover{transform:translateY(-2px);border-color:#1c6dd0}
+  .pill.on{border-color:#1c6dd0;background:var(--sky)}
+  .pill .e{font-size:18px}
+  /* button cards */
+  .btns{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-top:14px}
+  .bcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;cursor:pointer;transition:.15s;box-shadow:0 2px 8px rgba(40,30,20,.04)}
+  .bcard:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(40,30,20,.10);border-color:var(--red)}
+  .bcard.sel{border-color:var(--red);background:var(--peach);box-shadow:0 8px 22px rgba(140,25,30,.14)}
+  .bcard .top{display:flex;align-items:center;gap:9px;font-weight:800;font-size:15px}
+  .bcard .tag{margin-top:8px;font-size:12px;font-weight:700;display:inline-block;padding:3px 9px;border-radius:999px}
+  .t-none{background:var(--mint);color:#0f7a45}.t-mail{background:var(--sky);color:#1c5fa8}
+  .t-sms{background:#d6f2f4;color:#0c6d74}.t-alert{background:#fff0d6;color:#9a6a12}.t-note{background:#eee9f7;color:#6a3fb0}
+  .bcard .hint{color:var(--muted);font-size:13px;margin-top:8px}
+  .bcard .go{margin-top:8px;color:var(--red);font-weight:800;font-size:13px}
+  /* reveal panel */
+  #stage{margin-top:16px}
+  .seq{background:#fff;border:2px solid var(--red);border-radius:18px;padding:20px;box-shadow:0 10px 30px rgba(140,25,30,.12);animation:fade .25s}
+  .seq h3{margin:0 0 4px;font-size:20px;display:flex;align-items:center;gap:9px}
+  .seq .lead{color:var(--muted);margin:0 0 12px}
+  .steps{list-style:none;padding:0;margin:0}
+  .steps li{position:relative;padding:12px 12px 12px 50px;border-left:3px dashed var(--line);margin-left:16px}
+  .steps li:last-child{border-left-color:transparent}
+  .steps li .n{position:absolute;left:-16px;top:8px;width:32px;height:32px;border-radius:50%;background:var(--red);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px}
+  .steps li b{color:#111}
+  .opts{background:var(--peach);border-radius:12px;padding:12px 14px;margin-top:12px;font-size:14px}
+  .opts b{display:block;margin-bottom:4px}
+  /* email card */
+  .mail{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:12px;background:#fff}
+  .mail .mh{background:#f6f1ea;padding:10px 14px;font-size:13px;border-bottom:1px solid var(--line)}
+  .mail .mh .row{display:flex;gap:8px;margin:2px 0}
+  .mail .mh .row span:first-child{color:var(--muted);min-width:56px;font-weight:700}
+  .mail .mb{padding:14px;font-size:14px;white-space:pre-line}
+  .chan{display:inline-block;font-size:12px;font-weight:800;padding:3px 10px;border-radius:999px;margin-bottom:6px}
+  .c-mail{background:var(--sky);color:#1c5fa8}.c-sms{background:#d6f2f4;color:#0c6d74}.c-alert{background:#fff0d6;color:#9a6a12}
+  .sms{background:#e9f9ef;border:1px solid #bfe6cd;border-radius:14px;padding:12px 14px;margin-top:12px;font-size:14px;max-width:340px}
+  .sms .who{font-size:12px;color:var(--muted);margin-bottom:5px}
+  /* flow player */
+  .flowpick{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:14px 0}
+  .fcard{width:150px;background:#fff;border:2px solid var(--line);border-radius:16px;padding:14px;text-align:center;cursor:pointer;transition:.15s}
+  .fcard:hover{transform:translateY(-3px);border-color:var(--red)}
+  .fcard.on{border-color:var(--red);background:var(--peach)}
+  .fcard .fe{font-size:30px}
+  .fcard .fn{font-weight:800;font-size:14px;margin-top:6px}
+  .fcard .fd{font-size:12px;color:var(--muted);margin-top:3px}
+  #player{background:#fff;border:2px solid var(--red);border-radius:18px;padding:20px;margin-top:14px;box-shadow:0 10px 30px rgba(140,25,30,.12);display:none}
+  #player.on{display:block}
+  .pbar{height:8px;background:var(--line);border-radius:999px;overflow:hidden;margin:12px 0}
+  .pbar i{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--red));width:0;transition:width .3s}
+  .pnav{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
+  .pnav button{border:none;border-radius:12px;padding:11px 20px;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit}
+  .pnav .prev{background:#eee;color:#555}
+  .pnav .next{background:var(--red);color:#fff}
+  .pnav button:disabled{opacity:.4;cursor:default}
+  .stepbox{min-height:120px}
+  .daychip{display:inline-block;background:var(--sun);color:#5a4300;font-weight:800;border-radius:999px;padding:4px 12px;font-size:13px;margin-bottom:8px}
+  .whatnext{text-align:center;color:var(--muted);font-size:13px;margin-top:8px}
+  .done{text-align:center;padding:20px}
+  .done .big{font-size:44px}
+  /* gallery */
+  .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:14px}
+  .note-callout{background:#fff8e6;border:1px solid #f0dca0;border-radius:12px;padding:12px 15px;margin:14px 0;font-size:14px}
+  .safe{background:var(--mint);border-color:#bfe6cd}
+  footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:30px}
+  .tt{font-size:12.5px;color:var(--muted);text-align:center;margin-top:4px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="logo911"><b>911</b><small>RESTORATION</small></div>
+  <h1>The Friendly Guide</h1>
+  <p>Click around. See what each button does — in plain English. 👇</p>
+</header>
+
+<nav class="tabs">
+  <button class="on" data-tab="start">① Start here</button>
+  <button data-tab="buttons">② Press a button</button>
+  <button data-tab="flows">③ Watch the auto-flows</button>
+  <button data-tab="gallery">④ Who gets which message</button>
+</nav>
+
+<div class="wrap">
+
+  <!-- ===== START ===== -->
+  <div class="panel on" id="tab-start">
+    <h2 class="big">Your collections co-pilot 🧑‍✈️</h2>
+    <p class="sub">It chases unpaid bills for you. You only step in for real decisions.</p>
+
+    <div class="how3">
+      <div class="howc"><div class="he">👀</div><b>It watches</b><span>every unpaid invoice, 24/7</span></div>
+      <div class="howc"><div class="he">✉️</div><b>It chases</b><span>polite reminders to the adjuster</span></div>
+      <div class="howc"><div class="he">🙋</div><b>It taps you</b><span>only when a person is needed</span></div>
+    </div>
+
+    <p class="sub" style="margin-top:6px"><b>What the colours mean:</b></p>
+    <div class="legend">
+      <span class="lg">🟢 Nothing is sent</span>
+      <span class="lg">✉️ An email goes out</span>
+      <span class="lg">📱 A text goes out</span>
+      <span class="lg">🔔 The office is alerted</span>
+      <span class="lg">📝 Just saves a note</span>
+    </div>
+
+    <div class="note-callout safe" style="text-align:center">🎬 <b>Practice mode is ON</b> — nothing reaches real customers yet. Explore freely!</div>
+
+    <p class="sub" style="margin-top:16px">👉 Tap <b>② Press a button</b> or <b>③ Watch the auto-flows</b> above.</p>
+  </div>
+
+  <!-- ===== BUTTONS ===== -->
+  <div class="panel" id="tab-buttons">
+    <h2 class="big">Pick a screen, then press any button 👇</h2>
+    <p class="sub">You will see, step by step, what happens next, what your options are, and a real example.</p>
+    <div class="pills" id="pills"></div>
+    <div id="stage"><p class="tt">☝️ Pick a screen above, then click a button card.</p></div>
+  </div>
+
+  <!-- ===== FLOWS ===== -->
+  <div class="panel" id="tab-flows">
+    <h2 class="big">Watch the system chase a bill — all by itself 🤖</h2>
+    <p class="sub">These run automatically in the background. Pick one and press <b>Next ▶</b> to walk through it day by day. See every message and who receives it.</p>
+    <div class="flowpick" id="flowpick"></div>
+    <div id="player">
+      <div class="daychip" id="pl-day"></div>
+      <div class="stepbox" id="pl-step"></div>
+      <div class="pbar"><i id="pl-bar"></i></div>
+      <div class="pnav">
+        <button class="prev" id="pl-prev">◀ Back</button>
+        <div class="whatnext" id="pl-count"></div>
+        <button class="next" id="pl-next">Next ▶</button>
+      </div>
+    </div>
+    <p class="tt" id="flowhint">☝️ Pick a flow above to start.</p>
+  </div>
+
+  <!-- ===== GALLERY ===== -->
+  <div class="panel" id="tab-gallery">
+    <h2 class="big">Who gets which message ✉️📱</h2>
+    <p class="sub">Every message the system can send, in plain sight. From us, to them, and roughly what it says.</p>
+    <div class="gal" id="gal"></div>
+  </div>
+
+</div>
+
+<footer>
+  9-1-1 Restoration · Collections Copilot — Friendly Guide · made for the office team 💛<br>
+  While in practice mode, nothing reaches real customers.
+</footer>
+
+<script>
+/* ---------- FROM address used everywhere ---------- */
+var FROM = "911 Restoration Collections <911rcollection@gmail.com>";
+var SMSFROM = "911 Restoration · (971) 458-1011";
+
+/* ---------- SCREENS + BUTTONS ---------- */
+var SCREENS = [
+  { id:"dash", name:"Dashboard", emoji:"📊", buttons:[
+    { label:"↻ Refresh", tag:"none", tagText:"🟢 Nothing is sent",
+      title:"Refresh the numbers",
+      lead:"Grabs the very latest totals. A read-only button — totally safe to press any time.",
+      steps:["You click <b>Refresh</b>.","The screen re-loads the latest AR totals, diversions and lien alerts.","That is it — no emails, no texts, nothing changes for any customer."],
+      opts:"Next you might: open <b>AR Aging</b> to work a case, or check <b>My Tasks</b> to see what needs you today." }
+  ]},
+  { id:"ar", name:"AR Aging", emoji:"📋", buttons:[
+    { label:"Open a case (click a row)", tag:"none", tagText:"🟢 Nothing is sent",
+      title:"Open a case",
+      lead:"Clicking any invoice row opens that job's full Case File.",
+      steps:["You click an invoice row (e.g. <b>Job 1-26-1448 · Farmers · $5,000</b>).","The Case File opens with the whole story: timeline, invoices, payments, disputes, contacts.","Nothing is sent — you are just looking."],
+      opts:"From the Case File you can call, email, open a dispute, or print a statement." },
+    { label:"💾 Export CSV", tag:"none", tagText:"🟢 Nothing is sent",
+      title:"Export a spreadsheet",
+      lead:"Downloads the list you are looking at as a spreadsheet to your computer.",
+      steps:["You click <b>Export CSV</b>.","A spreadsheet file downloads to your computer (opens in Excel/Google Sheets).","No customer is contacted."],
+      opts:"Great for sharing a working list in a meeting or with the boss." },
+    { label:"📄 Generate Statement", tag:"none", tagText:"🟢 Nothing is sent",
+      title:"Make a statement PDF",
+      lead:"Builds a tidy PDF account statement for one job.",
+      steps:["You click <b>Generate Statement</b> on a job.","A printable PDF is created right in your browser.","Nothing is emailed automatically — you decide whether to attach and send it."],
+      opts:"You can then attach it yourself if an adjuster asks for a statement." }
+  ]},
+  { id:"strike", name:"Strike Queue", emoji:"📞", buttons:[
+    { label:"☎ Start Call", tag:"none", tagText:"🟢 Nothing is sent",
+      title:"Start a phone call",
+      lead:"These are the stubborn cases (31+ days) where polite emails did not work — time for a human voice.",
+      steps:["You click <b>Start Call</b> on a case.","The call workflow opens with the adjuster's number and the full history in front of you.","You make the call. Pressing this sends nothing — it just helps you dial and remember the details."],
+      opts:"After the call, use <b>Save &amp; Log Call</b> to write down what happened." },
+    { label:"💾 Save & Log Call", tag:"note", tagText:"📝 Just saves a note",
+      title:"Save what happened on the call",
+      lead:"Records the outcome so everyone can see it later.",
+      steps:["You type what the adjuster said and when to follow up.","You click <b>Save &amp; Log Call</b>.","The note is saved to the case history (the \"CommsLog\"). <b>No email is sent.</b>"],
+      opts:"Then either <b>Resolve</b> the task, or leave it for the next follow-up." },
+    { label:"✓ Resolve", tag:"note", tagText:"📝 Just saves a note",
+      title:"Resolve the task",
+      lead:"Clears the case off your to-do list once it is handled.",
+      steps:["You click <b>Resolve</b> and note the outcome.","The task disappears from your queue.","No message goes out."],
+      opts:"If it still is not paid, don't resolve — the polite email chaser keeps working in the background." }
+  ]},
+  { id:"case", name:"Case File", emoji:"📁", buttons:[
+    { label:"✉ Draft Email", tag:"mail", tagText:"✉️ You send an email",
+      title:"Draft an email to the adjuster",
+      lead:"Opens a ready-to-go email so you only have to review and press send.",
+      steps:["You click <b>Draft Email</b>.","A pre-written message opens in your own email program, addressed to the adjuster.","<b>You</b> review it and press send. The system also saves a copy to the case history."],
+      opts:"Handy when you want a personal touch instead of the automatic reminders.",
+      mail:{ chan:"mail", to:"Dana Cole, Farmers Insurance", subj:"Invoice for Claim #7008170877-1 — Job 1-26-1448",
+        body:"Hi Dana,\n\nFollowing up on the outstanding balance of $5,000 for the above claim. Could you share the expected payment date, or let me know if anything is needed from us?\n\nThank you,\n911 Restoration Collections" } },
+    { label:"☎ Log Call", tag:"note", tagText:"📝 Just saves a note",
+      title:"Log a phone call",
+      lead:"Write down a call you just made.",
+      steps:["You enter the call notes.","You save.","Saved to the case history. Nothing is sent."],
+      opts:"Keeps the whole team on the same page about this job." },
+    { label:"⚠ Open Dispute", tag:"mail", tagText:"✉️ Starts an email series",
+      title:"Open a dispute",
+      lead:"Kicks off a polite but firm email series to the adjuster about a disagreement on the amount.",
+      steps:["You enter the dispute details (category, our estimate vs theirs, notes).","You click <b>Open Dispute &amp; Start Cadence</b>.","The system begins the <b>Dispute Chaser</b> — automatic emails to the adjuster on Day 3, 7, 14 and 21 until it is resolved."],
+      opts:"You can later mark a supplement sent, invoke the appraisal clause, or resolve it. See flow ③ → <b>Dispute Chaser</b>.",
+      mail:{ chan:"mail", to:"Dana Cole, Farmers Insurance", subj:"RE: Claim Dispute — Job 1-26-1448 — Documentation Forthcoming",
+        body:"Hi Dana,\n\nWe disagree with the current adjustment on this claim and are preparing supporting documentation. We'd like to resolve the $2,000 gap between our estimate and yours. We'll follow up shortly with the details.\n\n911 Restoration Collections" } }
+  ]},
+  { id:"inbox", name:"AI Inbox", emoji:"🤖", buttons:[
+    { label:"How it sorts email", tag:"none", tagText:"🟢 Nothing is sent",
+      title:"The robot reads the adjuster's reply",
+      lead:"When an adjuster emails back, a smart assistant reads it and sorts it for you.",
+      steps:["An adjuster replies to one of our emails.","The assistant reads it and labels it: <b>Payment</b>, <b>Dispute</b>, <b>Partial agreement</b>, <b>Info request</b>, <b>Out of office</b>, <b>Will respond</b>, or <b>Other</b>.","It shows up in your <b>AI Inbox</b> with that label so you know what it is at a glance."],
+      opts:"You always have the final say — you can pick a different action than the robot suggested." },
+    { label:"✓ Log Carrier Response (Full Agreement)", tag:"mail", tagText:"✉️ Optional confirmation email",
+      title:"Record a win — full agreement",
+      lead:"The adjuster agreed to pay in full. Record it, and optionally send a thank-you confirmation.",
+      steps:["You enter the agreed amount, date and reference number.","You save. The case is marked <b>Agreed — Full</b> and the chasing stops.","Optionally, a short confirmation email is prepared to the adjuster (you press send)."],
+      opts:"After payment lands, the case closes itself.",
+      mail:{ chan:"mail", to:"Dana Cole, Farmers Insurance", subj:"Thank you — Claim #7008170877-1 confirmed at $5,000",
+        body:"Hi Dana,\n\nThank you for confirming payment of $5,000 on this claim (ref #A-4471). We appreciate the quick resolution.\n\n911 Restoration Collections" } },
+    { label:"📄 Log Info Request", tag:"note", tagText:"📝 Note + pauses chasing",
+      title:"Carrier asked for documents",
+      lead:"The adjuster needs paperwork before paying. This pauses the chasing so we don't nag them unfairly.",
+      steps:["You note what they asked for and a deadline.","The case is marked <b>Gathering Docs</b> and the follow-up clock is <b>paused</b>.","A to-do is created reminding you (or the team) to send the documents."],
+      opts:"When you've sent the docs, press <b>Mark Docs Sent</b> and the clock resumes. See flow ③ → nothing sent to the customer here." }
+  ]},
+  { id:"disputes", name:"Disputes", emoji:"⚖️", buttons:[
+    { label:"📄 Mark Supplement Sent", tag:"note", tagText:"📝 Just saves a note",
+      title:"Mark that you sent the supplement",
+      lead:"Records that supporting documents went to the adjuster.",
+      steps:["You confirm you've emailed the adjuster the supplement + docs.","You click <b>Mark Supplement Sent</b>.","The dispute status updates. (This button only records — you send the actual docs email yourself first.)"],
+      opts:"Then wait for the adjuster; the Dispute Chaser keeps nudging on schedule." },
+    { label:"✓ Resolve Dispute", tag:"note", tagText:"📝 Just saves a note",
+      title:"Close out the dispute",
+      lead:"Records the final outcome and stops the dispute emails.",
+      steps:["You pick the outcome: <b>Won</b>, <b>Adjusted</b>, or <b>Settled</b>, and add a note.","You save.","The automatic dispute emails stop. Nothing else is sent."],
+      opts:"The main balance chasing resumes if there is still money owed." }
+  ]},
+  { id:"pay", name:"Payments", emoji:"💸", buttons:[
+    { label:"What is a 'diversion'?", tag:"sms", tagText:"✉️📱 Homeowner is contacted",
+      title:"The carrier paid the homeowner by mistake",
+      lead:"Sometimes the insurance company sends the check to the homeowner instead of to us. The system catches it and gently asks the homeowner to hold the funds.",
+      steps:["The system spots a payment that went to the homeowner, not to 911 Restoration.","It flags the case and <b>emails and texts the homeowner the same day</b> asking them to call us before depositing.","It then runs a friendly recovery reminder series (Day 7, 14, 21, 28) until it is sorted."],
+      opts:"You watch the progress here and press <b>Resolve</b> once the money is recovered. See flow ③ → <b>Diversion Recovery</b>.",
+      sms:{ who:"To the homeowner", text:"911 Restoration: We understand your insurer may have sent a payment to you directly for your recent restoration. Please call us at (971) 458-1011 before depositing so we can help. Reply STOP to opt out." } },
+    { label:"✓ Resolve", tag:"note", tagText:"📝 Just saves a note",
+      title:"Resolve a recovery",
+      lead:"Marks the diversion sorted once the money is with us.",
+      steps:["You click <b>Resolve</b> and note how it was settled.","The recovery series stops.","No further messages go out."],
+      opts:"Done! The case goes back to normal." }
+  ]},
+  { id:"lien", name:"Lien Zone", emoji:"⏰", buttons:[
+    { label:"Set Lien Mode: Regular", tag:"alert", tagText:"🔔 Office gets reminders",
+      title:"Turn on full lien tracking",
+      lead:"A lien is a legal right to get paid that expires by a deadline (different in Oregon vs Washington). 'Regular' means the system watches the clock and reminds the office.",
+      steps:["You set the job to <b>Regular</b>.","The system tracks the legal deadline and sends the office reminder alerts as it approaches.","A decision task is created for the owner (Moshe) to choose: file, extend, or write off."],
+      opts:"Choose <b>Silent</b> to track without alerts, or <b>None</b> to stop tracking. See flow ③ → <b>Lien Guardian</b>." },
+    { label:"Set Lien Mode: None", tag:"note", tagText:"📝 Just saves a note",
+      title:"Stop tracking a lien",
+      lead:"Turns off deadline tracking for a job.",
+      steps:["You set the job to <b>None</b>.","The system stops watching that deadline.","No alerts, nothing sent."],
+      opts:"Use when a job is paid or a lien is not relevant." }
+  ]},
+  { id:"tasks", name:"My Tasks", emoji:"✅", buttons:[
+    { label:"→ Take Action", tag:"none", tagText:"🟢 Nothing is sent",
+      title:"Jump to the right place",
+      lead:"Your personal to-do list, sorted by urgency. 'Take Action' is just a shortcut — it never sends anything.",
+      steps:["You click <b>Take Action</b> on a task.","It jumps you to the exact screen where that task gets done (a lien task → Lien Zone, a dispute → the Disputes tab).","<b>Nothing is sent by this button</b> — the real action happens once you're there."],
+      opts:"Work top to bottom: Critical → Today → This Week → Upcoming." }
+  ]}
+];
+
+/* ---------- AUTOMATIC FLOWS ---------- */
+var FLOWS = [
+  { id:"followup", emoji:"🕰️", name:"The Polite Chaser", desc:"Chases an unpaid invoice",
+    intro:"An invoice is sitting unpaid. The system chases the adjuster politely, getting a little firmer each time — so you don't have to.",
+    steps:[
+      { day:"Day 0", chan:"none", h:"The clock starts", t:"An invoice is issued and payment hasn't arrived. The system quietly starts watching. Nothing is sent yet." },
+      { day:"Day 3", chan:"mail", h:"Gentle nudge to the adjuster", to:"Dana Cole, Farmers Insurance", subj:"Quick check-in — Claim #7008170877-1",
+        body:"Hi Dana,\n\nJust checking in on the $5,000 balance for this claim. Is there anything you need from us to process payment?\n\nThanks!\n911 Restoration Collections" },
+      { day:"Day 7", chan:"mail", h:"Friendly reminder", to:"Dana Cole, Farmers Insurance", subj:"Reminder — Invoice for Claim #7008170877-1",
+        body:"Hi Dana,\n\nA friendly reminder that $5,000 remains outstanding on this claim. Could you share an expected payment date?\n\n911 Restoration Collections" },
+      { day:"Day 14", chan:"mail", h:"A firmer note", to:"Dana Cole, Farmers Insurance", subj:"Second reminder — payment outstanding",
+        body:"Hi Dana,\n\nWe still show $5,000 outstanding on this claim, now 14 days past. Please let us know the status so we can keep the file moving.\n\n911 Restoration Collections" },
+      { day:"Day 21", chan:"mail", h:"Escalation notice", to:"Dana Cole, Farmers Insurance", subj:"Escalation notice — Claim #7008170877-1",
+        body:"Hi Dana,\n\nThis balance is now 21 days past due. If we don't hear back, we'll escalate for direct follow-up. We'd much rather resolve it with you.\n\n911 Restoration Collections" },
+      { day:"Day 31", chan:"alert", h:"A human takes over", t:"Enough polite emails. The case moves to the <b>Strike Queue</b> and the office is alerted to <b>call</b> the adjuster personally. (This is where you step in — see screen 📞 Strike Queue.)" },
+      { day:"Anytime", chan:"none", h:"Paid? Everything stops", t:"The moment payment or an agreement is recorded, the chasing stops automatically. 🎉" }
+    ]},
+  { id:"diversion", emoji:"💸", name:"Diversion Recovery", desc:"Carrier paid the homeowner",
+    intro:"The insurer accidentally paid the homeowner instead of us. The system politely helps recover the funds — contacting the homeowner, not the adjuster.",
+    steps:[
+      { day:"Day 0", chan:"sms", h:"Same-day text to the homeowner", who:"To the homeowner",
+        smstext:"911 Restoration: Your insurer may have sent a restoration payment to you directly. Please call (971) 458-1011 before depositing so we can help sort it out. Reply STOP to opt out." },
+      { day:"Day 0", chan:"mail", h:"Same-day email to the homeowner", to:"The Johnson family (homeowner)", subj:"Please call us before depositing your insurance check",
+        body:"Hi,\n\nWe believe your insurance company sent a payment for your recent restoration work directly to you. That payment is intended for the completed work. Please give us a quick call at (971) 458-1011 before depositing so we can guide you.\n\nThank you,\n911 Restoration Collections" },
+      { day:"Day 7", chan:"mail", h:"Friendly recovery reminder", to:"The Johnson family (homeowner)", subj:"Following up — restoration payment",
+        body:"Hi,\n\nJust following up on the insurance payment for your restoration. Please call us at (971) 458-1011 so we can arrange the details. We're happy to help.\n\n911 Restoration Collections" },
+      { day:"Day 14 & 21", chan:"mail", h:"Continued gentle reminders", t:"Two more friendly reminders go to the homeowner, by email and text, if we still haven't connected." },
+      { day:"Day 28", chan:"mail", h:"Firm (but factual) notice", to:"The Johnson family (homeowner)", subj:"Important — regarding your restoration payment",
+        body:"Hello,\n\nWe still need to resolve the restoration payment for the completed work at your property. Please contact us at (971) 458-1011 within a few days so we can avoid further steps.\n\n911 Restoration Collections" },
+      { day:"Day 30", chan:"alert", h:"Escalate to the office", t:"If it's still unresolved, the office is alerted to handle it directly. Only now — after a month of friendly contact — does it become a firmer matter." },
+      { day:"Anytime", chan:"none", h:"Recovered? Press Resolve", t:"Once the funds are with us, someone presses <b>Resolve</b> on the Payments screen and the reminders stop. ✅" }
+    ]},
+  { id:"dispute", emoji:"⚖️", name:"Dispute Chaser", desc:"Adjuster disagrees on the amount",
+    intro:"You (or the robot) opened a dispute because the adjuster's amount is too low. The system chases the adjuster on a schedule while you gather documentation.",
+    steps:[
+      { day:"Day 0", chan:"none", h:"Dispute opened", t:"You record the disagreement and the gap (e.g. our $7,000 vs their $5,000). The chaser begins." },
+      { day:"Day 3", chan:"mail", h:"Opening note to the adjuster", to:"Dana Cole, Farmers Insurance", subj:"RE: Claim Dispute — Job 1-26-1448 — Documentation Forthcoming",
+        body:"Hi Dana,\n\nWe're formally disputing the current adjustment and preparing supporting documentation for the $2,000 difference. We'll share it shortly and would like to find a resolution.\n\n911 Restoration Collections" },
+      { day:"Day 7", chan:"mail", h:"Supplement follow-up", to:"Dana Cole, Farmers Insurance", subj:"Supporting documents — Claim #7008170877-1",
+        body:"Hi Dana,\n\nPlease find our supporting documentation for the disputed items. We believe this substantiates the additional $2,000. Can we review together this week?\n\n911 Restoration Collections" },
+      { day:"Day 14", chan:"mail", h:"Checking in", to:"Dana Cole, Farmers Insurance", subj:"Following up on our supplement",
+        body:"Hi Dana,\n\nFollowing up on the supplement we sent. Do you have any questions, or an updated position on the claim?\n\n911 Restoration Collections" },
+      { day:"Day 21", chan:"mail", h:"Appraisal option raised", to:"Dana Cole, Farmers Insurance", subj:"Next steps — appraisal clause",
+        body:"Hi Dana,\n\nWe'd still like to resolve this directly. If we can't align, we may invoke the appraisal clause per the policy. Let's connect this week to avoid that.\n\n911 Restoration Collections" },
+      { day:"Anytime", chan:"note", h:"You resolve it", t:"When it's settled, you press <b>Resolve Dispute</b> (Won / Adjusted / Settled) and the emails stop. The main balance chasing resumes for anything still owed." }
+    ]},
+  { id:"lien", emoji:"🛡️", name:"Lien Guardian", desc:"Never miss a legal deadline",
+    intro:"Liens are a legal right to be paid that expire by a deadline — and it's different in Oregon vs Washington. The Guardian watches the clock so a deadline is never missed. These alerts go to the office, not the customer.",
+    steps:[
+      { day:"Ongoing", chan:"none", h:"Tracking the clock", t:"For each eligible job, the system calculates the correct legal deadline based on the job's state." },
+      { day:"30 days out", chan:"alert", h:"Early heads-up to the office", t:"An internal alert appears: a lien deadline is approaching. No customer is contacted." },
+      { day:"10 days out", chan:"alert", h:"Urgent alert + decision task", t:"A red-flag task is created and routed to <b>Moshe</b>: decide to <b>file the lien</b>, <b>extend</b>, or <b>write it off</b>. This is a business decision, made by a person." },
+      { day:"Decision", chan:"note", h:"You choose in the Lien Zone", t:"You open the case, make the call, and record it. The system just made sure you had the choice in time. 🛡️" }
+    ]},
+  { id:"homeowner", emoji:"🏠", name:"Homeowner Updates", desc:"Keeping the homeowner in the loop",
+    intro:"For some jobs the homeowner needs gentle, regular updates (for example if they're not answering, or the carrier is lowballing). The system sends a friendly weekly note on the right 'track'.",
+    steps:[
+      { day:"Setup", chan:"note", h:"You pick a track", t:"On the case you choose a communication track (e.g. '1 — Not Answering' or '4 — Lowball / Escalation'). This tells the system what tone and content to use." },
+      { day:"Weekly", chan:"mail", h:"Friendly weekly update", to:"The Johnson family (homeowner)", subj:"An update on your restoration claim",
+        body:"Hi,\n\nA quick update on your claim: we're actively working with your insurer to make sure the completed restoration is fully covered. We'll keep you posted, and you can reach us any time at (971) 458-1011.\n\n911 Restoration" },
+      { day:"Ongoing", chan:"none", h:"Adjusts as things change", t:"If the situation changes, you switch the track and the messages change with it. Homeowners feel looked-after, not chased." }
+    ]},
+  { id:"consent", emoji:"📱", name:"Text Opt-In", desc:"Getting permission to text",
+    intro:"By law we need permission before texting a customer about their claim. This little flow gets that consent, and always honors STOP.",
+    steps:[
+      { day:"Step 1", chan:"sms", h:"We ask for permission", who:"To the homeowner",
+        smstext:"911 Restoration: reply YES to get claim updates by text. Reply STOP to opt out. Msg & data rates may apply." },
+      { day:"Step 2", chan:"note", h:"They reply YES", t:"When the homeowner texts back <b>YES</b>, the system records their consent. Now — and only now — can claim updates be texted to them." },
+      { day:"Anytime", chan:"note", h:"STOP always works", t:"If they ever reply <b>STOP</b>, texting stops immediately and is recorded. Consent is never a condition of service. ✋" }
+    ]}
+];
+
+/* ---------- EMAIL/SMS GALLERY ---------- */
+var GALLERY = [
+  { chan:"mail", title:"Adjuster follow-up", to:"Adjuster (insurance)", subj:"Reminder — invoice for a claim", body:"Polite, escalating reminders on Day 3 / 7 / 14 / 21 asking for payment of the balance. From our collections mailbox." },
+  { chan:"mail", title:"Dispute emails", to:"Adjuster (insurance)", subj:"RE: Claim Dispute — documentation forthcoming", body:"A scheduled series (Day 3 / 7 / 14 / 21) working the disagreement and, if needed, raising the appraisal clause." },
+  { chan:"mail", title:"Diversion — homeowner email", to:"Homeowner", subj:"Please call before depositing your check", body:"Same-day, friendly note when the insurer paid the homeowner by mistake, plus reminders on Day 7 / 14 / 21 / 28." },
+  { chan:"sms", title:"Diversion — homeowner text", to:"Homeowner", subj:"", body:"A same-day text mirroring the email, asking the homeowner to call before depositing. Always includes 'Reply STOP to opt out.'" },
+  { chan:"mail", title:"Homeowner updates", to:"Homeowner", subj:"An update on your restoration claim", body:"Gentle weekly updates on the chosen 'track' so the homeowner feels informed and supported." },
+  { chan:"sms", title:"Text opt-in", to:"Homeowner", subj:"", body:"'Reply YES to get claim updates by text.' We only text after they say YES, and STOP always works." },
+  { chan:"alert", title:"Lien deadline alerts", to:"The office (Moshe)", subj:"Lien deadline approaching", body:"Internal reminders at 30 and 10 days before a legal deadline, plus a decision task. Customers are NOT contacted." },
+  { chan:"alert", title:"Strike Queue hand-off", to:"The office", subj:"Time to call this adjuster", body:"After ~31 days of polite emails, the case is handed to a person to call directly." }
+];
+
+/* ---------- RENDER: buttons tab ---------- */
+var curScreen = SCREENS[0].id;
+function chanTag(t){return t;}
+function renderPills(){
+  var el=document.getElementById('pills'); el.innerHTML='';
+  SCREENS.forEach(function(s){
+    var d=document.createElement('div'); d.className='pill'+(s.id===curScreen?' on':'');
+    d.innerHTML='<span class="e">'+s.emoji+'</span>'+s.name;
+    d.onclick=function(){curScreen=s.id; renderPills(); renderButtons();};
+    el.appendChild(d);
+  });
+}
+function renderButtons(){
+  var s=SCREENS.find(function(x){return x.id===curScreen;});
+  var stage=document.getElementById('stage');
+  var grid='<div class="btns">';
+  s.buttons.forEach(function(b,i){
+    grid+='<div class="bcard" data-i="'+i+'"><div class="top">🔘 '+b.label+'</div>'+
+      '<span class="tag t-'+b.tag+'">'+b.tagText+'</span>'+
+      '<div class="hint">'+b.lead+'</div><div class="go">See what happens →</div></div>';
+  });
+  grid+='</div><div id="reveal"></div>';
+  stage.innerHTML=grid;
+  stage.querySelectorAll('.bcard').forEach(function(c){
+    c.onclick=function(){ stage.querySelectorAll('.bcard').forEach(function(x){x.classList.remove('sel');}); c.classList.add('sel'); showSeq(s.buttons[+c.dataset.i]); };
+  });
+  // auto-open the first button so something always shows
+  if(s.buttons[0]){ var f=stage.querySelector('.bcard'); if(f) f.classList.add('sel'); showSeq(s.buttons[0]); }
+}
+function mailCard(m){
+  var cls=m.chan==='sms'?'c-sms':(m.chan==='alert'?'c-alert':'c-mail');
+  if(m.chan==='sms'){
+    return '<div class="sms"><span class="chan c-sms">📱 TEXT MESSAGE</span><div class="who">From: '+SMSFROM+' · '+(m.to||m.who||'')+'</div>'+m.text+'</div>';
+  }
+  return '<div class="mail"><div class="mh"><span class="chan '+cls+'">'+(m.chan==='alert'?'🔔 OFFICE ALERT':'✉️ EMAIL')+'</span>'+
+    '<div class="row"><span>From</span><span>'+FROM+'</span></div>'+
+    '<div class="row"><span>To</span><span>'+m.to+'</span></div>'+
+    '<div class="row"><span>Subject</span><span><b>'+m.subj+'</b></span></div></div>'+
+    '<div class="mb">'+m.body+'</div></div>';
+}
+function showSeq(b){
+  var h='<div class="seq"><h3>'+b.title+' <span class="tag t-'+b.tag+'">'+b.tagText+'</span></h3>'+
+    '<p class="lead">'+b.lead+'</p><ul class="steps">';
+  b.steps.forEach(function(st,i){ h+='<li><span class="n">'+(i+1)+'</span>'+st+'</li>'; });
+  h+='</ul>';
+  if(b.mail) h+='<p style="font-weight:800;margin:14px 0 0">📬 Example of the message:</p>'+mailCard(b.mail);
+  if(b.sms) h+='<p style="font-weight:800;margin:14px 0 0">📬 Example of the message:</p>'+mailCard({chan:'sms',to:b.sms.who,text:b.sms.text});
+  h+='<div class="opts"><b>👉 What are my options next?</b>'+b.opts+'</div></div>';
+  var r=document.getElementById('reveal'); r.innerHTML=h; r.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+/* ---------- RENDER: flows tab ---------- */
+var curFlow=null, stepIdx=0;
+function renderFlowPick(){
+  var el=document.getElementById('flowpick'); el.innerHTML='';
+  FLOWS.forEach(function(f){
+    var d=document.createElement('div'); d.className='fcard'+(curFlow&&curFlow.id===f.id?' on':'');
+    d.innerHTML='<div class="fe">'+f.emoji+'</div><div class="fn">'+f.name+'</div><div class="fd">'+f.desc+'</div>';
+    d.onclick=function(){ curFlow=f; stepIdx=0; renderFlowPick(); document.getElementById('flowhint').style.display='none'; document.getElementById('player').classList.add('on'); renderStep(); };
+    el.appendChild(d);
+  });
+}
+function renderStep(){
+  var f=curFlow; var total=f.steps.length;
+  if(stepIdx>=total){ // done screen
+    document.getElementById('pl-day').textContent='🎉 That\'s the whole flow!';
+    document.getElementById('pl-step').innerHTML='<div class="done"><div class="big">✅</div><p><b>'+f.name+'</b> — done!</p><p class="whatnext">The system did all of that on its own. You only stepped in for the human decisions.</p></div>';
+    document.getElementById('pl-bar').style.width='100%';
+    document.getElementById('pl-count').textContent='Complete';
+    document.getElementById('pl-next').textContent='Start over ↻';
+    document.getElementById('pl-prev').disabled=false;
+    return;
+  }
+  var s=f.steps[stepIdx];
+  document.getElementById('pl-day').textContent=s.day;
+  var body='<h3 style="margin:2px 0 6px;font-size:19px">'+s.h+'</h3>';
+  if(stepIdx===0) body='<p class="whatnext" style="margin:0 0 8px">'+f.intro+'</p>'+body;
+  var hasMail=(s.chan==='mail'||s.chan==='alert')&&(s.subj||s.body);
+  var hasSms=s.chan==='sms'&&s.smstext;
+  if(s.t) body+='<p>'+s.t+'</p>';
+  if(hasMail) body+=mailCard({chan:s.chan,to:s.to,subj:s.subj,body:s.body});
+  else if(hasSms) body+=mailCard({chan:'sms',to:s.who,text:s.smstext});
+  document.getElementById('pl-step').innerHTML=body;
+  document.getElementById('pl-bar').style.width=Math.round((stepIdx)/(total)*100)+'%';
+  document.getElementById('pl-count').textContent='Step '+(stepIdx+1)+' of '+total;
+  document.getElementById('pl-next').textContent = (stepIdx===total-1)?'Finish ▶':'Next ▶';
+  document.getElementById('pl-prev').disabled = stepIdx===0;
+}
+document.getElementById('pl-next').onclick=function(){ if(stepIdx>=curFlow.steps.length){stepIdx=0;} else {stepIdx++;} renderStep(); };
+document.getElementById('pl-prev').onclick=function(){ if(stepIdx>0){stepIdx--; renderStep();} };
+
+/* ---------- RENDER: gallery ---------- */
+function renderGallery(){
+  var el=document.getElementById('gal'); el.innerHTML='';
+  GALLERY.forEach(function(g){
+    var badge=g.chan==='sms'?'<span class="chan c-sms">📱 TEXT</span>':(g.chan==='alert'?'<span class="chan c-alert">🔔 OFFICE</span>':'<span class="chan c-mail">✉️ EMAIL</span>');
+    var from=g.chan==='sms'?SMSFROM:(g.chan==='alert'?'System':FROM);
+    el.innerHTML+='<div class="mail"><div class="mh">'+badge+
+      '<div class="row"><span>From</span><span>'+from+'</span></div>'+
+      '<div class="row"><span>To</span><span>'+g.to+'</span></div>'+
+      (g.subj?'<div class="row"><span>Subject</span><span><b>'+g.subj+'</b></span></div>':'')+
+      '</div><div class="mb"><b>'+g.title+'</b><br>'+g.body+'</div></div>';
+  });
+}
+
+/* ---------- TABS ---------- */
+document.querySelectorAll('nav.tabs button').forEach(function(btn){
+  btn.onclick=function(){
+    document.querySelectorAll('nav.tabs button').forEach(function(b){b.classList.remove('on');});
+    btn.classList.add('on');
+    document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('on');});
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('on');
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+});
+
+/* init */
+renderPills(); renderButtons();
+renderFlowPick(); renderGallery();
+</script>
+</body>
+</html>
