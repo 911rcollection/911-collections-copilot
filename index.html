@@ -1472,6 +1472,16 @@ function startTask(id){
     +'<div class="form-actions" style="flex-wrap:wrap"><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button><button class="btn btn-primary" onclick="saveCallAndLog(\''+id+'\')">&#128190; Save &amp; Log Call</button></div>'
   );
   t.status='In Progress';
+  (function(){
+    var pat=getAirtablePAT();
+    var recId=t.recId||(String(t.id).indexOf('rec')===0?t.id:'');
+    if(pat&&recId){
+      fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.hsq+'/'+recId,{
+        method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
+        body:JSON.stringify({typecast:true,fields:{'Status':'In Progress'}})
+      }).catch(function(e){console.warn('HSQ status patch failed',e)});
+    }
+  })();
   renderStrikeQueue();
 }
 
@@ -1497,10 +1507,18 @@ function saveCallAndLog(taskId){
       'Date':new Date().toISOString(),
       'Logged By':'Command Center'
     };
+    if(t.jobId&&String(t.jobId).indexOf('rec')===0){fields['Linked Job']=[t.jobId];}
+    var hsqRecId=t.recId||(String(t.id).indexOf('rec')===0?t.id:'');
+    if(hsqRecId){
+      fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.hsq+'/'+hsqRecId,{
+        method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
+        body:JSON.stringify({typecast:true,fields:{'Call Notes':(t.callNotes||'')+(outcome?'\nOutcome: '+outcome:''),'Status':'In Progress'}})
+      }).catch(function(e){console.warn('HSQ call-notes patch failed',e)});
+    }
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{
       method:'POST',
       headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
-      body:JSON.stringify({fields:fields})
+      body:JSON.stringify({typecast:true,fields:fields})
     }).then(function(r){
       if(r.ok){showToast('Call logged to Airtable','success');return r.json();}
       else{showToast('Airtable log failed ('+r.status+')','error');}
@@ -1883,7 +1901,8 @@ function sendEmailAndLog(jobId){
   var pat=getAirtablePAT();
   if(pat){
     var fields={'Message':logMsg,'Channel':'Email','Direction':'Outbound','Source':'Command Center','Log Entry':newEntry.subject,'Date':newEntry.date,'Logged By':'Command Center'};
-    fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{method:'POST',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},body:JSON.stringify({fields:fields})}).then(function(r){if(r.ok){return r.json();}else{showToast('Airtable log failed ('+r.status+')','error');}}).then(function(data){if(data&&data.id){newEntry.id=data.id;}}).catch(function(e){showToast('Network error logging email','error');});
+    if(String(j.id).indexOf('rec')===0){fields['Linked Job']=[j.id];}
+    fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{method:'POST',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},body:JSON.stringify({typecast:true,fields:fields})}).then(function(r){if(r.ok){return r.json();}else{showToast('Airtable log failed ('+r.status+')','error');}}).then(function(data){if(data&&data.id){newEntry.id=data.id;}}).catch(function(e){showToast('Network error logging email','error');});
   }
   closeModalForce();
   showToast('Email opened in mail client + logged to CommsLog','success');
@@ -2326,12 +2345,14 @@ function saveNewSender(){
   if(!domain.trim()){showToast('Enter a domain','error');return;}
   var today=new Date().toISOString().split('T')[0];
   var pat=getAirtablePAT();
-  AUTHORIZED_SENDERS.push({id:'local-'+Date.now(),domain:domain.trim(),name:org.trim()||domain.trim(),type:type,addedDate:today,status:'Active'});
+  var newSender={id:'local-'+Date.now(),domain:domain.trim(),name:org.trim()||domain.trim(),type:type,addedDate:today,status:'Active'};
+  AUTHORIZED_SENDERS.push(newSender);
   if(pat){
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/tbloXKsztyfjrrFF6',{
       method:'POST',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
       body:JSON.stringify({typecast:true,fields:{'Domain':domain.trim(),'Organization Name':org.trim()||domain.trim(),'Type':type,'Active':true,'Added Date':today,'Notes':'Added via Command Center'}})
-    }).then(function(r){if(!r.ok)throw new Error('POST failed '+r.status);showToast('Sender added to AuthorizedSenders','success')})
+    }).then(function(r){if(!r.ok)throw new Error('POST failed '+r.status);return r.json();})
+      .then(function(data){if(data&&data.id){newSender.id=data.id;renderSettings();}showToast('Sender added to AuthorizedSenders','success')})
       .catch(function(e){showToast('Airtable write failed: '+e.message,'error')});
   } else {
     showToast('Sender added (local only — connect Airtable to persist)','info');
@@ -2416,12 +2437,14 @@ function saveNewHoliday(){
   var type=(document.getElementById('holidayType')||{}).value||'Company';
   if(!name.trim()||!date){showToast('Enter a name and date','error');return;}
   var pat=getAirtablePAT();
-  HOLIDAYS_2026.push({id:'local-'+Date.now(),name:name.trim(),date:date,type:type});
+  var newHoliday={id:'local-'+Date.now(),name:name.trim(),date:date,type:type};
+  HOLIDAYS_2026.push(newHoliday);
   if(pat){
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/tbl1vSkWPrLwbxEn3',{
       method:'POST',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
       body:JSON.stringify({typecast:true,fields:{'Holiday Name':name.trim(),'Date':date,'Year':parseInt(date.split('-')[0],10),'Notes':type+' — added via Command Center'}})
-    }).then(function(r){if(!r.ok)throw new Error('POST failed '+r.status);showToast('Holiday added to HolidayCalendar','success')})
+    }).then(function(r){if(!r.ok)throw new Error('POST failed '+r.status);return r.json();})
+      .then(function(data){if(data&&data.id){newHoliday.id=data.id;renderSettings();}showToast('Holiday added to HolidayCalendar','success')})
       .catch(function(e){showToast('Airtable write failed: '+e.message,'error')});
   } else {
     showToast('Holiday added (local only — connect Airtable to persist)','info');
@@ -2754,8 +2777,12 @@ function confirmOpenDispute(jobId) {
   }).then(function() {
     applyDisputeLocally();
   }).catch(function(err) {
-    console.warn('Airtable PATCH failed (demo data?): ' + err.message);
-    applyDisputeLocally();
+    if (String(jobId).indexOf('rec') === 0) {
+      // Live record: do NOT pretend success — surface the failure so the dispute isn't silently lost
+      showToast('Dispute NOT saved to Airtable: ' + err.message + ' — please retry', 'error');
+    } else {
+      applyDisputeLocally(); // demo job — local-only is expected
+    }
   });
 }
 
@@ -2835,6 +2862,19 @@ function confirmResolveDispute(jobId) {
       job.disputeStatus = resType;
       job.disputeNotes = updatedNotes;
     }
+    // Log the resolution to CommsLog so it appears on the Case File timeline (audit trail)
+    var jn = job ? job.jobNum : jobId;
+    var logMsg = 'DISPUTE RESOLVED — ' + jn + '\nResolution: ' + resType + (amount ? '\nFinal Agreed Amount: $' + fmtNum(amount) : '') + (notes ? '\nNotes: ' + notes : '');
+    fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.commsLog, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ typecast: true, fields: {
+        'Message': logMsg, 'Channel': 'system', 'Direction': 'Outbound',
+        'Source': 'Command Center', 'Log Entry': new Date().toISOString().split('T')[0] + ' — Dispute Resolved: ' + resType + ' — ' + jn,
+        'Date': new Date().toISOString(), 'Logged By': 'Command Center', 'Linked Job': [jobId]
+      }})
+    }).catch(function(e){ console.warn('CommsLog failed:', e); });
+    if (job) pushLocalComms(job, 'system', 'Outbound', new Date().toISOString().split('T')[0] + ' — Dispute Resolved: ' + resType + ' — ' + jn, logMsg);
     closeModal();
     showToast('Dispute resolved: ' + resType,'success');
     renderDashboard();
@@ -2955,7 +2995,7 @@ async function loadLiveData() {
     // Fetch Jobs
     var sel = function(v){ return Array.isArray(v)?v[0]:(v||''); };
     var num = function(v){ return typeof v==='number'?v:(parseFloat(v)||0); };
-    var jobRecs = await fetchAllRecords(T.jobs, ['Job ID','Claim Number','Office','Primary Status','Alternative Status','Collections Status','Amount Invoiced','Total Paid','Invoiced Date','Lien Deadline','Lien Mode','Property State','Days to Lien Deadline','Diversion Flag','Carriers','Homeowners','Adjusters','Lien Eligible','Dispute Status','Dispute Date','Our Estimate','Adjuster Estimate','Dispute Gap','Dispute Category','Dispute Notes','Supplement Sent Date','Carrier Response Status','Carrier Agreed Amount','Carrier Response Date','Carrier Response Notes','Partial Gap Decision','Carrier Info Request Status','Info Request Date','Info Requested Items','Info Docs Sent Date','Info Response Deadline','Aging Paused','Aging Pause Start','Aging Pause Days','InvoiceRecords','Payment Stop'], pat);
+    var jobRecs = await fetchAllRecords(T.jobs, ['Job ID','Claim Number','Office','Primary Status','Alternative Status','Collections Status','Amount Invoiced','Total Paid','Invoiced Date','Lien Deadline','Lien Mode','Property State','Days to Lien Deadline','Diversion Flag','Carriers','Homeowners','Adjusters','Lien Eligible','Dispute Status','Dispute Date','Our Estimate','Adjuster Estimate','Dispute Gap','Dispute Category','Dispute Notes','Supplement Sent Date','Carrier Response Status','Carrier Agreed Amount','Carrier Response Date','Carrier Response Notes','Partial Gap Decision','Carrier Info Request Status','Info Request Date','Info Requested Items','Info Docs Sent Date','Info Response Deadline','Aging Paused','Aging Pause Start','Aging Pause Days','InvoiceRecords','Payment Stop','Communication Track','Track Assigned Date','Homeowner Email'], pat);
     // Fetch Carriers table to resolve linked record IDs to names
     var carrierMap = {};
     try {
@@ -2969,14 +3009,15 @@ async function loadLiveData() {
     var adjusterMap = {};
     var adjusterDetails = {};
     try {
-      var adjRecs = await fetchAllRecords(T.adjusters, ['Adjuster Name','Phone','Email'], pat);
+      var adjRecs = await fetchAllRecords(T.adjusters, ['Adjuster Name','Phone','Email','Rating'], pat);
       adjRecs.forEach(function(r) {
         var f = r.fields;
         var name = (f['Adjuster Name'] || '').trim();
         if (name) adjusterMap[r.id] = name;
         adjusterDetails[r.id] = {
           phone: f['Phone'] || '',
-          email: f['Email'] || ''
+          email: f['Email'] || '',
+          rating: f['Rating'] || 0
         };
       });
     } catch(e) { /* adjusters table optional */ }
@@ -3000,6 +3041,7 @@ async function loadLiveData() {
           invoicedDate: f['Invoiced Date'] || '',
           adjuster: (function(){ var ids = f['Adjusters']; if (!ids || !ids.length) return ''; var id = Array.isArray(ids) ? ids[0] : ids; return adjusterMap[id] || id || ''; })() || '',
           adjusterId: (function(){ var ids = f['Adjusters']; if (!ids || !ids.length) return ''; return Array.isArray(ids) ? ids[0] : ids; })(),
+          adjusterRating: (function(){ var ids = f['Adjusters']; if (!ids || !ids.length) return 0; var id = Array.isArray(ids) ? ids[0] : ids; var d = adjusterDetails[id]; return (d && d.rating) || 0; })(),
           adjPhone: (function(){ var ids = f['Adjusters']; if (!ids || !ids.length) return ''; var id = Array.isArray(ids) ? ids[0] : ids; var d = adjusterDetails[id]; return d ? d.phone : ''; })(),
           adjEmail: (function(){ var ids = f['Adjusters']; if (!ids || !ids.length) return ''; var id = Array.isArray(ids) ? ids[0] : ids; var d = adjusterDetails[id]; return d ? d.email : ''; })(),
           homeowner: (function(){ var v = f['Homeowners']; if (!v) return ''; if (Array.isArray(v)) { var val = v[0]; return (val && val.startsWith && val.startsWith('rec')) ? '' : val; } return v; })() || '',
@@ -3243,6 +3285,13 @@ function resolveJobRecord(jobId) {
       || (typeof DEMO_JOBS !== 'undefined' ? DEMO_JOBS.find(function(x){ return x.id === jobId || x.jobNum === jobId; }) : null);
 }
 
+function pushLocalComms(j, channel, direction, subjectLabel, msg) {
+  // Mirror an Airtable CommsLog POST into local state so the Case File timeline updates immediately
+  if (typeof COMMS_LOG !== 'undefined' && COMMS_LOG && COMMS_LOG.unshift) {
+    COMMS_LOG.unshift({ id: 'local-' + Date.now(), jobId: j.id, jobNum: j.jobNum || '', office: j.office || '', channel: channel, direction: direction, subject: subjectLabel, summary: msg, date: new Date().toISOString(), agent: 'Command Center' });
+  }
+}
+
 function updateGapDisplay(jobId, inputId, displayId) {
   var j = resolveJobRecord(jobId); if (!j) return;
   var v = parseFloat((document.getElementById(inputId)||{}).value) || 0;
@@ -3321,9 +3370,16 @@ function confirmCarrierInfoRequest(jobId) {
         'Status': 'Open',
         'Due Date': deadline || today,
         'Assignee': 'Command Center',
-        'Jobs': [jobId]
+        'Jobs': [jobId],
+        'PSA Job Number': j.jobNum || ''
       }})
-    }).then(function(r){ if (!r.ok) throw new Error('HSQ POST failed'); })
+    }).then(function(r){ if (!r.ok) throw new Error('HSQ POST failed'); return r.json(); })
+      .then(function(data){
+        if (data && data.id) {
+          STRIKE_QUEUE.unshift({ id: data.id, recId: data.id, jobId: jobId, jobNum: j.jobNum || '', taskType: 'Carrier Info Request — Gather & Send Docs', priority: 'P2', status: 'Open', assignedTo: 'Command Center', office: j.office || 'Portland', daysOpen: 0, amount: Math.max(0, (j.amtInvoiced||0) - (j.amtPaid||0)), description: taskDesc, callNotes: '', outcome: '' });
+          updateMyTasksBadge();
+        }
+      })
       .catch(function(e){ showToast('Task creation failed: ' + e.message, 'error'); });
   }
 
@@ -3373,6 +3429,7 @@ function confirmMarkDocsSent(jobId) {
   j.infoDocsSentDate = sentDate;
   j.carrierInfoRequestStatus = 'Docs Sent — Awaiting Response';
   j.agingPaused = false;
+  j.agingPauseStart = '';
   j.agingPauseDays = newPauseDays;
   j.infoResponseDeadline = responseExpected;
   j.effectiveDaysOut = Math.max(0, j.daysOut - newPauseDays);
@@ -3384,7 +3441,8 @@ function confirmMarkDocsSent(jobId) {
       'Aging Paused': false,
       'Aging Pause Days': newPauseDays
     };
-    if (responseExpected) jobFields['Info Response Deadline'] = responseExpected;
+    jobFields['Info Response Deadline'] = responseExpected || null;
+    jobFields['Aging Pause Start'] = null;
     setInvoicesSequenceHalted(j, false, pat); // resume the S-05 cadence on the linked invoices
 
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
@@ -3405,6 +3463,7 @@ function confirmMarkDocsSent(jobId) {
         'Date': new Date().toISOString(), 'Logged By': 'Command Center', 'Linked Job': [jobId]
       }})
     }).catch(function(e){ console.warn('CommsLog failed:', e); });
+    pushLocalComms(j, 'Email', 'Outbound', sentDate + ' — Docs Sent — ' + j.jobNum, logMsg);
 
     // Create follow-up task
     if (responseExpected) {
@@ -3416,9 +3475,16 @@ function confirmMarkDocsSent(jobId) {
           'Priority': 'P2',
           'Description': 'Follow up with carrier on docs sent ' + sentDate + ' via ' + sentVia + '. Response expected by ' + responseExpected,
           'Status': 'Open', 'Due Date': responseExpected,
-          'Assignee': 'Command Center', 'Jobs': [jobId]
+          'Assignee': 'Command Center', 'Jobs': [jobId],
+          'PSA Job Number': j.jobNum || ''
         }})
-      }).catch(function(){});
+      }).then(function(r){ if (r.ok) return r.json(); })
+        .then(function(data){
+          if (data && data.id) {
+            STRIKE_QUEUE.unshift({ id: data.id, recId: data.id, jobId: jobId, jobNum: j.jobNum || '', taskType: 'Carrier Info Request — Follow Up', priority: 'P2', status: 'Open', assignedTo: 'Command Center', office: j.office || 'Portland', daysOpen: 0, amount: Math.max(0, (j.amtInvoiced||0) - (j.amtPaid||0)), description: 'Follow up with carrier on docs sent ' + sentDate + '. Response expected by ' + responseExpected, callNotes: '', outcome: '' });
+            updateMyTasksBadge();
+          }
+        }).catch(function(){});
     }
   }
 
@@ -3610,7 +3676,12 @@ function confirmCarrierFullAgreement(jobId) {
   j.carrierResponseDate = date;
   j.carrierResponseNotes = notes;
   if(!j.communicationTrack){j.communicationTrack='5 - Good Faith';j.trackAssignedDate=date}
-  if (j.agingPaused) { j.agingPaused = false; j.effectiveDaysOut = Math.max(0, j.daysOut - (j.agingPauseDays||0)); }
+  if (j.agingPaused) {
+    var accPauseDays = j.agingPauseDays || 0;
+    if (j.agingPauseStart) { accPauseDays += Math.max(0, Math.floor((Date.now() - new Date(j.agingPauseStart).getTime()) / 86400000)); }
+    j.agingPaused = false; j.agingPauseStart = ''; j.agingPauseDays = accPauseDays;
+    j.effectiveDaysOut = Math.max(0, j.daysOut - accPauseDays);
+  }
 
   if (pat && jobId.indexOf('rec') === 0) {
     var jobFields = {
@@ -3621,7 +3692,10 @@ function confirmCarrierFullAgreement(jobId) {
       'Communication Track': j.communicationTrack || null,
       'Track Assigned Date': j.trackAssignedDate || null
     };
-    if (j.agingPaused !== undefined) jobFields['Aging Paused'] = false;
+    jobFields['Aging Paused'] = false;
+    jobFields['Aging Pause Days'] = j.agingPauseDays || 0;
+    jobFields['Aging Pause Start'] = null;
+    setInvoicesSequenceHalted(j, false, pat); // resume the S-05 cadence on the linked invoices
 
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
       method: 'PATCH',
@@ -3641,6 +3715,7 @@ function confirmCarrierFullAgreement(jobId) {
         'Date': new Date().toISOString(), 'Logged By': 'Command Center', 'Linked Job': [jobId]
       }})
     }).catch(function(e){ console.warn('CommsLog failed:', e); });
+    pushLocalComms(j, 'Email', 'Inbound', date + ' — Carrier Response: Full Agreement — ' + j.jobNum, logMsg);
   }
 
   closeModalForce();
@@ -3749,6 +3824,7 @@ function sendAdjusterConfirmation(jobId, responseType) {
       }})
     }).then(function(){ showToast('Confirmation logged & queued for delivery', 'success'); })
      .catch(function(e){ showToast('CommsLog failed: ' + e.message, 'warning'); });
+    pushLocalComms(j, 'Email', 'Outbound', new Date().toISOString().split('T')[0] + ' — Sent ' + responseType + ' confirmation to ' + to, logMsg);
   }
 
   // Copy to clipboard as fallback for manual send
@@ -3786,7 +3862,12 @@ function confirmCarrierPartialAgreement(jobId) {
   j.carrierResponseNotes = notes;
   j.partialGapDecision = gapDecision;
   if(!j.communicationTrack){j.communicationTrack='4 - Lowball/Escalation';j.trackAssignedDate=date}
-  if (j.agingPaused) { j.agingPaused = false; j.effectiveDaysOut = Math.max(0, j.daysOut - (j.agingPauseDays||0)); }
+  if (j.agingPaused) {
+    var accPauseDays = j.agingPauseDays || 0;
+    if (j.agingPauseStart) { accPauseDays += Math.max(0, Math.floor((Date.now() - new Date(j.agingPauseStart).getTime()) / 86400000)); }
+    j.agingPaused = false; j.agingPauseStart = ''; j.agingPauseDays = accPauseDays;
+    j.effectiveDaysOut = Math.max(0, j.daysOut - accPauseDays);
+  }
 
   if (pat && jobId.indexOf('rec') === 0) {
     var jobFields = {
@@ -3796,8 +3877,12 @@ function confirmCarrierPartialAgreement(jobId) {
       'Carrier Response Notes': notes,
       'Partial Gap Decision': gapDecision,
       'Communication Track': j.communicationTrack || null,
-      'Track Assigned Date': j.trackAssignedDate || null
+      'Track Assigned Date': j.trackAssignedDate || null,
+      'Aging Paused': false,
+      'Aging Pause Days': j.agingPauseDays || 0,
+      'Aging Pause Start': null
     };
+    setInvoicesSequenceHalted(j, false, pat); // resume the S-05 cadence on the linked invoices
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
       method: 'PATCH',
       headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
@@ -3815,6 +3900,7 @@ function confirmCarrierPartialAgreement(jobId) {
         'Date': new Date().toISOString(), 'Logged By': 'Command Center', 'Linked Job': [jobId]
       }})
     }).catch(function(e){ console.warn('CommsLog failed:', e); });
+    pushLocalComms(j, 'Email', 'Inbound', date + ' — Carrier Response: Partial Agreement — ' + j.jobNum, logMsg);
   }
 
   closeModalForce();
@@ -3873,6 +3959,7 @@ function setCommTrack(jobId, track) {
       method:'POST',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
       body:JSON.stringify({typecast:true,fields:{'Message':'Communication Track set to: '+track+' for '+j.jobNum,'Channel':'system','Direction':'Outbound','Source':'Command Center','Log Entry':new Date().toISOString().split('T')[0]+' — Track assigned: '+track+' — '+j.jobNum,'Date':new Date().toISOString(),'Logged By':'Command Center','Linked Job':[jobId]}})
     }).catch(function(e){console.warn('CommsLog failed:',e)});
+    pushLocalComms(j,'system','Outbound',new Date().toISOString().split('T')[0]+' — Track assigned: '+track+' — '+j.jobNum,'Communication Track set to: '+track+' for '+j.jobNum);
   }
   showToast('Communication track set to: '+(track||'None'),'success');
   renderCaseFile();
