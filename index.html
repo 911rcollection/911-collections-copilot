@@ -536,7 +536,7 @@ td{font-size:1rem}
 
     <!-- STRIKE QUEUE -->
     <div class="screen" id="screen-strike-queue">
-      <div class="page-header"><div><h1>Human Strike Queue</h1><div class="subtitle">Priority-sorted tasks requiring human action</div></div><button class="btn btn-secondary" onclick="showToast('Queue refreshed','info')">&#8635; Refresh</button></div>
+      <div class="page-header"><div><h1>Human Strike Queue</h1><div class="subtitle">Priority-sorted tasks requiring human action</div></div><button class="btn btn-secondary" onclick="loadLiveData().then(function(){navigate('strike-queue');showToast('Queue refreshed','success')})">&#8635; Refresh</button></div>
       <div id="strikeGuidedMode"></div>
       <div id="strikeQueueList"></div>
     </div>
@@ -573,7 +573,7 @@ td{font-size:1rem}
 
     <!-- AI INBOX -->
     <div class="screen" id="screen-ai-inbox">
-      <div class="page-header"><div><h1>AI Inbox</h1><div class="subtitle">S-03 Email Reply Parser — AI-classified adjuster responses</div></div><button class="btn btn-secondary" onclick="showToast('Inbox refreshed','info')">&#8635; Refresh</button></div>
+      <div class="page-header"><div><h1>AI Inbox</h1><div class="subtitle">S-03 Email Reply Parser — AI-classified adjuster responses</div></div><button class="btn btn-secondary" onclick="loadLiveData().then(function(){navigate('ai-inbox');showToast('Inbox refreshed','success')})">&#8635; Refresh</button></div>
       <div class="kpi-grid" id="aiInboxKPIs"></div>
       <div class="filter-bar" id="aiInboxFilters"></div>
       <div class="table-container" id="aiInboxTableContainer"></div>
@@ -1283,7 +1283,7 @@ function scrollToDiversions(){
 function renderDashboard(){
   var r=getRole();var jobs=filterByDashOffice(JOBS);var invoices=filterByDashOffice(INVOICES);
   var offSel=$('dashOfficeFilter');if(offSel){var opts='<option value="">All Locations</option>';r.offices.forEach(function(o){opts+='<option value="'+o+'"'+(o===_dashOffice?' selected':'')+'>'+o+'</option>'});offSel.innerHTML=opts;if(r.offices.length<=1)offSel.style.display='none';else offSel.style.display=''}
-  $('dashSubtitle').textContent=r.offices.join(' & ')+' · Updated just now';
+  $('dashSubtitle').textContent=(_dashOffice||r.offices.join(' & '))+' · Updated just now';
   var totalAR=jobs.reduce((s,j)=>s+(j.amtInvoiced-j.amtPaid),0);
   var totalInvoiced=jobs.reduce((s,j)=>s+j.amtInvoiced,0);
   var totalPaid=jobs.reduce((s,j)=>s+j.amtPaid,0);
@@ -1522,9 +1522,27 @@ function saveCallAndLog(taskId){
   renderStrikeQueue();
 }
 function resolveTask(id){
-  openModal('<div class="modal-header"><h2>Resolve Task '+id+'</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>Resolution Type</label><select><option>Payment Received</option><option>Carrier Responded</option><option>Escalated to Supervisor</option><option>Deferred - Follow Up Later</option><option>No Action Needed</option></select></div><div class="form-group"><label>Notes</label><textarea placeholder="Describe the outcome..."></textarea></div><div class="form-actions"><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button><button class="btn btn-success" onclick="closeModalForce();confirmResolve(\''+id+'\')">Resolve Task</button></div>');
+  openModal('<div class="modal-header"><h2>Resolve Task '+id+'</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>Resolution Type</label><select id="resType"><option>Payment Received</option><option>Carrier Responded</option><option>Escalated to Supervisor</option><option>Deferred - Follow Up Later</option><option>No Action Needed</option></select></div><div class="form-group"><label>Notes</label><textarea id="resNotes" placeholder="Describe the outcome..."></textarea></div><div class="form-actions"><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button><button class="btn btn-success" onclick="closeModalForce();confirmResolve(\''+id+'\')">Resolve Task</button></div>');
 }
-function confirmResolve(id){const t=STRIKE_QUEUE.find(x=>x.id===id);if(t)t.status='Resolved';showToast('Task '+id+' resolved','success');renderStrikeQueue()}
+function confirmResolve(id){
+  const t=STRIKE_QUEUE.find(x=>x.id===id);
+  if(!t){showToast('Task not found: '+id,'error');return;}
+  var resType=(document.getElementById('resType')||{}).value||'Resolved';
+  var resNotes=(document.getElementById('resNotes')||{}).value||'';
+  t.status='Resolved';t.outcome=resType;t.callNotes=resNotes;
+  var pat=getAirtablePAT();
+  var recId=t.recId||(String(t.id).indexOf('rec')===0?t.id:'');
+  if(pat&&recId){
+    var today=new Date().toISOString().split('T')[0];
+    fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.hsq+'/'+recId,{
+      method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
+      body:JSON.stringify({typecast:true,fields:{'Status':'Resolved','Description':(t.description||'')+'\n\nRESOLVED '+today+': '+resType+(resNotes?' — '+resNotes:'')}})
+    }).then(function(r){if(!r.ok)throw new Error('HSQ PATCH failed '+r.status)})
+      .catch(function(e){showToast('Airtable update failed: '+e.message,'error')});
+  }
+  showToast('Task '+id+' resolved'+((pat&&recId)?'':' (local only — not an Airtable task)'),'success');
+  renderStrikeQueue();updateMyTasksBadge&&updateMyTasksBadge();
+}
 function showGuidedHelp(id){
   const t=STRIKE_QUEUE.find(x=>x.id===id);
   const guides={'Adjuster Follow-up Call':'1. Review the case timeline first\n2. Prepare talking points from the CommsLog\n3. Call the adjuster at the number on file\n4. If no answer, leave voicemail and send follow-up email\n5. Log the outcome in the resolution form','Homeowner Contact':'1. Check case file for preferred contact method\n2. Call the homeowner and explain the AOB requirement\n3. If they have questions, offer to email documents\n4. Log the call and set a follow-up reminder','Supplemental Estimate Review':'1. Gather all requested documentation\n2. Compile into a single PDF package\n3. Upload to the carrier portal\n4. Log the submission and set 5-day follow-up'};
@@ -1791,13 +1809,43 @@ function renderCaseFile(){
       }
     }
   }else if(caseFileTab==='contacts'){
-    html+='<div class="two-col"><div class="card"><div class="card-header"><span class="card-title">Adjuster</span><span class="badge badge-blue">'+(j.carrier&&!j.carrier.startsWith("rec")?j.carrier:"Unknown Carrier")+'</span></div><div style="margin-bottom:8px"><strong>'+(j.adjuster&&!j.adjuster.startsWith("rec")?j.adjuster:"Unknown Adjuster")+'</strong></div><div style="font-size:1rem;color:var(--text-secondary);margin-bottom:4px">&#9742; '+(j.adjPhone||"No phone on file")+'</div><div style="font-size:1rem;color:var(--text-secondary);margin-bottom:12px">&#9993; '+(j.adjEmail||"No email on file")+'</div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Communication Rating</div><div class="stars" id="adjStars">'+[1,2,3,4,5].map(i=>'<span class="star '+(i<=3?'filled':'')+'" onclick="rateAdjuster('+i+')">&#9733;</span>').join('')+'</div></div><div class="card"><div class="card-header"><span class="card-title">Homeowner</span>'+(j.communicationTrack?'<span class="badge badge-'+(trackColors[j.communicationTrack]||'blue')+'">'+j.communicationTrack+'</span>':'')+'</div><div style="margin-bottom:8px"><strong>'+(j.homeowner||"Unknown Homeowner")+'</strong></div><div style="font-size:1rem;color:var(--text-secondary);margin-bottom:4px">&#9742; '+(j.hoPhone||"No phone on file")+'</div><div style="font-size:1rem;color:var(--text-secondary)">&#9993; '+(j.hoEmail||"No email on file")+'</div></div></div>';
+    html+='<div class="two-col"><div class="card"><div class="card-header"><span class="card-title">Adjuster</span><span class="badge badge-blue">'+(j.carrier&&!j.carrier.startsWith("rec")?j.carrier:"Unknown Carrier")+'</span></div><div style="margin-bottom:8px"><strong>'+(j.adjuster&&!j.adjuster.startsWith("rec")?j.adjuster:"Unknown Adjuster")+'</strong></div><div style="font-size:1rem;color:var(--text-secondary);margin-bottom:4px">&#9742; '+(j.adjPhone||"No phone on file")+'</div><div style="font-size:1rem;color:var(--text-secondary);margin-bottom:12px">&#9993; '+(j.adjEmail||"No email on file")+'</div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Communication Rating</div><div class="stars" id="adjStars">'+[1,2,3,4,5].map(i=>'<span class="star '+(i<=(j.adjusterRating||3)?'filled':'')+'" onclick="rateAdjuster(&#39;'+j.id+'&#39;,'+i+')">&#9733;</span>').join('')+'</div></div><div class="card"><div class="card-header"><span class="card-title">Homeowner</span>'+(j.communicationTrack?'<span class="badge badge-'+(trackColors[j.communicationTrack]||'blue')+'">'+j.communicationTrack+'</span>':'')+'</div><div style="margin-bottom:8px"><strong>'+(j.homeowner||"Unknown Homeowner")+'</strong></div><div style="font-size:1rem;color:var(--text-secondary);margin-bottom:4px">&#9742; '+(j.hoPhone||"No phone on file")+'</div><div style="font-size:1rem;color:var(--text-secondary)">&#9993; '+(j.hoEmail||"No email on file")+'</div></div></div>';
   }else if(caseFileTab==='actions'){
-    html+=renderCommunicationTrackCard(j)+renderCarrierResponseCard(j)+renderInfoRequestCard(j)+'<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px"><button class="btn btn-primary" onclick="openEmailCompose(\''+j.id+'\')">&#9993; Draft Email</button><button class="btn btn-secondary" onclick="openCallLog(\''+j.id+'\')">&#9742; Log Call</button><button class="btn btn-secondary" style="display:none" onclick="generateStatement(\''+j.id+'\')">&#128196; Generate Statement</button></div><div class="card"><div class="card-header"><span class="card-title">Payment Stop</span><span class="card-subtitle">Prevent payments to unauthorized payees</span></div><div style="display:flex;align-items:center;gap:12px"><label class="toggle"><input type="checkbox" onchange="showToast(this.checked?\'Payment stop activated\':\'Payment stop removed\',\'info\')"><span class="toggle-slider"></span></label><span style="font-size:1rem">Enable Payment Stop for this job</span></div></div>';
+    html+=renderCommunicationTrackCard(j)+renderCarrierResponseCard(j)+renderInfoRequestCard(j)+'<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px"><button class="btn btn-primary" onclick="openEmailCompose(\''+j.id+'\')">&#9993; Draft Email</button><button class="btn btn-secondary" onclick="openCallLog(\''+j.id+'\')">&#9742; Log Call</button><button class="btn btn-secondary" style="display:none" onclick="generateStatement(\''+j.id+'\')">&#128196; Generate Statement</button></div><div class="card"><div class="card-header"><span class="card-title">Payment Stop</span><span class="card-subtitle">Prevent payments to unauthorized payees</span></div><div style="display:flex;align-items:center;gap:12px"><label class="toggle"><input type="checkbox" '+(j.paymentStop?'checked ':'')+'onchange="setPaymentStop(\''+j.id+'\',this.checked)"><span class="toggle-slider"></span></label><span style="font-size:1rem">Enable Payment Stop for this job</span></div></div>';
   }
   $('caseFileContent').innerHTML=html;
 }
-function rateAdjuster(n){document.querySelectorAll('#adjStars .star').forEach((s,i)=>{s.classList.toggle('filled',i<n)});showToast('Rating updated to '+n+' stars','success')}
+function rateAdjuster(jobId,n){
+  document.querySelectorAll('#adjStars .star').forEach((s,i)=>{s.classList.toggle('filled',i<n)});
+  var j=resolveJobRecord(jobId);
+  if(j)j.adjusterRating=n;
+  var pat=getAirtablePAT();
+  if(pat&&j&&j.adjusterId&&String(j.adjusterId).indexOf('rec')===0){
+    fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.adjusters+'/'+j.adjusterId,{
+      method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
+      body:JSON.stringify({typecast:true,fields:{'Rating':n}})
+    }).then(function(r){if(!r.ok)throw new Error('PATCH failed '+r.status);showToast('Adjuster rating saved: '+n+' stars','success')})
+      .catch(function(e){showToast('Rating not saved to Airtable: '+e.message,'error')});
+  } else {
+    showToast('Rating updated to '+n+' stars'+((j&&j.adjusterId)?'':' (no linked adjuster — local only)'),'success');
+  }
+}
+
+function setPaymentStop(jobId,val){
+  var j=resolveJobRecord(jobId);
+  if(!j){showToast('Job not found: '+jobId,'error');return;}
+  j.paymentStop=!!val;
+  var pat=getAirtablePAT();
+  if(pat&&j.id.indexOf('rec')===0){
+    fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.jobs+'/'+j.id,{
+      method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
+      body:JSON.stringify({typecast:true,fields:{'Payment Stop':!!val}})
+    }).then(function(r){if(!r.ok)throw new Error('PATCH failed '+r.status);showToast(val?'Payment stop activated for '+j.jobNum:'Payment stop removed for '+j.jobNum,'success')})
+      .catch(function(e){j.paymentStop=!val;showToast('Airtable update failed: '+e.message,'error')});
+  } else {
+    showToast((val?'Payment stop activated':'Payment stop removed')+' (demo job — local only)','info');
+  }
+}
 function openEmailCompose(jobId){
   const j=JOBS.find(x=>x.id===jobId);
   var defaultBody='Dear '+j.adjuster+',\n\nI am writing to follow up on the outstanding balance of '+fmt(j.amtInvoiced-j.amtPaid)+' for Claim '+j.claimNum+' (Job '+j.jobNum+').\n\nThis balance has been outstanding for '+j.daysOut+' days. Please advise on the expected payment timeline.\n\nThank you,\n911 Restoration Collections Team';
@@ -1841,8 +1889,35 @@ function sendEmailAndLog(jobId){
   showToast('Email opened in mail client + logged to CommsLog','success');
 }
 function openCallLog(jobId){
-  const j=JOBS.find(x=>x.id===jobId);
-  openModal('<div class="modal-header"><h2>&#9742; Log Call</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>Contact</label><select><option>'+j.adjuster+' (Adjuster)</option><option>'+j.homeowner+' (Homeowner)</option></select></div><div class="form-group"><label>Direction</label><select><option>Outbound</option><option>Inbound</option></select></div><div class="form-group"><label>Outcome</label><select><option>Connected - Positive</option><option>Connected - Needs Follow-up</option><option>Voicemail Left</option><option>No Answer</option><option>Wrong Number</option></select></div><div class="form-group"><label>Notes</label><textarea placeholder="Call notes..."></textarea></div><div class="form-actions"><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button><button class="btn btn-primary" onclick="closeModalForce();showToast(\'Call logged\',\'success\')">Log Call</button></div>');
+  const j=resolveJobRecord(jobId);
+  if(!j){showToast('Job not found: '+jobId,'error');return;}
+  openModal('<div class="modal-header"><h2>&#9742; Log Call</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>Contact</label><select id="clContact"><option>'+j.adjuster+' (Adjuster)</option><option>'+j.homeowner+' (Homeowner)</option></select></div><div class="form-group"><label>Direction</label><select id="clDirection"><option>Outbound</option><option>Inbound</option></select></div><div class="form-group"><label>Outcome</label><select id="clOutcome"><option>Connected - Positive</option><option>Connected - Needs Follow-up</option><option>Voicemail Left</option><option>No Answer</option><option>Wrong Number</option></select></div><div class="form-group"><label>Notes</label><textarea id="clNotes" placeholder="Call notes..."></textarea></div><div class="form-actions"><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button><button class="btn btn-primary" onclick="saveCaseCallLog(\''+j.id+'\')">Log Call</button></div>');
+}
+
+function saveCaseCallLog(jobId){
+  var j=resolveJobRecord(jobId);
+  if(!j){showToast('Job not found: '+jobId,'error');return;}
+  var contact=(document.getElementById('clContact')||{}).value||'';
+  var direction=(document.getElementById('clDirection')||{}).value||'Outbound';
+  var outcome=(document.getElementById('clOutcome')||{}).value||'';
+  var notes=(document.getElementById('clNotes')||{}).value||'';
+  var nowIso=new Date().toISOString();
+  var today=nowIso.split('T')[0];
+  var msg='CALL — '+j.jobNum+'\nContact: '+contact+'\nOutcome: '+outcome+(notes?'\nNotes: '+notes:'');
+  var pat=getAirtablePAT();
+  if(pat&&jobId.indexOf('rec')===0){
+    fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{
+      method:'POST',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
+      body:JSON.stringify({typecast:true,fields:{'Message':msg,'Channel':'Phone','Direction':direction,'Source':'Command Center','Log Entry':today+' — Call ('+outcome+') — '+j.jobNum,'Date':nowIso,'Logged By':'Command Center','Linked Job':[jobId]}})
+    }).then(function(r){if(!r.ok)throw new Error('CommsLog POST failed '+r.status)})
+      .catch(function(e){showToast('Airtable log failed: '+e.message,'error')});
+  }
+  if(typeof COMMS_LOG!=='undefined'&&COMMS_LOG&&COMMS_LOG.unshift){
+    COMMS_LOG.unshift({id:'local-'+Date.now(),jobId:j.id,jobNum:j.jobNum,office:j.office,channel:'Phone',direction:direction,subject:'Call — '+outcome,summary:msg,date:nowIso,agent:'Command Center'});
+  }
+  closeModalForce();
+  showToast('Call logged'+((pat&&jobId.indexOf('rec')===0)?' to CommsLog':' (demo job — local only)'),'success');
+  if(typeof selectedCaseJob!=='undefined'&&selectedCaseJob&&selectedCaseJob.id===j.id){renderCaseFile()}
 }
 
 // ============================================================
@@ -2217,7 +2292,20 @@ function applyErrFilters(){
   $('errorTableContainer').innerHTML=pager+'<table><thead><tr><th>Error ID</th><th>Timestamp</th><th>Scenario</th><th>Module</th><th>Severity</th><th>Message</th><th>Resolved</th></tr></thead><tbody>'+paged.map(e=>'<tr><td>'+e.id+'</td><td style="white-space:nowrap">'+formatDateTime(e.timestamp)+'</td><td>'+e.scenario+'</td><td>'+e.module+'</td><td><span class="badge badge-'+sc[e.severity]+'">'+e.severity+'</span></td><td style="max-width:300px;font-size:.95rem">'+e.message+'</td><td><label class="toggle"><input type="checkbox" '+(e.resolved?'checked':'')+' onchange="toggleError(\''+e.id+'\',this.checked)"><span class="toggle-slider"></span></label></td></tr>').join('')+'</tbody></table>'+pager;
   makeSortable('errorTableContainer');
 }
-function toggleError(id,val){const e=ERROR_LOG.find(x=>x.id===id);if(e){e.resolved=val;showToast(id+' '+(val?'resolved':'unresolved'),'success')}}
+function toggleError(id,val){
+  const e=ERROR_LOG.find(x=>x.id===id);
+  if(!e)return;
+  e.resolved=val;
+  var pat=getAirtablePAT();
+  if(pat&&String(id).indexOf('rec')===0){
+    fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.errorLog+'/'+id,{
+      method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
+      body:JSON.stringify({typecast:true,fields:{'Resolved':!!val}})
+    }).then(function(r){if(!r.ok)throw new Error('PATCH failed '+r.status)})
+      .catch(function(err){e.resolved=!val;showToast('Airtable update failed: '+err.message,'error');applyErrFilters&&applyErrFilters()});
+  }
+  showToast((val?'Resolved':'Reopened')+' — '+(e.scenario||id),'success');
+}
 
 // ============================================================
 // 8. SETTINGS
@@ -2228,10 +2316,47 @@ function renderSettings(){
   var currentPAT = getAirtablePAT();
   var maskedPAT = currentPAT ? currentPAT.substring(0,6) + '...' + currentPAT.substring(currentPAT.length-4) : 'Not set';
   var isLive = currentPAT && _liveDataLoaded && !_dataLoadError;
-  $('settingsContent').innerHTML='<div class="card"><div class="card-header"><span class="card-title">&#128273; Airtable Connection</span></div><div style="padding:4px 0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span class="status-dot '+(currentPAT?'active':'')+'"></span><span style="font-size:.95rem">'+(currentPAT?'PAT configured: <code style="background:var(--bg-tertiary);padding:2px 6px;border-radius:4px">'+maskedPAT+'</code>':'No PAT configured — enter your Airtable Personal Access Token below')+'</span></div><div style="display:flex;gap:8px;align-items:center"><input type="password" id="settingsPATInput" placeholder="pat-xxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" value="'+currentPAT+'" style="flex:1;padding:10px 12px;border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border-color);font-family:monospace;font-size:.9rem"><button class="btn btn-secondary btn-sm" onclick="var i=$(\'settingsPATInput\');i.type=i.type===\'password\'?\'text\':\'password\'">&#128065; Show</button><button class="btn btn-primary btn-sm" onclick="var v=$(\'settingsPATInput\').value.trim();if(!v){showToast(\'Please enter a PAT\',\'error\');return}setAirtablePAT(v);showToast(\'PAT saved successfully\',\'success\');renderSettings()">Save PAT</button></div><div style="margin-top:8px;font-size:.85rem;color:var(--text-muted)">Your PAT is stored locally in this browser. Get one from <a href=\'https://airtable.com/create/tokens\' target=\'_blank\' style=\'color:var(--accent-blue)\'>airtable.com/create/tokens</a> with read access to the 911 base.</div></div></div><div class="card"><div class="card-header"><span class="card-title">&#128268; Data Mode</span></div><div style="padding:4px 0"><div style="display:flex;align-items:center;gap:16px;margin-bottom:12px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 16px;border-radius:8px;border:2px solid '+(!isLive?'var(--accent-blue)':'var(--border-color)')+';background:'+(!isLive?'rgba(59,130,246,.08)':'transparent')+'"><input type="radio" name="dataMode" value="demo" '+(isLive?'':'checked')+' onchange="switchDataMode(\'demo\')"> <span style="font-weight:600">&#127922; Demo Data</span></label><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 16px;border-radius:8px;border:2px solid '+(isLive?'var(--accent-green)':'var(--border-color)')+';background:'+(isLive?'rgba(34,197,94,.08)':'transparent')+'"><input type="radio" name="dataMode" value="live" '+(isLive?'checked':'')+' onchange="switchDataMode(\'live\')"> <span style="font-weight:600">&#128994; Live Airtable</span></label></div><div style="font-size:.9rem;color:var(--text-muted)">'+(_dataLoadError?'<span style="color:var(--accent-red)">&#9888;&#65039; Last sync error: '+_dataLoadError+'</span>':isLive?'<span style="color:var(--accent-green)">&#9989; Connected — showing live Airtable data</span>':'Showing built-in demo data. Save a valid PAT and switch to Live to pull from Airtable.')+'</div></div></div><div class="card"><div class="card-header"><span class="card-title">Authorized Senders</span><button class="btn btn-primary btn-sm" onclick="openAddSender()">+ Add Domain</button></div><div class="table-container"><table><thead><tr><th>Domain</th><th>Name</th><th>Type</th><th>Added</th><th>Status</th><th>Actions</th></tr></thead><tbody>'+AUTHORIZED_SENDERS.map(s=>'<tr><td><strong>@'+s.domain+'</strong></td><td>'+s.name+'</td><td><span class="badge badge-'+(s.type==='Carrier'?'blue':s.type==='Internal'?'purple':'cyan')+'">'+s.type+'</span></td><td>'+formatDate(s.addedDate)+'</td><td><span class="badge badge-green">'+s.status+'</span></td><td><button class="btn btn-ghost btn-sm" onclick="showToast(\'Edit '+s.domain+'\',\'info\')">Edit</button> <button class="btn btn-ghost btn-sm" style="color:var(--accent-red)" onclick="showToast(\'Remove '+s.domain+'\',\'info\')">Remove</button></td></tr>').join('')+'</tbody></table></div></div><div class="card"><div class="card-header"><span class="card-title">Holiday Calendar 2026</span><button class="btn btn-primary btn-sm" onclick="openAddHoliday()">+ Add Holiday</button></div><div class="table-container"><table><thead><tr><th>Holiday</th><th>Date</th><th>Type</th></tr></thead><tbody>'+HOLIDAYS_2026.map(h=>'<tr><td>'+h.name+'</td><td>'+formatDate(h.date)+'</td><td><span class="badge badge-blue">'+h.type+'</span></td></tr>').join('')+'</tbody></table></div></div><div class="card"><div class="card-header"><span class="card-title">System Status</span></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px"><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Airtable Connection</div><div style="display:flex;align-items:center;gap:6px"><span class="status-dot active"></span> Connected</div></div><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Make.com Status</div><div style="display:flex;align-items:center;gap:6px"><span class="status-dot active"></span> Operational</div></div><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Last Sync</div><div style="font-size:1rem">May 19, 2026 9:15 AM</div></div></div></div><div class="card"><div class="card-header"><span class="card-title">User Roles</span></div><div class="table-container"><table><thead><tr><th>User</th><th>Mode</th><th>Offices</th><th>Permissions</th></tr></thead><tbody><tr><td><strong>Moshe</strong></td><td><span class="badge badge-green">Full Access</span></td><td>Portland, Seattle</td><td>All features, settings, admin</td></tr><tr><td><strong>Christina</strong></td><td><span class="badge badge-blue">Full Mode</span></td><td>Portland</td><td>Collections, payments, errors, ops</td></tr><tr><td><strong>Hannah</strong></td><td><span class="badge badge-yellow">Guided Mode</span></td><td>Seattle</td><td>Guided AR, Strike Queue, Lien Zone</td></tr></tbody></table></div></div>';
+  $('settingsContent').innerHTML='<div class="card"><div class="card-header"><span class="card-title">&#128273; Airtable Connection</span></div><div style="padding:4px 0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span class="status-dot '+(currentPAT?'active':'')+'"></span><span style="font-size:.95rem">'+(currentPAT?'PAT configured: <code style="background:var(--bg-tertiary);padding:2px 6px;border-radius:4px">'+maskedPAT+'</code>':'No PAT configured — enter your Airtable Personal Access Token below')+'</span></div><div style="display:flex;gap:8px;align-items:center"><input type="password" id="settingsPATInput" placeholder="pat-xxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" value="'+currentPAT+'" style="flex:1;padding:10px 12px;border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border-color);font-family:monospace;font-size:.9rem"><button class="btn btn-secondary btn-sm" onclick="var i=$(\'settingsPATInput\');i.type=i.type===\'password\'?\'text\':\'password\'">&#128065; Show</button><button class="btn btn-primary btn-sm" onclick="var v=$(\'settingsPATInput\').value.trim();if(!v){showToast(\'Please enter a PAT\',\'error\');return}setAirtablePAT(v);showToast(\'PAT saved successfully\',\'success\');renderSettings()">Save PAT</button></div><div style="margin-top:8px;font-size:.85rem;color:var(--text-muted)">Your PAT is stored locally in this browser. Get one from <a href=\'https://airtable.com/create/tokens\' target=\'_blank\' style=\'color:var(--accent-blue)\'>airtable.com/create/tokens</a> with read access to the 911 base.</div></div></div><div class="card"><div class="card-header"><span class="card-title">&#128268; Data Mode</span></div><div style="padding:4px 0"><div style="display:flex;align-items:center;gap:16px;margin-bottom:12px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 16px;border-radius:8px;border:2px solid '+(!isLive?'var(--accent-blue)':'var(--border-color)')+';background:'+(!isLive?'rgba(59,130,246,.08)':'transparent')+'"><input type="radio" name="dataMode" value="demo" '+(isLive?'':'checked')+' onchange="switchDataMode(\'demo\')"> <span style="font-weight:600">&#127922; Demo Data</span></label><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 16px;border-radius:8px;border:2px solid '+(isLive?'var(--accent-green)':'var(--border-color)')+';background:'+(isLive?'rgba(34,197,94,.08)':'transparent')+'"><input type="radio" name="dataMode" value="live" '+(isLive?'checked':'')+' onchange="switchDataMode(\'live\')"> <span style="font-weight:600">&#128994; Live Airtable</span></label></div><div style="font-size:.9rem;color:var(--text-muted)">'+(_dataLoadError?'<span style="color:var(--accent-red)">&#9888;&#65039; Last sync error: '+_dataLoadError+'</span>':isLive?'<span style="color:var(--accent-green)">&#9989; Connected — showing live Airtable data</span>':'Showing built-in demo data. Save a valid PAT and switch to Live to pull from Airtable.')+'</div></div></div><div class="card"><div class="card-header"><span class="card-title">Authorized Senders</span><button class="btn btn-primary btn-sm" onclick="openAddSender()">+ Add Domain</button></div><div class="table-container"><table><thead><tr><th>Domain</th><th>Name</th><th>Type</th><th>Added</th><th>Status</th><th>Actions</th></tr></thead><tbody>'+AUTHORIZED_SENDERS.map(s=>'<tr><td><strong>@'+s.domain+'</strong></td><td>'+s.name+'</td><td><span class="badge badge-'+(s.type==='Carrier'?'blue':s.type==='Internal'?'purple':'cyan')+'">'+s.type+'</span></td><td>'+formatDate(s.addedDate)+'</td><td><span class="badge badge-green">'+s.status+'</span></td><td><button class="btn btn-ghost btn-sm" onclick="showToast(\'Edit senders directly in Airtable → AuthorizedSenders table\',\'info\')">Edit</button> <button class="btn btn-ghost btn-sm" style="color:var(--accent-red)" onclick="showToast(\'Remove senders directly in Airtable → AuthorizedSenders table\',\'info\')">Remove</button></td></tr>').join('')+'</tbody></table></div></div><div class="card"><div class="card-header"><span class="card-title">Holiday Calendar 2026</span><button class="btn btn-primary btn-sm" onclick="openAddHoliday()">+ Add Holiday</button></div><div class="table-container"><table><thead><tr><th>Holiday</th><th>Date</th><th>Type</th></tr></thead><tbody>'+HOLIDAYS_2026.map(h=>'<tr><td>'+h.name+'</td><td>'+formatDate(h.date)+'</td><td><span class="badge badge-blue">'+h.type+'</span></td></tr>').join('')+'</tbody></table></div></div><div class="card"><div class="card-header"><span class="card-title">System Status</span></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px"><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Airtable Connection</div><div style="display:flex;align-items:center;gap:6px"><span class="status-dot active"></span> Connected</div></div><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Make.com Status</div><div style="display:flex;align-items:center;gap:6px"><span class="status-dot active"></span> Operational</div></div><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Last Sync</div><div style="font-size:1rem">May 19, 2026 9:15 AM</div></div></div></div><div class="card"><div class="card-header"><span class="card-title">User Roles</span></div><div class="table-container"><table><thead><tr><th>User</th><th>Mode</th><th>Offices</th><th>Permissions</th></tr></thead><tbody><tr><td><strong>Moshe</strong></td><td><span class="badge badge-green">Full Access</span></td><td>Portland, Seattle</td><td>All features, settings, admin</td></tr><tr><td><strong>Christina</strong></td><td><span class="badge badge-blue">Full Mode</span></td><td>Portland</td><td>Collections, payments, errors, ops</td></tr><tr><td><strong>Hannah</strong></td><td><span class="badge badge-yellow">Guided Mode</span></td><td>Seattle</td><td>Guided AR, Strike Queue, Lien Zone</td></tr></tbody></table></div></div>';
 }
-function openAddSender(){openModal('<div class="modal-header"><h2>Add Authorized Sender</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>Domain</label><input type="text" placeholder="e.g., progressive.com"></div><div class="form-group"><label>Organization Name</label><input type="text" placeholder="e.g., Progressive Insurance"></div><div class="form-group"><label>Type</label><select><option>Carrier</option><option>Vendor</option><option>Internal</option></select></div><div class="form-actions"><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button><button class="btn btn-primary" onclick="closeModalForce();showToast(\'Sender added\',\'success\')">Add Sender</button></div>')}
-function openAddHoliday(){openModal('<div class="modal-header"><h2>Add Holiday</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>Holiday Name</label><input type="text" placeholder="e.g., Company Holiday"></div><div class="form-group"><label>Date</label><input type="date"></div><div class="form-group"><label>Type</label><select><option>Federal</option><option>Company</option><option>State</option></select></div><div class="form-actions"><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button><button class="btn btn-primary" onclick="closeModalForce();showToast(\'Holiday added\',\'success\')">Add Holiday</button></div>')}
+function openAddSender(){openModal('<div class="modal-header"><h2>Add Authorized Sender</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>Domain</label><input id="senderDomain" type="text" placeholder="e.g., progressive.com"></div><div class="form-group"><label>Organization Name</label><input id="senderOrg" type="text" placeholder="e.g., Progressive Insurance"></div><div class="form-group"><label>Type</label><select id="senderType"><option>Carrier</option><option>Vendor</option><option>Internal</option></select></div><div class="form-actions"><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button><button class="btn btn-primary" onclick="saveNewSender()">Add Sender</button></div>')}
+function saveNewSender(){
+  var domain=(document.getElementById('senderDomain')||{}).value||'';
+  var org=(document.getElementById('senderOrg')||{}).value||'';
+  var type=(document.getElementById('senderType')||{}).value||'Carrier';
+  if(!domain.trim()){showToast('Enter a domain','error');return;}
+  var today=new Date().toISOString().split('T')[0];
+  var pat=getAirtablePAT();
+  AUTHORIZED_SENDERS.push({id:'local-'+Date.now(),domain:domain.trim(),name:org.trim()||domain.trim(),type:type,addedDate:today,status:'Active'});
+  if(pat){
+    fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/tbloXKsztyfjrrFF6',{
+      method:'POST',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
+      body:JSON.stringify({typecast:true,fields:{'Domain':domain.trim(),'Organization Name':org.trim()||domain.trim(),'Type':type,'Active':true,'Added Date':today,'Notes':'Added via Command Center'}})
+    }).then(function(r){if(!r.ok)throw new Error('POST failed '+r.status);showToast('Sender added to AuthorizedSenders','success')})
+      .catch(function(e){showToast('Airtable write failed: '+e.message,'error')});
+  } else {
+    showToast('Sender added (local only — connect Airtable to persist)','info');
+  }
+  closeModalForce();renderSettings();
+}
+function openAddHoliday(){openModal('<div class="modal-header"><h2>Add Holiday</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>Holiday Name</label><input id="holidayName" type="text" placeholder="e.g., Company Holiday"></div><div class="form-group"><label>Date</label><input id="holidayDate" type="date"></div><div class="form-group"><label>Type</label><select id="holidayType"><option>Federal</option><option>Company</option><option>State</option></select></div><div class="form-actions"><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button><button class="btn btn-primary" onclick="saveNewHoliday()">Add Holiday</button></div>')}
+function saveNewHoliday(){
+  var name=(document.getElementById('holidayName')||{}).value||'';
+  var date=(document.getElementById('holidayDate')||{}).value||'';
+  var type=(document.getElementById('holidayType')||{}).value||'Company';
+  if(!name.trim()||!date){showToast('Enter a name and date','error');return;}
+  var pat=getAirtablePAT();
+  HOLIDAYS_2026.push({id:'local-'+Date.now(),name:name.trim(),date:date,type:type});
+  if(pat){
+    fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/tbl1vSkWPrLwbxEn3',{
+      method:'POST',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
+      body:JSON.stringify({typecast:true,fields:{'Holiday Name':name.trim(),'Date':date,'Year':parseInt(date.split('-')[0],10),'Notes':type+' — added via Command Center'}})
+    }).then(function(r){if(!r.ok)throw new Error('POST failed '+r.status);showToast('Holiday added to HolidayCalendar','success')})
+      .catch(function(e){showToast('Airtable write failed: '+e.message,'error')});
+  } else {
+    showToast('Holiday added (local only — connect Airtable to persist)','info');
+  }
+  closeModalForce();renderSettings();
+}
 
 // ============================================================
 // 9. OPS DASHBOARD
@@ -2387,14 +2512,14 @@ function resolveJobFromEmail(entry) {
 }
 function openDisputeFromEmail(emailId) {
   var entry = AI_INBOX.find(function(e){ return e.id === emailId; });
-  if (!entry) { alert('Email not found'); return; }
+  if (!entry) { showToast('Email not found','error'); return; }
   var job = resolveJobFromEmail(entry);
-  if (!job) { alert('Job not found: ' + (entry.jobNum || entry.jobId)); return; }
+  if (!job) { showToast('Job not found: ' + (entry.jobNum || entry.jobId),'error'); return; }
   openDisputeFromInbox(job.id, entry.senderName||entry.fromName||job.adjuster||'', entry.senderEmail||entry.from||job.adjEmail||'', entry.bodyPreview||entry.body||'');
 }
 function openCarrierResponseFromEmail(emailId) {
   var entry = AI_INBOX.find(function(e){ return e.id === emailId; });
-  if (!entry) { alert('Email not found'); return; }
+  if (!entry) { showToast('Email not found','error'); return; }
   var job = resolveJobFromEmail(entry);
   if (!job) { openCaseFile(entry.jobNum||entry.jobId, 'actions'); return; }
   if (typeof openCarrierResponseModal === 'function') { openCarrierResponseModal(job.id, null, entry.bodyPreview||entry.body||'', entry.outcome||''); }
@@ -2402,7 +2527,7 @@ function openCarrierResponseFromEmail(emailId) {
 }
 function openInfoRequestFromEmail(emailId) {
   var entry = AI_INBOX.find(function(e){ return e.id === emailId; });
-  if (!entry) { alert('Email not found'); return; }
+  if (!entry) { showToast('Email not found','error'); return; }
   var job = resolveJobFromEmail(entry);
   if (!job) { openCaseFile(entry.jobNum||entry.jobId, 'actions'); return; }
   if (typeof openCarrierInfoRequestModal === 'function') { openCarrierInfoRequestModal(job.id, entry.bodyPreview||entry.body||''); }
@@ -2440,7 +2565,7 @@ function autoDetectDisputeCategory(text) {
 }
 function openDisputeFromInbox(jobId, adjusterName, adjusterEmail, bodyPreview) {
   var job = JOBS.find(function(j){ return j.id === jobId; }) || JOBS.find(function(j){ return j.jobNum === jobId; }) || (typeof DEMO_JOBS!=='undefined' ? DEMO_JOBS.find(function(j){ return j.id === jobId || j.jobNum === jobId; }) : null);
-  if (!job) { alert('Job not found: ' + jobId); return; }
+  if (!job) { showToast('Job not found: ' + jobId,'error'); return; }
 
   // Auto-parse amounts from email body
   var parsedAdjEst = parseAmountFromEmail(bodyPreview||'');
@@ -2518,7 +2643,7 @@ function confirmOpenDispute(jobId) {
   var ourEst = parseFloat(document.getElementById('disputeOurEstimate').value) || 0;
   var notes = document.getElementById('disputeNotes').value;
   var pat = getAirtablePAT();
-  if (!pat) { alert('Connect Airtable PAT first'); return; }
+  if (!pat) { showToast('Connect Airtable PAT first','error'); return; }
 
   var fields = {
     'Dispute Status': 'Active Dispute',
@@ -2565,7 +2690,7 @@ function confirmOpenDispute(jobId) {
 
 function updateDisputeStatus(jobId, newStatus) {
   var pat = getAirtablePAT();
-  if (!pat) { alert('Connect Airtable PAT first'); return; }
+  if (!pat) { showToast('Connect Airtable PAT first','error'); return; }
 
   var fields = { 'Dispute Status': newStatus };
   if (newStatus === 'Supplement Sent') {
@@ -2587,7 +2712,7 @@ function updateDisputeStatus(jobId, newStatus) {
     }
     closeModal();
     openCaseFile(jobId);
-  }).catch(function(err) { alert('Error: ' + err.message); });
+  }).catch(function(err) { showToast('Error: ' + err.message,'error'); });
 }
 
 function resolveDispute(jobId) {
@@ -2616,7 +2741,7 @@ function confirmResolveDispute(jobId) {
   var amount = parseFloat(document.getElementById('resolveDisputeAmount').value) || 0;
   var notes = document.getElementById('resolveDisputeNotes').value;
   var pat = getAirtablePAT();
-  if (!pat) { alert('Connect Airtable PAT first'); return; }
+  if (!pat) { showToast('Connect Airtable PAT first','error'); return; }
 
   var job = JOBS.find(function(j){ return j.id === jobId; });
   var existingNotes = job ? (job.disputeNotes || '') : '';
@@ -2640,9 +2765,9 @@ function confirmResolveDispute(jobId) {
       job.disputeNotes = updatedNotes;
     }
     closeModal();
-    alert('Dispute resolved: ' + resType);
+    showToast('Dispute resolved: ' + resType,'success');
     renderDashboard();
-  }).catch(function(err) { alert('Error: ' + err.message); });
+  }).catch(function(err) { showToast('Error: ' + err.message,'error'); });
 }
 
 function renderOps(){
@@ -2759,7 +2884,7 @@ async function loadLiveData() {
     // Fetch Jobs
     var sel = function(v){ return Array.isArray(v)?v[0]:(v||''); };
     var num = function(v){ return typeof v==='number'?v:(parseFloat(v)||0); };
-    var jobRecs = await fetchAllRecords(T.jobs, ['Job ID','Claim Number','Office','Primary Status','Alternative Status','Collections Status','Amount Invoiced','Total Paid','Invoiced Date','Lien Deadline','Lien Mode','Property State','Days to Lien Deadline','Diversion Flag','Carriers','Homeowners','Adjusters','Lien Eligible','Dispute Status','Dispute Date','Our Estimate','Adjuster Estimate','Dispute Gap','Dispute Category','Dispute Notes','Supplement Sent Date','Carrier Response Status','Carrier Agreed Amount','Carrier Response Date','Carrier Response Notes','Partial Gap Decision','Carrier Info Request Status','Info Request Date','Info Requested Items','Info Docs Sent Date','Info Response Deadline','Aging Paused','Aging Pause Start','Aging Pause Days','InvoiceRecords'], pat);
+    var jobRecs = await fetchAllRecords(T.jobs, ['Job ID','Claim Number','Office','Primary Status','Alternative Status','Collections Status','Amount Invoiced','Total Paid','Invoiced Date','Lien Deadline','Lien Mode','Property State','Days to Lien Deadline','Diversion Flag','Carriers','Homeowners','Adjusters','Lien Eligible','Dispute Status','Dispute Date','Our Estimate','Adjuster Estimate','Dispute Gap','Dispute Category','Dispute Notes','Supplement Sent Date','Carrier Response Status','Carrier Agreed Amount','Carrier Response Date','Carrier Response Notes','Partial Gap Decision','Carrier Info Request Status','Info Request Date','Info Requested Items','Info Docs Sent Date','Info Response Deadline','Aging Paused','Aging Pause Start','Aging Pause Days','InvoiceRecords','Payment Stop'], pat);
     // Fetch Carriers table to resolve linked record IDs to names
     var carrierMap = {};
     try {
@@ -2803,6 +2928,7 @@ async function loadLiveData() {
           daysOut: f['Invoiced Date'] ? Math.max(0, Math.floor((Date.now() - new Date(f['Invoiced Date']).getTime()) / 86400000)) : 0,
           invoicedDate: f['Invoiced Date'] || '',
           adjuster: (function(){ var ids = f['Adjusters']; if (!ids || !ids.length) return ''; var id = Array.isArray(ids) ? ids[0] : ids; return adjusterMap[id] || id || ''; })() || '',
+          adjusterId: (function(){ var ids = f['Adjusters']; if (!ids || !ids.length) return ''; return Array.isArray(ids) ? ids[0] : ids; })(),
           adjPhone: (function(){ var ids = f['Adjusters']; if (!ids || !ids.length) return ''; var id = Array.isArray(ids) ? ids[0] : ids; var d = adjusterDetails[id]; return d ? d.phone : ''; })(),
           adjEmail: (function(){ var ids = f['Adjusters']; if (!ids || !ids.length) return ''; var id = Array.isArray(ids) ? ids[0] : ids; var d = adjusterDetails[id]; return d ? d.email : ''; })(),
           homeowner: (function(){ var v = f['Homeowners']; if (!v) return ''; if (Array.isArray(v)) { var val = v[0]; return (val && val.startsWith && val.startsWith('rec')) ? '' : val; } return v; })() || '',
@@ -2836,6 +2962,7 @@ async function loadLiveData() {
           agingPauseStart: f['Aging Pause Start'] || '',
           agingPauseDays: num(f['Aging Pause Days']),
           invoiceIds: f['InvoiceRecords'] || [],
+          paymentStop: !!f['Payment Stop'],
           effectiveDaysOut: 0,
           communicationTrack: sel(f['Communication Track']) || '',
           trackAssignedDate: f['Track Assigned Date'] || '',
@@ -2911,6 +3038,7 @@ async function loadLiveData() {
         var f = r.fields;
         return {
           id: f['Task ID'] || r.id,
+          recId: r.id,
           jobId: (f['Jobs'] && f['Jobs'][0]) || '',
           jobNum: f['PSA Job Number'] || '',
           taskType: f['Task Type'] || '',
