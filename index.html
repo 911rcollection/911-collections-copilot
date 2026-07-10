@@ -3006,7 +3006,7 @@ async function loadLiveData() {
 // FEATURE 3: CARRIER INFO REQUEST — PAUSE AGING
 // ============================================================
 // FIX 2026-07-10 (ERR-20260710-S05-PAUSE-001): the pause must also halt the S-05
-// cadence, which gates on InvoiceRecords.{Sequence Halted} - not on Jobs.Aging Paused.
+// cadence, which gates on InvoiceRecords.{Sequence Halted} — not on Jobs.Aging Paused.
 function setInvoicesSequenceHalted(j, halted, pat) {
   if (!pat || !j || !j.invoiceIds || !j.invoiceIds.length) return;
   j.invoiceIds.forEach(function(invId){
@@ -3017,8 +3017,23 @@ function setInvoicesSequenceHalted(j, halted, pat) {
     }).catch(function(e){ console.warn('Sequence Halted patch failed for ' + invId, e); });
   });
 }
+function resolveJobRecord(jobId) {
+  // Canonical job lookup: live record id, then job number, then demo/training jobs.
+  return JOBS.find(function(x){ return x.id === jobId; })
+      || JOBS.find(function(x){ return x.jobNum === jobId; })
+      || (typeof DEMO_JOBS !== 'undefined' ? DEMO_JOBS.find(function(x){ return x.id === jobId || x.jobNum === jobId; }) : null);
+}
+
+function updateGapDisplay(jobId, inputId, displayId) {
+  var j = resolveJobRecord(jobId); if (!j) return;
+  var v = parseFloat((document.getElementById(inputId)||{}).value) || 0;
+  var el = document.getElementById(displayId); if (!el) return;
+  if (v > 0) { el.style.display = 'block'; el.textContent = 'Gap: ' + fmt(Math.max(0, j.amtInvoiced - v)); }
+  else { el.style.display = 'none'; }
+}
+
 function openCarrierInfoRequestModal(jobId, prefillText) {
-  var j = JOBS.find(function(x){ return x.id === jobId; }) || JOBS.find(function(x){ return x.jobNum === jobId; }) || (typeof DEMO_JOBS!=='undefined' ? DEMO_JOBS.find(function(x){ return x.id === jobId || x.jobNum === jobId; }) : null);
+  var j = resolveJobRecord(jobId);
   if (!j) { showToast('Job not found: ' + jobId, 'error'); return; }
   var today = new Date().toISOString().split('T')[0];
   var defaultDeadline = new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0];
@@ -3037,8 +3052,9 @@ function openCarrierInfoRequestModal(jobId, prefillText) {
 }
 
 function confirmCarrierInfoRequest(jobId) {
-  var j = JOBS.find(function(x){ return x.id === jobId; });
-  if (!j) return;
+  var j = resolveJobRecord(jobId);
+  if (!j) { showToast('Job not found: ' + jobId, 'error'); return; }
+  jobId = j.id; // canonical id — handles demo/training jobs passed by job number
   var requestedItems = (document.getElementById('irRequestedItems')||{}).value || '';
   var deadline = (document.getElementById('irResponseDeadline')||{}).value || '';
   var pauseAging = (document.getElementById('irPauseAging')||{}).checked !== false;
@@ -3055,7 +3071,7 @@ function confirmCarrierInfoRequest(jobId) {
     j.agingPauseStart = today;
   }
 
-  if (pat) {
+  if (pat && jobId.indexOf('rec') === 0) {
     var jobFields = {
       'Carrier Info Request Status': 'Pending — Gathering Docs',
       'Info Request Date': today,
@@ -3093,7 +3109,8 @@ function confirmCarrierInfoRequest(jobId) {
   }
 
   closeModalForce();
-  showToast('Info request logged.' + (pauseAging ? ' Aging paused.' : '') + ' Strike Queue task created.', 'success');
+  var liveWrite = pat && jobId.indexOf('rec') === 0;
+  showToast('Info request logged.' + (pauseAging ? ' Aging paused.' : '') + (liveWrite ? ' Strike Queue task created.' : ' (demo job — not written to Airtable)'), 'success');
   if (typeof selectedCaseJob !== 'undefined' && selectedCaseJob && selectedCaseJob.id === jobId) {
     caseFileTab = 'actions';
     navigate('case-file');
@@ -3102,8 +3119,9 @@ function confirmCarrierInfoRequest(jobId) {
 }
 
 function openMarkDocsSentModal(jobId) {
-  var j = JOBS.find(function(x){ return x.id === jobId; });
-  if (!j) return;
+  var j = resolveJobRecord(jobId);
+  if (!j) { showToast('Job not found: ' + jobId, 'error'); return; }
+  jobId = j.id;
   var today = new Date().toISOString().split('T')[0];
   var defaultFollowUp = new Date(Date.now() + 10 * 86400000).toISOString().split('T')[0];
   var html = '<div class="modal-header"><h2>&#128229; Mark Documents Sent — ' + j.jobNum + '</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div>' +
@@ -3116,8 +3134,9 @@ function openMarkDocsSentModal(jobId) {
 }
 
 function confirmMarkDocsSent(jobId) {
-  var j = JOBS.find(function(x){ return x.id === jobId; });
-  if (!j) return;
+  var j = resolveJobRecord(jobId);
+  if (!j) { showToast('Job not found: ' + jobId, 'error'); return; }
+  jobId = j.id;
   var sentDesc = (document.getElementById('docsSentDescription')||{}).value || '';
   var sentDate = (document.getElementById('docsSentDate')||{}).value || new Date().toISOString().split('T')[0];
   var sentVia = (document.getElementById('docsSentVia')||{}).value || 'Email';
@@ -3139,7 +3158,7 @@ function confirmMarkDocsSent(jobId) {
   j.infoResponseDeadline = responseExpected;
   j.effectiveDaysOut = Math.max(0, j.daysOut - newPauseDays);
 
-  if (pat) {
+  if (pat && jobId.indexOf('rec') === 0) {
     var jobFields = {
       'Info Docs Sent Date': sentDate,
       'Carrier Info Request Status': 'Docs Sent — Awaiting Response',
@@ -3161,7 +3180,7 @@ function confirmMarkDocsSent(jobId) {
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.commsLog, {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fields: {
+      body: JSON.stringify({ typecast: true, fields: {
         'Message': logMsg, 'Channel': sentVia, 'Direction': 'Outbound',
         'Source': 'Command Center', 'Log Entry': sentDate + ' — Docs Sent — ' + j.jobNum,
         'Date': new Date().toISOString(), 'Logged By': 'Command Center', 'Linked Job': [jobId]
@@ -3280,8 +3299,9 @@ function openCarrierResponseModal(jobId, prefillAmount, prefillNotes, aiClassifi
 }
 
 function renderCarrierResponseStage2(jobId, responseType, extractedAmount, emailBody, carrierName, adjusterName) {
-  var j = JOBS.find(function(x) { return x.id === jobId; });
-  if (!j) return;
+  var j = resolveJobRecord(jobId);
+  if (!j) { showToast('Job not found: ' + jobId, 'error'); return; }
+  jobId = j.id;
   
   // If dispute, delegate to existing dispute flow
   if (responseType === 'dispute') {
@@ -3356,8 +3376,9 @@ function renderCarrierResponseStage2(jobId, responseType, extractedAmount, email
 }
 
 function confirmCarrierFullAgreement(jobId) {
-  var j = JOBS.find(function(x){ return x.id === jobId; });
-  if (!j) return;
+  var j = resolveJobRecord(jobId);
+  if (!j) { showToast('Job not found: ' + jobId, 'error'); return; }
+  jobId = j.id;
   var amount = parseFloat((document.getElementById('crAgreedAmount')||{}).value) || j.amtInvoiced;
   var date = (document.getElementById('crResponseDate')||{}).value || new Date().toISOString().split('T')[0];
   var notes = (document.getElementById('crNotes')||{}).value || '';
@@ -3372,13 +3393,13 @@ function confirmCarrierFullAgreement(jobId) {
   if(!j.communicationTrack){j.communicationTrack='5 - Good Faith';j.trackAssignedDate=date}
   if (j.agingPaused) { j.agingPaused = false; j.effectiveDaysOut = Math.max(0, j.daysOut - (j.agingPauseDays||0)); }
 
-  if (pat) {
+  if (pat && jobId.indexOf('rec') === 0) {
     var jobFields = {
       'Carrier Response Status': 'Agreed — Full',
       'Carrier Agreed Amount': amount,
       'Carrier Response Date': date,
       'Carrier Response Notes': notes + (refNum ? '\nReference #: ' + refNum : ''),
-      'Communication Track': j.communicationTrack ? { name: j.communicationTrack } : null,
+      'Communication Track': j.communicationTrack || null,
       'Track Assigned Date': j.trackAssignedDate || null
     };
     if (j.agingPaused !== undefined) jobFields['Aging Paused'] = false;
@@ -3395,7 +3416,7 @@ function confirmCarrierFullAgreement(jobId) {
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.commsLog, {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fields: {
+      body: JSON.stringify({ typecast: true, fields: {
         'Message': logMsg, 'Channel': 'Email', 'Direction': 'Inbound',
         'Source': 'Command Center', 'Log Entry': date + ' — Carrier Response: Full Agreement — ' + j.jobNum,
         'Date': new Date().toISOString(), 'Logged By': 'Command Center', 'Linked Job': [jobId]
@@ -3414,8 +3435,9 @@ function confirmCarrierFullAgreement(jobId) {
 
 // ── Outbound Confirmation to Carrier/Adjuster ──
 function showSendConfirmationModal(jobId, responseType, agreedAmount, gap, respDate, refNum, notes) {
-  var j = JOBS.find(function(x){ return x.id === jobId; });
-  if (!j) return;
+  var j = resolveJobRecord(jobId);
+  if (!j) { showToast('Job not found: ' + jobId, 'error'); return; }
+  jobId = j.id;
   var adjName = j.adjuster || j.adjusterName || 'Adjuster';
   var adjEmail = j.adjEmail || j.adjusterEmail || '';
   var carrier = j.carrier || '';
@@ -3496,12 +3518,12 @@ function sendAdjusterConfirmation(jobId, responseType) {
   if (!to) { showToast('Please enter an adjuster email address', 'error'); return; }
 
   // Log outbound email to CommsLog
-  if (pat) {
+  if (pat && jobId.indexOf('rec') === 0) {
     var logMsg = 'OUTBOUND CONFIRMATION (' + responseType.toUpperCase() + ')\nTo: ' + to + '\nSubject: ' + subject + '\n\n' + body;
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.commsLog, {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fields: {
+      body: JSON.stringify({ typecast: true, fields: {
         'Message': logMsg, 'Channel': 'Email', 'Direction': 'Outbound',
         'Source': 'Command Center', 'Log Entry': new Date().toISOString().split('T')[0] + ' — Sent ' + responseType + ' confirmation to ' + to,
         'Date': new Date().toISOString(), 'Logged By': 'Command Center', 'Linked Job': [jobId]
@@ -3526,8 +3548,9 @@ function sendAdjusterConfirmation(jobId, responseType) {
 }
 
 function confirmCarrierPartialAgreement(jobId) {
-  var j = JOBS.find(function(x){ return x.id === jobId; });
-  if (!j) return;
+  var j = resolveJobRecord(jobId);
+  if (!j) { showToast('Job not found: ' + jobId, 'error'); return; }
+  jobId = j.id;
   var partial = parseFloat((document.getElementById('crPartialAmount')||{}).value) || 0;
   var date = (document.getElementById('crResponseDate')||{}).value || new Date().toISOString().split('T')[0];
   var notes = (document.getElementById('crNotes')||{}).value || '';
@@ -3546,14 +3569,14 @@ function confirmCarrierPartialAgreement(jobId) {
   if(!j.communicationTrack){j.communicationTrack='4 - Lowball/Escalation';j.trackAssignedDate=date}
   if (j.agingPaused) { j.agingPaused = false; j.effectiveDaysOut = Math.max(0, j.daysOut - (j.agingPauseDays||0)); }
 
-  if (pat) {
+  if (pat && jobId.indexOf('rec') === 0) {
     var jobFields = {
       'Carrier Response Status': 'Agreed — Partial',
       'Carrier Agreed Amount': partial,
       'Carrier Response Date': date,
       'Carrier Response Notes': notes,
       'Partial Gap Decision': gapDecision,
-      'Communication Track': j.communicationTrack ? { name: j.communicationTrack } : null,
+      'Communication Track': j.communicationTrack || null,
       'Track Assigned Date': j.trackAssignedDate || null
     };
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
@@ -3567,7 +3590,7 @@ function confirmCarrierPartialAgreement(jobId) {
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.commsLog, {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fields: {
+      body: JSON.stringify({ typecast: true, fields: {
         'Message': logMsg, 'Channel': 'Email', 'Direction': 'Inbound',
         'Source': 'Command Center', 'Log Entry': date + ' — Carrier Response: Partial Agreement — ' + j.jobNum,
         'Date': new Date().toISOString(), 'Logged By': 'Command Center', 'Linked Job': [jobId]
@@ -3620,7 +3643,7 @@ function setCommTrack(jobId, track) {
   j.trackAssignedDate=track?new Date().toISOString().split('T')[0]:'';
   var pat=getAirtablePAT();
   if(pat&&jobId.startsWith('rec')){
-    var fields={'Communication Track':track?{name:track}:null,'Track Assigned Date':j.trackAssignedDate||null};
+    var fields={'Communication Track':track||null,'Track Assigned Date':j.trackAssignedDate||null};
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.jobs+'/'+jobId,{
       method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
       body:JSON.stringify({typecast:true,fields:fields})
@@ -3629,7 +3652,7 @@ function setCommTrack(jobId, track) {
     // Log track assignment to CommsLog
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{
       method:'POST',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
-      body:JSON.stringify({fields:{'Message':'Communication Track set to: '+track+' for '+j.jobNum,'Channel':'system','Direction':'Outbound','Source':'Command Center','Log Entry':new Date().toISOString().split('T')[0]+' — Track assigned: '+track+' — '+j.jobNum,'Date':new Date().toISOString(),'Logged By':'Command Center','Linked Job':[jobId]}})
+      body:JSON.stringify({typecast:true,fields:{'Message':'Communication Track set to: '+track+' for '+j.jobNum,'Channel':'system','Direction':'Outbound','Source':'Command Center','Log Entry':new Date().toISOString().split('T')[0]+' — Track assigned: '+track+' — '+j.jobNum,'Date':new Date().toISOString(),'Logged By':'Command Center','Linked Job':[jobId]}})
     }).catch(function(e){console.warn('CommsLog failed:',e)});
   }
   showToast('Communication track set to: '+(track||'None'),'success');
