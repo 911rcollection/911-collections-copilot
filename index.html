@@ -2759,7 +2759,7 @@ async function loadLiveData() {
     // Fetch Jobs
     var sel = function(v){ return Array.isArray(v)?v[0]:(v||''); };
     var num = function(v){ return typeof v==='number'?v:(parseFloat(v)||0); };
-    var jobRecs = await fetchAllRecords(T.jobs, ['Job ID','Claim Number','Office','Primary Status','Alternative Status','Collections Status','Amount Invoiced','Total Paid','Invoiced Date','Lien Deadline','Lien Mode','Property State','Days to Lien Deadline','Diversion Flag','Carriers','Homeowners','Adjusters','Lien Eligible','Dispute Status','Dispute Date','Our Estimate','Adjuster Estimate','Dispute Gap','Dispute Category','Dispute Notes','Supplement Sent Date','Carrier Response Status','Carrier Agreed Amount','Carrier Response Date','Carrier Response Notes','Partial Gap Decision','Carrier Info Request Status','Info Request Date','Info Requested Items','Info Docs Sent Date','Info Response Deadline','Aging Paused','Aging Pause Start','Aging Pause Days'], pat);
+    var jobRecs = await fetchAllRecords(T.jobs, ['Job ID','Claim Number','Office','Primary Status','Alternative Status','Collections Status','Amount Invoiced','Total Paid','Invoiced Date','Lien Deadline','Lien Mode','Property State','Days to Lien Deadline','Diversion Flag','Carriers','Homeowners','Adjusters','Lien Eligible','Dispute Status','Dispute Date','Our Estimate','Adjuster Estimate','Dispute Gap','Dispute Category','Dispute Notes','Supplement Sent Date','Carrier Response Status','Carrier Agreed Amount','Carrier Response Date','Carrier Response Notes','Partial Gap Decision','Carrier Info Request Status','Info Request Date','Info Requested Items','Info Docs Sent Date','Info Response Deadline','Aging Paused','Aging Pause Start','Aging Pause Days','InvoiceRecords'], pat);
     // Fetch Carriers table to resolve linked record IDs to names
     var carrierMap = {};
     try {
@@ -2835,6 +2835,7 @@ async function loadLiveData() {
           agingPaused: f['Aging Paused'] || false,
           agingPauseStart: f['Aging Pause Start'] || '',
           agingPauseDays: num(f['Aging Pause Days']),
+          invoiceIds: f['InvoiceRecords'] || [],
           effectiveDaysOut: 0,
           communicationTrack: sel(f['Communication Track']) || '',
           trackAssignedDate: f['Track Assigned Date'] || '',
@@ -3004,6 +3005,18 @@ async function loadLiveData() {
 // ============================================================
 // FEATURE 3: CARRIER INFO REQUEST — PAUSE AGING
 // ============================================================
+// FIX 2026-07-10 (ERR-20260710-S05-PAUSE-001): the pause must also halt the S-05
+// cadence, which gates on InvoiceRecords.{Sequence Halted} - not on Jobs.Aging Paused.
+function setInvoicesSequenceHalted(j, halted, pat) {
+  if (!pat || !j || !j.invoiceIds || !j.invoiceIds.length) return;
+  j.invoiceIds.forEach(function(invId){
+    fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.invoices + '/' + invId, {
+      method: 'PATCH',
+      headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ typecast: true, fields: { 'Sequence Halted': halted } })
+    }).catch(function(e){ console.warn('Sequence Halted patch failed for ' + invId, e); });
+  });
+}
 function openCarrierInfoRequestModal(jobId, prefillText) {
   var j = JOBS.find(function(x){ return x.id === jobId; }) || JOBS.find(function(x){ return x.jobNum === jobId; }) || (typeof DEMO_JOBS!=='undefined' ? DEMO_JOBS.find(function(x){ return x.id === jobId || x.jobNum === jobId; }) : null);
   if (!j) { showToast('Job not found: ' + jobId, 'error'); return; }
@@ -3052,6 +3065,7 @@ function confirmCarrierInfoRequest(jobId) {
     if (pauseAging) {
       jobFields['Aging Paused'] = true;
       jobFields['Aging Pause Start'] = today;
+      setInvoicesSequenceHalted(j, true, pat); // halt the S-05 cadence on the linked invoices
     }
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
       method: 'PATCH',
@@ -3133,6 +3147,7 @@ function confirmMarkDocsSent(jobId) {
       'Aging Pause Days': newPauseDays
     };
     if (responseExpected) jobFields['Info Response Deadline'] = responseExpected;
+    setInvoicesSequenceHalted(j, false, pat); // resume the S-05 cadence on the linked invoices
 
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
       method: 'PATCH',
