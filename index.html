@@ -840,6 +840,7 @@ let currentRole='moshe';
 let currentScreen='dashboard';var previousScreen='dashboard';
 let selectedCaseJob=null;
 let caseFileTab='timeline';
+var caseFileShowAll=false;
 var CURRENT_USER=null;
 
 // SECURITY: passwords are NOT stored in client-side code. Authentication is performed against the
@@ -988,12 +989,23 @@ function getRole(){
   }
   return ROLES[currentRole];
 }
+// Airtable's Office single-select is UPPERCASE (e.g. "SEATTLE") while the app's
+// role/dropdown values are Title Case (e.g. "Seattle"). Always compare case-insensitively.
+function officeEq(a,b){return String(a||'').trim().toLowerCase()===String(b||'').trim().toLowerCase()}
+function resolveOffice(item){
+  if(!item) return '';
+  if(item.office) return String(item.office).trim();
+  var parent=null;
+  if(item.jobId) parent=JOBS.find(function(j){return j.id===item.jobId});
+  if(!parent&&item.jobNum) parent=JOBS.find(function(j){return j.jobNum&&j.jobNum===item.jobNum});
+  return parent&&parent.office?String(parent.office).trim():'';
+}
 function filterByOffice(arr){
   const r=getRole();
-  return arr.filter(item=>{
-    const office=item.office||(JOBS.find(j=>j.id===item.jobId)||{}).office||'';
+  return arr.filter(function(item){
+    var office=resolveOffice(item);
     if(!office) return true;
-    return r.offices.some(function(o){return o.toLowerCase()===office.toLowerCase();});
+    return r.offices.some(function(o){return officeEq(o,office)});
   });
 }
 
@@ -1034,9 +1046,11 @@ var screenHelp={
     ],
     actions:['Call the cases the automation could not close','Record every call outcome','Resolve or escalate after contact'],
     tips:['Everything here is 31+ days old — treat as priority.','Logging the call keeps the audit trail complete.']},
-  'case-file':{title:'Case File',desc:'The complete 360 view of a single job: timeline, invoices, payments, disputes, contacts and actions in one place.',
+  'case-file':{title:'Case File',desc:'The complete 360 view of a single job: timeline, invoices, payments, disputes, contacts and actions in one place. Open it with no job selected and you get a browsable list of every case in your offices — click any row to open it.',
     buttons:[
       {b:'&#8592; Back',d:'Returns to the screen you came from.'},
+      {b:'All Cases list (shown when no job is selected)',d:'Every job in your offices with Job #, Claim #, Office, Carrier, Status, Days Out and Outstanding. Click any column header to sort, click any row to open that case.'},
+      {b:'Showing: this case only / all cases (Invoices &amp; Payments tabs)',d:'Toggles those two tables between the records linked to this job and every invoice/payment across your offices. In all-cases mode a Job # column appears so you can jump to any case.'},
       {b:'Tabs: Timeline / Invoices / Payments / Disputes / Contacts / Actions',d:'Switch the section you are viewing for this job.'},
       {b:'&#128196; Generate Statement',d:'Creates a printable PDF statement for this job.'},
       {b:'&#9993; Draft Email',d:'Composes an email to the adjuster; the send is logged to the CommsLog.'},
@@ -1048,8 +1062,8 @@ var screenHelp={
       {b:'&#10003; Log Carrier Response',d:'Records how the carrier/adjuster responded and creates any follow-up task.'},
       {b:'Star rating',d:'Rates the adjuster for future reference.'}
     ],
-    actions:['See the entire history of a job','Take the next action on it','Manage disputes and supplements','Produce a statement'],
-    tips:['Send/Draft actions are suppressed while TEST MODE is on.','The Timeline shows suppressed sends too, so you can verify what would have gone out.']},
+    actions:['Browse every case in your offices','See the entire history of a job','Take the next action on it','Manage disputes and supplements','Produce a statement'],
+    tips:['Send/Draft actions are suppressed while TEST MODE is on.','The Timeline shows suppressed sends too, so you can verify what would have gone out.','If a job has no linked invoices or payments yet, flip the Invoices/Payments toggle to "all cases" to see everything in your offices.']},
   'lien-zone':{title:'Lien Zone',desc:'Tracks statutory lien deadlines for active jobs. Lien rights expire by state law (Oregon and Washington differ) — this screen makes sure a filing deadline is never missed.',
     buttons:[
       {b:'Lien Mode: Regular',d:'Full tracking with automated alert emails and the decision task as the deadline nears.'},
@@ -1263,8 +1277,9 @@ function switchDashOffice(val) {
   renderDashboard();
 }
 function filterByDashOffice(arr) {
-  if (!_dashOffice) return filterByOffice(arr);
-  return arr.filter(function(item) { return item.office === _dashOffice; });
+  var scoped = filterByOffice(arr);
+  if (!_dashOffice) return scoped;
+  return scoped.filter(function(item) { return officeEq(resolveOffice(item), _dashOffice); });
 }
 
 
@@ -1340,7 +1355,7 @@ function renderDashboard(){
 
   if(r.offices.length>1){
     $('officeComparison').innerHTML=r.offices.map(off=>{
-      const oj=JOBS.filter(j=>j.office===off);
+      const oj=JOBS.filter(function(j){return officeEq(j.office,off)});
       const oar=oj.reduce((s,j)=>s+(j.amtInvoiced-j.amtPaid),0);
       const odso=oj.length?Math.round(oj.reduce((s,j)=>s+(j.effectiveDaysOut||j.daysOut),0)/oj.length):0;
       return '<div class="card"><div class="card-header"><span class="card-title">'+off+' Office</span><span class="badge badge-blue">'+oj.length+' jobs</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><div style="font-size:1rem;color:var(--text-muted)">AR Outstanding</div><div style="font-size:1.3rem;font-weight:700;margin-top:4px">'+fmt(oar)+'</div></div><div><div style="font-size:1rem;color:var(--text-muted)">Avg DSO</div><div style="font-size:1.3rem;font-weight:700;margin-top:4px">'+odso+' days</div></div></div></div>';
@@ -1657,8 +1672,27 @@ function showStepDetail(jobId,stepNum,stepLabel,stepChannel,stepDate){
   }
   showModal('Step '+stepNum+' Details — '+stepLabel,body);
 }
+function toggleCaseFileShowAll(){caseFileShowAll=!caseFileShowAll;renderCaseFile()}
+function caseFileScopeToggle(){
+  return '<div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="btn btn-secondary btn-sm" onclick="toggleCaseFileShowAll()">'+(caseFileShowAll?'Showing: All cases &#183; switch to this case only':'Showing: This case only &#183; switch to all cases')+'</button></div>';
+}
+function renderCaseFileList(){
+  const alljobs=filterByOffice(JOBS);
+  $('caseFileTitle').textContent='Case File';
+  $('caseFileSubtitle').textContent='All cases · '+alljobs.length+' job'+(alljobs.length!==1?'s':'')+' · click a row to open it';
+  if(!alljobs.length){$('caseFileContent').innerHTML='<div class="empty-state"><div class="empty-icon">&#128193;</div><h3>No Cases Available</h3><p>No jobs are visible for your offices.</p></div>';return}
+  var rows=alljobs.map(function(j){
+    var out=(j.amtInvoiced||0)-(j.amtPaid||0);
+    var d=j.effectiveDaysOut||j.daysOut||0;
+    var c=agingColor(d);
+    var carrier=(j.carrier&&String(j.carrier).indexOf('rec')!==0)?j.carrier:'—';
+    return '<tr style="cursor:pointer" onclick="openCaseFile(\''+j.id+'\')"><td><span style="color:var(--accent-blue);font-weight:600">'+(j.jobNum||'—')+'</span></td><td>'+(j.claimNum||'—')+'</td><td>'+(j.office||'—')+'</td><td>'+carrier+'</td><td><span class="badge badge-'+c+'">'+(j.status||'—')+'</span></td><td data-sort="'+d+'">'+d+'</td><td data-sort="'+out+'">'+fmt(out)+'</td></tr>';
+  }).join('');
+  $('caseFileContent').innerHTML='<div class="card"><div class="card-header"><span class="card-title">&#128193; All Cases</span><span class="card-subtitle">Click any row to open its full case file</span></div><div class="table-container" id="caseListContainer"><table><thead><tr><th>Job #</th><th>Claim #</th><th>Office</th><th>Carrier</th><th>Status</th><th>Days Out</th><th>Outstanding</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+  try{makeSortable('caseListContainer')}catch(e){}
+}
 function renderCaseFile(){
-  if(!selectedCaseJob){$('caseFileTitle').textContent='Case File';$('caseFileSubtitle').textContent='Select a job from AR Aging Table';$('caseFileContent').innerHTML='<div class="empty-state"><div class="empty-icon">&#128193;</div><h3>No Case Selected</h3><p>Click on a job number from the AR Aging Table or Strike Queue to view the full case file.</p></div>';return}
+  if(!selectedCaseJob){renderCaseFileList();return}
   const j=selectedCaseJob;const r=getRole();
   if(!r.offices.some(function(o){return o.toLowerCase()===(j.office||'').toLowerCase()})){$('caseFileContent').innerHTML='<div class="no-permission"><div class="lock-icon">&#128274;</div><h3>Access Restricted</h3><p>You don\'t have permission to view '+j.office+' cases.</p></div>';return}
   $('caseFileTitle').innerHTML='<button onclick="navigate(previousScreen||\'dashboard\')" style="background:none;border:1px solid var(--text-muted);color:var(--text-secondary);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:.85rem;margin-right:12px">&#8592; Back</button>Case: '+j.jobNum;$('caseFileSubtitle').textContent=j.claimNum+' · '+(j.carrier&&!j.carrier.startsWith('rec')?j.carrier:'')+' · '+j.office;
@@ -1679,12 +1713,15 @@ function renderCaseFile(){
     const icons={email:'&#9993;',phone:'&#9742;',sms:'&#128172;',system:'&#9881;',portal:'&#127760;'};
     html+=logs.length?timelineHeader+logs.map(l=>'<div class="activity-item"><div class="activity-icon '+l.channel+'">'+(icons[l.channel]||'')+'</div><div style="flex:1"><div style="display:flex;justify-content:space-between"><strong style="font-size:1rem">'+l.subject+'</strong><span class="badge badge-'+(l.direction==='Inbound'?'green':'blue')+'">'+l.direction+'</span></div><div class="activity-text" style="margin-top:4px">'+l.summary+'</div><div class="activity-meta">'+formatDateTime(l.date)+' · '+l.agent+' · '+l.channel+'</div></div></div>').join(''):'<div class="empty-state"><p>No communications logged.</p></div>';
   }else if(caseFileTab==='invoices'){
-    const invs=INVOICES.filter(i=>i.jobId===j.id);
-    html+=invs.length?'<div class="table-container"><table><thead><tr><th>Invoice ID</th><th>Status</th><th>Amount</th><th>Paid</th><th>Due</th><th>Escalation</th></tr></thead><tbody>'+invs.map(i=>'<tr><td>'+i.id+'</td><td><span class="badge badge-'+agingColor(i.daysOut)+'">'+i.status+'</span></td><td>'+fmt(i.amtInvoiced)+'</td><td>'+fmt(i.amtPaid)+'</td><td>'+fmt(i.amtDue)+'</td><td>'+i.escalationLevel+'</td></tr>').join('')+'</tbody></table></div>':'<div class="empty-state"><p>No invoices found.</p></div>';
+    const invs=caseFileShowAll?filterByOffice(INVOICES):INVOICES.filter(i=>i.jobId===j.id);
+    var invJobCol=caseFileShowAll?'<th>Job #</th>':'';
+    html+=caseFileScopeToggle();
+    html+=invs.length?'<div class="table-container"><table><thead><tr>'+invJobCol+'<th>Invoice ID</th><th>Status</th><th>Amount</th><th>Paid</th><th>Due</th><th>Escalation</th></tr></thead><tbody>'+invs.map(function(i){var jc=caseFileShowAll?'<td><a href="#" onclick="openCaseFile(\''+(i.jobId||i.jobNum||'')+'\',\'invoices\');return false" style="color:var(--accent-blue);text-decoration:none">'+(i.jobNum||'—')+'</a></td>':'';return '<tr>'+jc+'<td>'+i.id+'</td><td><span class="badge badge-'+agingColor(i.daysOut)+'">'+i.status+'</span></td><td>'+fmt(i.amtInvoiced)+'</td><td>'+fmt(i.amtPaid)+'</td><td>'+fmt(i.amtDue)+'</td><td>'+i.escalationLevel+'</td></tr>'}).join('')+'</tbody></table></div>':'<div class="empty-state"><p>No invoices found.</p></div>';
   }else if(caseFileTab==='payments'){
-    const pmts=PAYMENTS.filter(p=>p.jobId===j.id||(p.jobNum&&p.jobNum===j.jobNum));
-    // Recovery tracker card for active diversions
-    var divPmts=pmts.filter(p=>p.diversion&&p.recoveryStatus);
+    const pmts=caseFileShowAll?filterByOffice(PAYMENTS):PAYMENTS.filter(p=>p.jobId===j.id||(p.jobNum&&p.jobNum===j.jobNum));
+    // Recovery tracker card for active diversions — always scoped to THIS job
+    var jobPmts=PAYMENTS.filter(p=>p.jobId===j.id||(p.jobNum&&p.jobNum===j.jobNum));
+    var divPmts=jobPmts.filter(p=>p.diversion&&p.recoveryStatus);
     if(divPmts.length>0){
       var dp=divPmts[0];var stepNum=dp.recoveryStep||0;
       var statusColor=dp.recoveryStatus==='Active'?'var(--accent-yellow)':dp.recoveryStatus==='Escalated to Legal'?'var(--accent-red)':dp.recoveryStatus==='Resolved — Payment Forwarded'?'var(--accent-green)':'var(--text-muted)';
@@ -1738,7 +1775,9 @@ function renderCaseFile(){
       });
       html+='</div></div>';
     }
-    html+=pmts.length?'<div class="table-container"><table><thead><tr><th>Payment ID</th><th>Amount</th><th>Date</th><th>Source</th><th>Paid To</th><th>Status</th></tr></thead><tbody>'+pmts.map(p=>'<tr'+(p.diversion?' style="background:rgba(239,68,68,.08)"':'')+'><td>'+p.id+'</td><td>'+fmt(p.amount)+'</td><td>'+formatDate(p.date)+'</td><td>'+p.source+'</td><td>'+p.paidTo+'</td><td>'+(p.diversion?(p.recoveryStatus?'<span class="badge badge-'+(p.recoveryStatus==='Active'?'yellow':p.recoveryStatus==='Escalated to Legal'?'red':'green')+'">'+p.recoveryStatus+'</span>':'<span class="badge badge-red">&#9888; DIVERTED</span>'):'<span class="badge badge-green">&#10003; OK</span>')+'</td></tr>').join('')+'</tbody></table></div>':'<div class="empty-state"><p>No payments recorded.</p></div>';
+    var pmtJobCol=caseFileShowAll?'<th>Job #</th>':'';
+    html+=caseFileScopeToggle();
+    html+=pmts.length?'<div class="table-container"><table><thead><tr>'+pmtJobCol+'<th>Payment ID</th><th>Amount</th><th>Date</th><th>Source</th><th>Paid To</th><th>Status</th></tr></thead><tbody>'+pmts.map(function(p){var jc=caseFileShowAll?'<td><a href="#" onclick="openCaseFile(\''+(p.jobId||p.jobNum||'')+'\',\'payments\');return false" style="color:var(--accent-blue);text-decoration:none">'+(p.jobNum||'—')+'</a></td>':'';return '<tr'+(p.diversion?' style="background:rgba(239,68,68,.08)"':'')+'>'+jc+'<td>'+p.id+'</td><td>'+fmt(p.amount)+'</td><td>'+formatDate(p.date)+'</td><td>'+p.source+'</td><td>'+p.paidTo+'</td><td>'+(p.diversion?(p.recoveryStatus?'<span class="badge badge-'+(p.recoveryStatus==='Active'?'yellow':p.recoveryStatus==='Escalated to Legal'?'red':'green')+'">'+p.recoveryStatus+'</span>':'<span class="badge badge-red">&#9888; DIVERTED</span>'):'<span class="badge badge-green">&#10003; OK</span>')+'</td></tr>'}).join('')+'</tbody></table></div>':'<div class="empty-state"><p>No payments recorded.</p></div>';
   }else if(caseFileTab==='disputes'){
     var ds=j.disputeStatus||'No Dispute';
     var isActive=ds==='Active Dispute'||ds==='Supplement Sent'||ds==='Re-inspection Requested'||ds==='Appraisal Invoked';
@@ -1819,7 +1858,7 @@ function renderCaseFile(){
       if(isActive){
         html+='<div class="card" style="margin-bottom:16px"><div style="padding:16px"><h3 style="margin:0 0 12px;font-size:1rem">&#9889; Next Actions</h3>';
         html+='<div style="display:flex;gap:10px;flex-wrap:wrap">';
-        if(ds==='Active Dispute'){var hasDisputeEmail=COMMS_LOG.some(function(c){return(c.jobId===j.id||(c.jobNum&&c.jobNum===j.jobNum))&&(c.channel||'').toLowerCase()==='email'&&c.direction==='Outbound'&&(!j.disputeDate||new Date(c.date)>=new Date(j.disputeDate));});html+='<div style="text-align:center"><button class="btn btn-primary" style="width:100%;margin-bottom:4px;'+(hasDisputeEmail?'':'opacity:.45;cursor:not-allowed;pointer-events:none;')+'" '+(hasDisputeEmail?'onclick="updateDisputeStatus(\''+j.id+'\',\'Supplement Sent\')"':'')+' title="'+(hasDisputeEmail?'Mark supplement as sent to adjuster':'Requires: email sent to adjuster with supporting docs')+'">&#128196; Mark Supplement Sent</button><div style="font-size:.75rem;color:'+(hasDisputeEmail?'var(--text-muted)':'var(--accent-red)')+'">'+(hasDisputeEmail?'You sent rebuttal docs to adjuster':'&#9888; Requires: email sent to adjuster with supporting docs')+'</div></div>';}
+        if(ds==='Active Dispute'){var hasDisputeEmail=COMMS_LOG.some(function(c){return(c.jobId===j.id||(c.jobNum&&c.jobNum===j.jobNum))&&(c.channel||'').toLowerCase()==='email'&&c.direction==='Outbound'&&(!j.disputeOpenedDate||new Date(c.date)>new Date(j.disputeOpenedDate));});html+='<div style="text-align:center"><button class="btn btn-primary" style="width:100%;margin-bottom:4px;'+(hasDisputeEmail?'':'opacity:.45;cursor:not-allowed;pointer-events:none;')+'" '+(hasDisputeEmail?'onclick="updateDisputeStatus(\''+j.id+'\',\'Supplement Sent\')"':'')+' title="'+(hasDisputeEmail?'Mark supplement as sent to adjuster':'Requires: email sent to adjuster with supporting docs')+'">&#128196; Mark Supplement Sent</button><div style="font-size:.75rem;color:'+(hasDisputeEmail?'var(--text-muted)':'var(--accent-red)')+'">'+(hasDisputeEmail?'You sent rebuttal docs to adjuster':'&#9888; Requires: email sent to adjuster with supporting docs')+'</div></div>';}
         if(ds==='Supplement Sent') html+='<div style="text-align:center"><button class="btn" style="background:var(--accent-yellow);color:#000;width:100%;margin-bottom:4px" onclick="updateDisputeStatus(\''+j.id+'\',\'Re-inspection Requested\')">&#128269; Request Re-inspection</button><div style="font-size:.75rem;color:var(--text-muted)">Ask adjuster to revisit the property</div></div>';
         html+='<div style="text-align:center"><button class="btn" style="background:var(--accent-purple);color:#fff;width:100%;margin-bottom:4px" onclick="updateDisputeStatus(\''+j.id+'\',\'Appraisal Invoked\')">&#9878; Invoke Appraisal Clause</button><div style="font-size:.75rem;color:var(--text-muted)">Escalate via policy appraisal process</div></div>';
         html+='<div style="text-align:center"><button class="btn" style="background:var(--accent-green);color:#fff;width:100%;margin-bottom:4px" onclick="resolveDispute(\''+j.id+'\')">&#10003; Resolve Dispute</button><div style="font-size:.75rem;color:var(--text-muted)">Record final agreed amount &amp; close</div></div>';
@@ -3137,7 +3176,7 @@ async function loadLiveData() {
           diversion: f['Diversion Flag'] || false,
           source: f['Source'] || '',
           carrier: f['Claim Number'] || '',
-          office: 'Portland',
+          office: '',
           recoveryStatus: sel(f['Recovery Status']) || '',
           recoveryStep: num(f['Recovery Step'])
         };
@@ -3158,7 +3197,7 @@ async function loadLiveData() {
           priority: f['Priority'] || 'P2',
           status: sel(f['Status']) || 'Open',
           assignedTo: f['Assignee'] || '',
-          office: 'Portland',
+          office: '',
           daysOpen: num(f['Days Outstanding']),
           amount: num(f['Amount at Stake']),
           description: f['Description'] || '',
@@ -3167,6 +3206,20 @@ async function loadLiveData() {
         };
       });
     }
+
+    // Cross-reference PAYMENTS and STRIKE_QUEUE with JOBS for office (and jobNum)
+    var backfillOfficeFromJob = function(rec) {
+      if (rec.office) return;
+      var matchJob = null;
+      if (rec.jobId) matchJob = JOBS.find(function(j) { return j.id === rec.jobId; });
+      if (!matchJob && rec.jobNum) matchJob = JOBS.find(function(j) { return j.jobNum && j.jobNum === rec.jobNum; });
+      if (matchJob) {
+        rec.office = matchJob.office || '';
+        if (!rec.jobNum) rec.jobNum = matchJob.jobNum || '';
+      }
+    };
+    PAYMENTS.forEach(backfillOfficeFromJob);
+    STRIKE_QUEUE.forEach(backfillOfficeFromJob);
 
     // Fetch Error Log
     var errRecs = await fetchAllRecords(T.errorLog, ['Timestamp','Scenario Name','Module Name','Severity','Error Message','Resolved','Error Type','Source'], pat);
