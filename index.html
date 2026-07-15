@@ -2509,7 +2509,7 @@ function renderAIInbox(){
   var total = data.length;
   var payConfirmed = data.filter(function(d){ return d.outcome && d.outcome.toLowerCase().indexOf('payment confirmed') !== -1; }).length;
   var disputes = data.filter(function(d){ return d.outcome && d.outcome.toLowerCase().indexOf('disput') !== -1; }).length;
-  var promised = data.filter(function(d){ return d.outcome && d.outcome.toLowerCase().indexOf('payment promised') !== -1; }).length;
+  var promised = data.filter(function(d){ var o=(d.outcome||'').toLowerCase(); return o.indexOf('payment promised') !== -1 || o.indexOf('will respond') !== -1 || o.indexOf('promis') !== -1; }).length;
   var reqInfo = data.filter(function(d){ var o=(d.outcome||'').toLowerCase(); return o.indexOf('requesting') !== -1 || o.indexOf('info request') !== -1; }).length;
   var noResponse = data.filter(function(d){ return d.outcome && d.outcome.toLowerCase().indexOf('no clear') !== -1; }).length;
 
@@ -2527,8 +2527,10 @@ function renderAIInbox(){
     '<option value="">All Outcomes</option>' +
     '<option value="payment confirmed">Payment Confirmed</option>' +
     '<option value="payment promised">Payment Promised</option>' +
+    '<option value="will respond">Will Respond</option>' +
     '<option value="info req">Requesting Info</option>' +
     '<option value="disput">Disputing Claim</option>' +
+    '<option value="out of office">Out of Office</option>' +
     '<option value="no clear">No Clear Response</option>' +
     '</select>' +
     '<input type="text" id="aiSearchFilter" onkeyup="renderAIInbox()" placeholder="Search by job, sender, subject..." style="padding:8px 12px;border-radius:6px;background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border-color);width:250px">';
@@ -2596,8 +2598,10 @@ function openAIEmailDetail(id) {
   var badgeClass = 'badge-gray'; var badgeText = entry.outcome || 'Unknown';
   if (outcomeLower.indexOf('payment confirmed') !== -1) { badgeClass = 'badge-green'; badgeText = 'Payment Confirmed'; }
   else if (outcomeLower.indexOf('payment promised') !== -1) { badgeClass = 'badge-blue'; badgeText = 'Payment Promised'; }
+  else if (outcomeLower.indexOf('will respond') !== -1 || outcomeLower.indexOf('promis') !== -1) { badgeClass = 'badge-blue'; badgeText = 'Will Respond'; }
   else if (outcomeLower.indexOf('requesting') !== -1 || outcomeLower.indexOf('info req') !== -1) { badgeClass = 'badge-yellow'; badgeText = 'Info Request'; }
   else if (outcomeLower.indexOf('disput') !== -1) { badgeClass = 'badge-red'; badgeText = 'Disputing Claim'; }
+  else if (outcomeLower.indexOf('out of office') !== -1) { badgeClass = 'badge-gray'; badgeText = 'Out of Office'; }
   else if (outcomeLower.indexOf('no clear') !== -1) { badgeClass = 'badge-orange'; badgeText = 'No Clear Response'; }
 
   var html = '<div style="padding:20px">' +
@@ -3024,6 +3028,29 @@ async function fetchAllRecords(tableId, fields, pat) {
   return allRecords;
 }
 
+// Fetch inbound CommsLog rows (AI Inbox) by field ID for a stable, name-independent mapping.
+// S-03 writes inbound adjuster replies with Direction="Inbound" and an AI classification token.
+async function fetchInboxRecords(pat) {
+  var fieldIds = ['fldC5yKRoKAA8SLqJ','fldU8wXKv2BxO6u7g','flddP3G9xSdHDuAjZ','fldMn3S6fSmxeYfJX','fldSWOh9ghfk1F4pC','fldOYqQER3Dd9B3mC','fldrrZFBMpVhtJ9D1','fldVQaKNe6xKZxdGV','fldBJZcdmd3gxOBug'];
+  var allRecords = [];
+  var offset = null;
+  var params = new URLSearchParams();
+  fieldIds.forEach(function(fid){ params.append('fields[]', fid); });
+  params.set('returnFieldsByFieldId', 'true');
+  params.set('filterByFormula', '{Direction}="Inbound"');
+  params.set('pageSize', '100');
+  do {
+    if (offset) params.set('offset', offset);
+    var url = AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.commsLog + '?' + params;
+    var resp = await fetch(url, { headers: { 'Authorization': 'Bearer ' + pat } });
+    if (!resp.ok) throw new Error('AI Inbox API error ' + resp.status + ': ' + resp.statusText);
+    var data = await resp.json();
+    allRecords.push.apply(allRecords, data.records);
+    offset = data.offset || null;
+  } while (offset);
+  return allRecords;
+}
+
 async function loadLiveData() {
   var pat = getAirtablePAT();
   if (!pat) return;
@@ -3159,6 +3186,52 @@ async function loadLiveData() {
         if (matchJob) { c.jobNum = matchJob.jobNum; c.office = matchJob.office; }
       }
     });
+
+    // Fetch AI Inbox = inbound CommsLog rows classified by S-03. Replaces the hardcoded mock AI_INBOX.
+    try {
+      var inboxRecs = await fetchInboxRecords(pat);
+      AI_INBOX = inboxRecs.map(function(r) {
+        var f = r.fields;
+        // Classification token lives in the AI summary field (fldSWOh9ghfk1F4pC); fall back to body / subject.
+        var classifySrc = ((f['fldSWOh9ghfk1F4pC'] || '') + ' ' + (f['fldOYqQER3Dd9B3mC'] || '') + ' ' + (f['fldMn3S6fSmxeYfJX'] || '')).toUpperCase();
+        var outcome = 'no clear response';
+        if (classifySrc.indexOf('PAYMENT_CONFIRMATION') !== -1 || classifySrc.indexOf('PAYMENT CONFIRM') !== -1) outcome = 'payment confirmed';
+        else if (classifySrc.indexOf('DISPUTE') !== -1) outcome = 'disputing claim';
+        else if (classifySrc.indexOf('ADJUSTER_WILL_RESPOND') !== -1 || classifySrc.indexOf('WILL_RESPOND') !== -1 || classifySrc.indexOf('WILL RESPOND') !== -1) outcome = 'will respond';
+        else if (classifySrc.indexOf('OUT_OF_OFFICE') !== -1 || classifySrc.indexOf('OUT OF OFFICE') !== -1) outcome = 'out of office';
+        else if (classifySrc.indexOf('INFO_REQUEST') !== -1 || classifySrc.indexOf('INFO REQUEST') !== -1) outcome = 'info request';
+        var body = f['fldOYqQER3Dd9B3mC'] || '';
+        var senderEmail = f['flddP3G9xSdHDuAjZ'] || '';
+        var senderName = f['fldU8wXKv2BxO6u7g'] || (senderEmail ? senderEmail.split('@')[0] : '');
+        var jobLink = f['fldBJZcdmd3gxOBug'];
+        var jobId = (jobLink && jobLink[0]) || '';
+        return {
+          id: r.id,
+          senderName: senderName,
+          senderEmail: senderEmail,
+          senderRole: 'Adjuster',
+          subject: f['fldMn3S6fSmxeYfJX'] || '',
+          bodyPreview: body,
+          body: body,
+          outcome: outcome,
+          deliveryStatus: f['fldrrZFBMpVhtJ9D1'] || 'RECEIVED',
+          date: f['fldVQaKNe6xKZxdGV'] || '',
+          jobId: jobId,
+          jobNum: '',
+          carrier: '',
+          office: ''
+        };
+      });
+      // Cross-reference AI_INBOX with JOBS for jobNum, carrier and office
+      AI_INBOX.forEach(function(e) {
+        if (e.jobId) {
+          var mj = JOBS.find(function(j) { return j.id === e.jobId; });
+          if (mj) { e.jobNum = mj.jobNum; e.carrier = mj.carrier; e.office = mj.office; }
+        }
+      });
+    } catch (inboxErr) {
+      console.warn('AI Inbox live load failed, keeping existing data:', inboxErr);
+    }
 
     // Fetch Payments
     var pmtRecs = await fetchAllRecords(T.payments, ['Amount','Payment Date','Jobs','PSA Job Number','Paid To','Expected Payee','Diversion Flag','Source','Claim Number','Recovery Status','Recovery Step','Payment ID','Diversion Type'], pat);
