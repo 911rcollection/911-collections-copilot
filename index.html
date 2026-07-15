@@ -852,7 +852,7 @@ var CURRENT_USER=null;
 var FALLBACK_USERS=[];
 
 const ROLES={
-  moshe:{name:'Moshe',mode:'Full',offices:['Portland','Seattle'],canViewSettings:true,canViewErrors:true,canViewOps:true,canViewPayments:true,canViewLiens:true},
+  moshe:{name:'Moshe',mode:'Full',offices:['Portland','Seattle','Utah'],canViewSettings:true,canViewErrors:true,canViewOps:true,canViewPayments:true,canViewLiens:true},
   christina:{name:'Christina',mode:'Full',offices:['Portland'],canViewSettings:false,canViewErrors:true,canViewOps:true,canViewPayments:true,canViewLiens:true},
   hannah:{name:'Hannah',mode:'Full',offices:['Seattle'],canViewSettings:false,canViewErrors:false,canViewOps:false,canViewPayments:true,canViewLiens:true}
 };
@@ -979,7 +979,7 @@ function getRole(){
     return {
       name:CURRENT_USER.name,
       mode:isGuided?'Guided':'Full',
-      offices:CURRENT_USER.offices||['Portland','Seattle'],
+      offices:CURRENT_USER.offices||['Portland','Seattle','Utah'],
       canViewSettings:CURRENT_USER.settingsAccess,
       canViewErrors:!isGuided,
       canViewOps:CURRENT_USER.opsAccess,
