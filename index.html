@@ -1533,7 +1533,7 @@ function saveCallAndLog(taskId){
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{
       method:'POST',
       headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
-      body:JSON.stringify({typecast:true,fields:fields})
+      body:JSON.stringify({typecast:false,fields:fields})
     }).then(function(r){
       if(r.ok){showToast('Call logged to Airtable','success');return r.json();}
       else{showToast('Airtable log failed ('+r.status+')','error');}
@@ -1941,7 +1941,7 @@ function sendEmailAndLog(jobId){
   if(pat){
     var fields={'Message':logMsg,'Channel':'Email','Direction':'Outbound','Source':'Command Center','Log Entry':newEntry.subject,'Date':newEntry.date,'Logged By':'Command Center'};
     if(String(j.id).indexOf('rec')===0){fields['Linked Job']=[j.id];}
-    fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{method:'POST',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},body:JSON.stringify({typecast:true,fields:fields})}).then(function(r){if(r.ok){return r.json();}else{showToast('Airtable log failed ('+r.status+')','error');}}).then(function(data){if(data&&data.id){newEntry.id=data.id;}}).catch(function(e){showToast('Network error logging email','error');});
+    fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{method:'POST',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},body:JSON.stringify({typecast:false,fields:fields})}).then(function(r){if(r.ok){return r.json();}else{showToast('Airtable log failed ('+r.status+')','error');}}).then(function(data){if(data&&data.id){newEntry.id=data.id;}}).catch(function(e){showToast('Network error logging email','error');});
   }
   closeModalForce();
   showToast('Email opened in mail client + logged to CommsLog','success');
@@ -1966,7 +1966,7 @@ function saveCaseCallLog(jobId){
   if(pat&&jobId.indexOf('rec')===0){
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{
       method:'POST',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
-      body:JSON.stringify({typecast:true,fields:{'Message':msg,'Channel':'Phone','Direction':direction,'Source':'Command Center','Log Entry':today+' — Call ('+outcome+') — '+j.jobNum,'Date':nowIso,'Logged By':'Command Center','Linked Job':[jobId]}})
+      body:JSON.stringify({typecast:false,fields:{'Message':msg,'Channel':'Phone','Direction':direction,'Source':'Command Center','Log Entry':today+' — Call ('+outcome+') — '+j.jobNum,'Date':nowIso,'Logged By':'Command Center','Linked Job':[jobId]}})
     }).then(function(r){if(!r.ok)throw new Error('CommsLog POST failed '+r.status)})
       .catch(function(e){showToast('Airtable log failed: '+e.message,'error')});
   }
@@ -2907,7 +2907,7 @@ function confirmResolveDispute(jobId) {
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.commsLog, {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ typecast: true, fields: {
+      body: JSON.stringify({ typecast: false, fields: {
         'Message': logMsg, 'Channel': 'system', 'Direction': 'Outbound',
         'Source': 'Command Center', 'Log Entry': new Date().toISOString().split('T')[0] + ' — Dispute Resolved: ' + resType + ' — ' + jn,
         'Date': new Date().toISOString(), 'Logged By': 'Command Center', 'Linked Job': [jobId]
@@ -3510,7 +3510,7 @@ function confirmMarkDocsSent(jobId) {
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.commsLog, {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ typecast: true, fields: {
+      body: JSON.stringify({ typecast: false, fields: {
         'Message': logMsg, 'Channel': sentVia, 'Direction': 'Outbound',
         'Source': 'Command Center', 'Log Entry': sentDate + ' — Docs Sent — ' + j.jobNum,
         'Date': new Date().toISOString(), 'Logged By': 'Command Center', 'Linked Job': [jobId]
@@ -3762,7 +3762,7 @@ function confirmCarrierFullAgreement(jobId) {
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.commsLog, {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ typecast: true, fields: {
+      body: JSON.stringify({ typecast: false, fields: {
         'Message': logMsg, 'Channel': 'Email', 'Direction': 'Inbound',
         'Source': 'Command Center', 'Log Entry': date + ' — Carrier Response: Full Agreement — ' + j.jobNum,
         'Date': new Date().toISOString(), 'Logged By': 'Command Center', 'Linked Job': [jobId]
@@ -3870,7 +3870,7 @@ function sendAdjusterConfirmation(jobId, responseType) {
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.commsLog, {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ typecast: true, fields: {
+      body: JSON.stringify({ typecast: false, fields: {
         'Message': logMsg, 'Channel': 'Email', 'Direction': 'Outbound',
         'Source': 'Command Center', 'Log Entry': new Date().toISOString().split('T')[0] + ' — Sent ' + responseType + ' confirmation to ' + to,
         'Date': new Date().toISOString(), 'Logged By': 'Command Center', 'Linked Job': [jobId]
@@ -3947,7 +3947,7 @@ function confirmCarrierPartialAgreement(jobId) {
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.commsLog, {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ typecast: true, fields: {
+      body: JSON.stringify({ typecast: false, fields: {
         'Message': logMsg, 'Channel': 'Email', 'Direction': 'Inbound',
         'Source': 'Command Center', 'Log Entry': date + ' — Carrier Response: Partial Agreement — ' + j.jobNum,
         'Date': new Date().toISOString(), 'Logged By': 'Command Center', 'Linked Job': [jobId]
@@ -4010,7 +4010,7 @@ function setCommTrack(jobId, track) {
     // Log track assignment to CommsLog
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{
       method:'POST',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
-      body:JSON.stringify({typecast:true,fields:{'Message':'Communication Track set to: '+track+' for '+j.jobNum,'Channel':'system','Direction':'Outbound','Source':'Command Center','Log Entry':new Date().toISOString().split('T')[0]+' — Track assigned: '+track+' — '+j.jobNum,'Date':new Date().toISOString(),'Logged By':'Command Center','Linked Job':[jobId]}})
+      body:JSON.stringify({typecast:false,fields:{'Message':'Communication Track set to: '+track+' for '+j.jobNum,'Channel':'system','Direction':'Outbound','Source':'Command Center','Log Entry':new Date().toISOString().split('T')[0]+' — Track assigned: '+track+' — '+j.jobNum,'Date':new Date().toISOString(),'Logged By':'Command Center','Linked Job':[jobId]}})
     }).catch(function(e){console.warn('CommsLog failed:',e)});
     pushLocalComms(j,'system','Outbound',new Date().toISOString().split('T')[0]+' — Track assigned: '+track+' — '+j.jobNum,'Communication Track set to: '+track+' for '+j.jobNum);
   }
