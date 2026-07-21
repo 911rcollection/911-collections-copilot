@@ -1057,7 +1057,7 @@ var screenHelp={
       {b:'&#9742; Log Call',d:'Records a phone call against this job.'},
       {b:'Manage (dispute)',d:'Opens the Disputes tab to work the dispute.'},
       {b:'&#128196; Mark Supplement Sent',d:'Records that the supplement went to the adjuster. Requires an email to the adjuster first.'},
-      {b:'&#9878; Invoke Appraisal Clause / &#128269; Request Re-inspection',d:'Updates the dispute status and sets the next step.'},
+      {b:'&#9878;  / &#128269; Request Re-inspection',d:'Updates the dispute status and sets the next step.'},
       {b:'&#10003; Resolve Dispute / Confirm Resolution',d:'Closes the dispute with an outcome (won, adjusted, settled).'},
       {b:'&#10003; Log Carrier Response',d:'Records how the carrier/adjuster responded and creates any follow-up task.'},
       {b:'Star rating',d:'Rates the adjuster for future reference.'}
@@ -1860,7 +1860,6 @@ function renderCaseFile(){
         html+='<div style="display:flex;gap:10px;flex-wrap:wrap">';
         if(ds==='Active Dispute'){var hasDisputeEmail=COMMS_LOG.some(function(c){return(c.jobId===j.id||(c.jobNum&&c.jobNum===j.jobNum))&&(c.channel||'').toLowerCase()==='email'&&c.direction==='Outbound'&&(!j.disputeOpenedDate||new Date(c.date)>new Date(j.disputeOpenedDate));});html+='<div style="text-align:center"><button class="btn btn-primary" style="width:100%;margin-bottom:4px;'+(hasDisputeEmail?'':'opacity:.45;cursor:not-allowed;pointer-events:none;')+'" '+(hasDisputeEmail?'onclick="updateDisputeStatus(\''+j.id+'\',\'Supplement Sent\')"':'')+' title="'+(hasDisputeEmail?'Mark supplement as sent to adjuster':'Requires: email sent to adjuster with supporting docs')+'">&#128196; Mark Supplement Sent</button><div style="font-size:.75rem;color:'+(hasDisputeEmail?'var(--text-muted)':'var(--accent-red)')+'">'+(hasDisputeEmail?'You sent rebuttal docs to adjuster':'&#9888; Requires: email sent to adjuster with supporting docs')+'</div></div>';}
         if(ds==='Supplement Sent') html+='<div style="text-align:center"><button class="btn" style="background:var(--accent-yellow);color:#000;width:100%;margin-bottom:4px" onclick="updateDisputeStatus(\''+j.id+'\',\'Re-inspection Requested\')">&#128269; Request Re-inspection</button><div style="font-size:.75rem;color:var(--text-muted)">Ask adjuster to revisit the property</div></div>';
-        html+='<div style="text-align:center"><button class="btn" style="background:var(--accent-purple);color:#fff;width:100%;margin-bottom:4px" onclick="updateDisputeStatus(\''+j.id+'\',\'Appraisal Invoked\')">&#9878; Invoke Appraisal Clause</button><div style="font-size:.75rem;color:var(--text-muted)">Escalate via policy appraisal process</div></div>';
         html+='<div style="text-align:center"><button class="btn" style="background:var(--accent-green);color:#fff;width:100%;margin-bottom:4px" onclick="resolveDispute(\''+j.id+'\')">&#10003; Resolve Dispute</button><div style="font-size:.75rem;color:var(--text-muted)">Record final agreed amount &amp; close</div></div>';
         html+='</div></div></div>';
       }
