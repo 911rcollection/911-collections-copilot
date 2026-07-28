@@ -575,6 +575,12 @@ td{font-size:1rem}
     <div class="screen" id="screen-ai-inbox">
       <div class="page-header"><div><h1>AI Inbox</h1><div class="subtitle">S-03 Email Reply Parser — AI-classified adjuster responses</div></div><button class="btn btn-secondary" onclick="loadLiveData().then(function(){navigate('ai-inbox');showToast('Inbox refreshed','success')})">&#8635; Refresh</button></div>
       <div class="kpi-grid" id="aiInboxKPIs"></div>
+      <!-- REAL-DATA-ONLY / F15 (2026-07-28): inbound classification is only half
+           of this screen. The other half is the outbound permission that governs
+           whether we may text a homeowner at all, and what the next step towards
+           each one actually is. It renders whether or not any email has been
+           parsed yet, because "no consent on file" is itself an action. -->
+      <div id="aiInboxConsentPanel"></div>
       <div class="filter-bar" id="aiInboxFilters"></div>
       <div class="table-container" id="aiInboxTableContainer"></div>
     </div>
@@ -669,168 +675,61 @@ document.addEventListener('DOMContentLoaded',function(){
 // ============================================================
 // MOCK DATA
 // ============================================================
-let JOBS=[
-  {id:'J-001',jobNum:'1-25-1001-WTR',claimNum:'CLM-2025-44821',office:'Portland',carrier:'State Farm',status:'In Collections',amtInvoiced:18750,amtPaid:4200,daysOut:42,adjuster:'Mike Reynolds',adjPhone:'503-555-0142',adjEmail:'mreynolds@statefarm.com',homeowner:'Sarah Mitchell',hoPhone:'503-555-8821',lienState:'OR',lienDeadline:'2026-07-15',lienDaysLeft:57,lienMode:'Regular',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:'smitchell@email.com'},
-  {id:'J-002',jobNum:'1-25-1002-FIRE',claimNum:'CLM-2025-51203',office:'Portland',carrier:'Allstate',status:'Invoice Sent',amtInvoiced:34200,amtPaid:0,daysOut:18,adjuster:'Karen White',adjPhone:'503-555-0298',adjEmail:'kwhite@allstate.com',homeowner:'James Peterson',hoPhone:'503-555-7734',lienState:'OR',lienDeadline:'2026-09-20',lienDaysLeft:124,lienMode:'None',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-003',jobNum:'1-25-1003-WTR',claimNum:'CLM-2025-39847',office:'Seattle',carrier:'Farmers',status:'In Collections',amtInvoiced:12400,amtPaid:6200,daysOut:68,adjuster:'Tom Bradley',adjPhone:'206-555-0173',adjEmail:'tbradley@farmers.com',homeowner:'Linda Garcia',hoPhone:'206-555-4412',lienState:'WA',lienDeadline:'2026-06-22',lienDaysLeft:34,lienMode:'Silent',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-004',jobNum:'1-25-1004-WTR',claimNum:'CLM-2025-62104',office:'Portland',carrier:'USAA',status:'Payment Pending',amtInvoiced:8900,amtPaid:8900,daysOut:95,adjuster:'Jessica Lane',adjPhone:'503-555-0387',adjEmail:'jlane@usaa.com',homeowner:'Robert Kim',hoPhone:'503-555-6623',lienState:'OR',lienDeadline:'2026-05-28',lienDaysLeft:9,lienMode:'Regular',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-005',jobNum:'1-25-1005-MOLD',claimNum:'CLM-2025-55092',office:'Seattle',carrier:'Liberty Mutual',status:'Escalated',amtInvoiced:22100,amtPaid:5000,daysOut:104,adjuster:'David Chen',adjPhone:'206-555-0455',adjEmail:'dchen@libertymutual.com',homeowner:'Maria Santos',hoPhone:'206-555-9901',lienState:'WA',lienDeadline:'2026-06-05',lienDaysLeft:17,lienMode:'Regular',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-006',jobNum:'1-25-1006-WTR',claimNum:'CLM-2025-47233',office:'Portland',carrier:'Nationwide',status:'In Collections',amtInvoiced:15300,amtPaid:3000,daysOut:55,adjuster:'Amy Foster',adjPhone:'503-555-0521',adjEmail:'afoster@nationwide.com',homeowner:'William Turner',hoPhone:'503-555-2218',lienState:'OR',lienDeadline:'2026-08-10',lienDaysLeft:83,lienMode:'None',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-007',jobNum:'1-25-1007-FIRE',claimNum:'CLM-2025-71845',office:'Seattle',carrier:'State Farm',status:'Invoice Sent',amtInvoiced:41500,amtPaid:0,daysOut:12,adjuster:'Brian Moore',adjPhone:'206-555-0634',adjEmail:'bmoore@statefarm.com',homeowner:'Jennifer Adams',hoPhone:'206-555-3347',lienState:'WA',lienDeadline:'2026-10-01',lienDaysLeft:135,lienMode:'None',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-008',jobNum:'1-25-1008-WTR',claimNum:'CLM-2025-33918',office:'Portland',carrier:'Allstate',status:'Escalated',amtInvoiced:27800,amtPaid:10000,daysOut:112,adjuster:'Nicole Parker',adjPhone:'503-555-0748',adjEmail:'nparker@allstate.com',homeowner:'Thomas Wright',hoPhone:'503-555-5562',lienState:'OR',lienDeadline:'2026-06-01',lienDaysLeft:13,lienMode:'Regular',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-009',jobNum:'1-25-1009-MOLD',claimNum:'CLM-2025-58476',office:'Seattle',carrier:'Farmers',status:'In Collections',amtInvoiced:9600,amtPaid:2400,daysOut:78,adjuster:'Steve Harris',adjPhone:'206-555-0861',adjEmail:'sharris@farmers.com',homeowner:'Angela Brown',hoPhone:'206-555-7789',lienState:'WA',lienDeadline:'2026-07-04',lienDaysLeft:46,lienMode:'Silent',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-010',jobNum:'1-25-1010-WTR',claimNum:'CLM-2025-42567',office:'Portland',carrier:'Erie Insurance',status:'Payment Pending',amtInvoiced:6200,amtPaid:6200,daysOut:33,adjuster:'Laura Scott',adjPhone:'503-555-0974',adjEmail:'lscott@erieinsurance.com',homeowner:'Christopher Lee',hoPhone:'503-555-1145',lienState:'OR',lienDeadline:'2026-09-15',lienDaysLeft:119,lienMode:'None',carrierResponseStatus:'Agreed — Full',carrierAgreedAmount:6200,carrierResponseDate:'2026-05-10',carrierResponseNotes:'Full payment confirmed via ACH. Ref: EI-2026-42567',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-011',jobNum:'1-25-1011-FIRE',claimNum:'CLM-2025-66891',office:'Portland',carrier:'Travelers',status:'In Collections',amtInvoiced:52300,amtPaid:15000,daysOut:87,adjuster:'Mark Thompson',adjPhone:'503-555-1087',adjEmail:'mthompson@travelers.com',homeowner:'Patricia Davis',hoPhone:'503-555-8834',lienState:'OR',lienDeadline:'2026-06-18',lienDaysLeft:30,lienMode:'Regular',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-012',jobNum:'1-25-1012-WTR',claimNum:'CLM-2025-29384',office:'Seattle',carrier:'USAA',status:'Invoice Sent',amtInvoiced:11200,amtPaid:0,daysOut:8,adjuster:'Rachel Green',adjPhone:'206-555-1193',adjEmail:'rgreen@usaa.com',homeowner:'Kevin Johnson',hoPhone:'206-555-2256',lienState:'WA',lienDeadline:'2026-11-01',lienDaysLeft:166,lienMode:'None',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-013',jobNum:'1-25-1013-WTR',claimNum:'CLM-2025-73620',office:'Portland',carrier:'Hartford',status:'Escalated',amtInvoiced:19400,amtPaid:7000,daysOut:99,adjuster:'Greg Wilson',adjPhone:'503-555-1306',adjEmail:'gwilson@thehartford.com',homeowner:'Michelle Taylor',hoPhone:'503-555-6678',lienState:'OR',lienDeadline:'2026-06-08',lienDaysLeft:20,lienMode:'Silent',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-014',jobNum:'1-25-1014-MOLD',claimNum:'CLM-2025-81245',office:'Seattle',carrier:'Allstate',status:'In Collections',amtInvoiced:16800,amtPaid:4200,daysOut:63,adjuster:'Diana Ross',adjPhone:'206-555-1419',adjEmail:'dross@allstate.com',homeowner:'Daniel Martinez',hoPhone:'206-555-9943',lienState:'WA',lienDeadline:'2026-07-20',lienDaysLeft:62,lienMode:'None',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-015',jobNum:'1-25-1015-WTR',claimNum:'CLM-2025-54378',office:'Portland',carrier:'State Farm',status:'In Collections',amtInvoiced:31000,amtPaid:8000,daysOut:46,adjuster:'Paul Anderson',adjPhone:'503-555-1522',adjEmail:'panderson@statefarm.com',homeowner:'Susan Clark',hoPhone:'503-555-4490',lienState:'OR',lienDeadline:'2026-08-25',lienDaysLeft:98,lienMode:'None',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-016',jobNum:'1-25-1016-FIRE',claimNum:'CLM-2025-37291',office:'Seattle',carrier:'Nationwide',status:'Invoice Sent',amtInvoiced:28600,amtPaid:0,daysOut:22,adjuster:'Emily Watson',adjPhone:'206-555-1635',adjEmail:'ewatson@nationwide.com',homeowner:'Richard Lee',hoPhone:'206-555-5568',lienState:'WA',lienDeadline:'2026-10-15',lienDaysLeft:149,lienMode:'None',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-017',jobNum:'1-25-1017-WTR',claimNum:'CLM-2025-69143',office:'Portland',carrier:'Farmers',status:'Payment Pending',amtInvoiced:14700,amtPaid:14700,daysOut:71,adjuster:'Chris Miller',adjPhone:'503-555-1748',adjEmail:'cmiller@farmers.com',homeowner:'Nancy Wilson',hoPhone:'503-555-3312',lienState:'OR',lienDeadline:'2026-07-28',lienDaysLeft:70,lienMode:'None',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-018',jobNum:'1-25-1018-MOLD',claimNum:'CLM-2025-85502',office:'Seattle',carrier:'Liberty Mutual',status:'Escalated',amtInvoiced:25400,amtPaid:6000,daysOut:91,adjuster:'Sandra Young',adjPhone:'206-555-1861',adjEmail:'syoung@libertymutual.com',homeowner:'Joseph Hernandez',hoPhone:'206-555-7701',lienState:'WA',lienDeadline:'2026-06-12',lienDaysLeft:24,lienMode:'Regular',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-019',jobNum:'1-25-1019-WTR',claimNum:'CLM-2025-41876',office:'Portland',carrier:'Travelers',status:'In Collections',amtInvoiced:7500,amtPaid:2500,daysOut:38,adjuster:'Ryan Davis',adjPhone:'503-555-1974',adjEmail:'rdavis@travelers.com',homeowner:'Betty Moore',hoPhone:'503-555-8856',lienState:'OR',lienDeadline:'2026-09-01',lienDaysLeft:105,lienMode:'None',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-020',jobNum:'1-25-1020-FIRE',claimNum:'CLM-2025-93714',office:'Portland',carrier:'USAA',status:'Invoice Sent',amtInvoiced:45600,amtPaid:0,daysOut:5,adjuster:'Ashley Thomas',adjPhone:'503-555-2087',adjEmail:'athomas@usaa.com',homeowner:'George White',hoPhone:'503-555-2234',lienState:'OR',lienDeadline:'2026-11-15',lienDaysLeft:180,lienMode:'None',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-021',jobNum:'1-25-1021-WTR',claimNum:'CLM-2025-26539',office:'Seattle',carrier:'Erie Insurance',status:'In Collections',amtInvoiced:13900,amtPaid:3500,daysOut:52,adjuster:'Jeff Martin',adjPhone:'206-555-2198',adjEmail:'jmartin@erieinsurance.com',homeowner:'Dorothy Anderson',hoPhone:'206-555-6645',lienState:'WA',lienDeadline:'2026-07-30',lienDaysLeft:72,lienMode:'None',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-022',jobNum:'1-25-1022-MOLD',claimNum:'CLM-2025-78463',office:'Portland',carrier:'Hartford',status:'In Collections',amtInvoiced:20100,amtPaid:5000,daysOut:84,adjuster:'Melissa King',adjPhone:'503-555-2311',adjEmail:'mking@thehartford.com',homeowner:'Charles Jackson',hoPhone:'503-555-1178',lienState:'OR',lienDeadline:'2026-06-25',lienDaysLeft:37,lienMode:'Silent',carrierResponseStatus:'Agreed — Partial',carrierAgreedAmount:14500,carrierResponseDate:'2026-05-15',carrierResponseNotes:'Hartford approved $14,500 of $20,100. Gap of $5,600 relates to mold testing scope.',partialGapDecision:'Pending',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-023',jobNum:'1-25-1023-WTR',claimNum:'CLM-2025-52184',office:'Seattle',carrier:'State Farm',status:'Invoice Sent',amtInvoiced:17300,amtPaid:0,daysOut:15,adjuster:'Kevin Brown',adjPhone:'206-555-2424',adjEmail:'kbrown@statefarm.com',homeowner:'Barbara Harris',hoPhone:'206-555-3390',lienState:'WA',lienDeadline:'2026-10-20',lienDaysLeft:154,lienMode:'None',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-024',jobNum:'1-25-1024-FIRE',claimNum:'CLM-2025-64817',office:'Portland',carrier:'Allstate',status:'Escalated',amtInvoiced:38900,amtPaid:12000,daysOut:106,adjuster:'Lisa Robinson',adjPhone:'503-555-2537',adjEmail:'lrobinson@allstate.com',homeowner:'Edward Lewis',hoPhone:'503-555-8812',lienState:'OR',lienDeadline:'2026-05-30',lienDaysLeft:11,lienMode:'Regular',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:0,communicationTrack:'',trackAssignedDate:'',hoEmail:''},
-  {id:'J-025',jobNum:'1-25-1025-WTR',claimNum:'CLM-2025-88956',office:'Seattle',carrier:'Farmers',status:'In Collections',amtInvoiced:10800,amtPaid:2700,daysOut:49,adjuster:'John Carter',adjPhone:'206-555-2650',adjEmail:'jcarter@farmers.com',homeowner:'Helen Walker',hoPhone:'206-555-4423',lienState:'WA',lienDeadline:'2026-08-05',lienDaysLeft:78,lienMode:'None',carrierResponseStatus:'',carrierAgreedAmount:0,carrierResponseDate:'',carrierResponseNotes:'',partialGapDecision:'',carrierInfoRequestStatus:'None',infoRequestDate:'',infoRequestedItems:'',infoDocsSentDate:'',infoResponseDeadline:'',agingPaused:false,agingPauseStart:'',agingPauseDays:0,effectiveDaysOut:49,communicationTrack:'',trackAssignedDate:'',hoEmail:''}
-];
+let JOBS=[];  // REAL-DATA-ONLY: seed removed 2026-07-28 — populated exclusively by loadLiveData()
 
-// Preserve demo data for AI Inbox test scenarios (loadLiveData overwrites JOBS with Airtable records)
-var DEMO_JOBS = JOBS.slice();
+// REAL-DATA-ONLY / F10 (2026-07-28): this used to be a parse-time copy of the JOBS
+// array, which captured the hardcoded seed and kept it alive as a lookup fallback
+// long after loadLiveData() had replaced JOBS with Airtable records. The seed is
+// gone, so this is now permanently empty and exists only so the six remaining
+// `|| DEMO_JOBS.find(...)` fallback branches stay defined. Those branches can never
+// return a record. Do not repopulate this.
+var DEMO_JOBS = [];
 
-let INVOICES=JOBS.filter(j=>j.status!=='Payment Pending').map((j,i)=>({
-  id:'INV-2025-'+(3001+i),jobId:j.id,jobNum:j.jobNum,carrier:j.carrier,office:j.office,
-  status:j.daysOut>90?'Escalated':j.daysOut>60?'Past Due':j.daysOut>30?'Follow-up':'Current',
-  daysOut:j.daysOut,effectiveDaysOut:j.effectiveDaysOut||j.daysOut,agingPaused:j.agingPaused||false,amtDue:j.amtInvoiced-j.amtPaid,amtPaid:j.amtPaid,amtInvoiced:j.amtInvoiced,
-  escalationLevel:j.daysOut>90?'Level 3':j.daysOut>60?'Level 2':j.daysOut>30?'Level 1':'None',
-  lastContact:randomPastDate(j.daysOut)
-}));
+let INVOICES=[];  // REAL-DATA-ONLY / F10 (2026-07-28): was derived at parse time from
+// the hardcoded JOBS seed - it synthesised invoice IDs, invented escalation levels
+// from made-up day counts, and stamped lastContact with a random past date. Every
+// InvoiceRecord now comes from Airtable via loadLiveData().
 
-let STRIKE_QUEUE=[
-  {id:'HSQ-001',jobId:'J-005',jobNum:'1-25-1005-MOLD',taskType:'Adjuster Follow-up Call',priority:'P1',status:'Open',assignedTo:'Christina',office:'Seattle',daysOpen:7,amount:17100,description:'Adjuster David Chen has not responded to 3 emails. Escalation required per carrier SLA. Liberty Mutual requires phone contact within 48hrs of escalation trigger.',callNotes:'',outcome:''},
-  {id:'HSQ-002',jobId:'J-008',jobNum:'1-25-1008-WTR',taskType:'Lien Decision Required',priority:'P1',status:'Open',assignedTo:'Moshe',office:'Portland',daysOpen:3,amount:17800,description:'Lien deadline approaching (13 days). Payment of $10,000 received but $17,800 still outstanding. Need owner decision on lien filing strategy.',callNotes:'',outcome:''},
-  {id:'HSQ-003',jobId:'J-024',jobNum:'1-25-1024-FIRE',taskType:'Payment Diversion Alert',priority:'P1',status:'In Progress',assignedTo:'Christina',office:'Portland',daysOpen:1,amount:26900,description:'Payment of $12,000 received but paid to wrong entity. Allstate issued check to homeowner instead of 911 Restoration. Need immediate redirect request.',callNotes:'Spoke with Allstate claims dept. They confirmed error. Reissue in process.',outcome:''},
-  {id:'HSQ-004',jobId:'J-011',jobNum:'1-25-1011-FIRE',taskType:'Carrier Negotiation',priority:'P2',status:'Open',assignedTo:'Moshe',office:'Portland',daysOpen:12,amount:37300,description:'Travelers disputing $15,200 of the $52,300 invoice. Need to review line items and prepare counter-documentation. Depreciation holdback is the main issue.',callNotes:'',outcome:''},
-  {id:'HSQ-005',jobId:'J-003',jobNum:'1-25-1003-WTR',taskType:'Homeowner Contact',priority:'P2',status:'Open',assignedTo:'Hannah',office:'Seattle',daysOpen:5,amount:6200,description:'Homeowner Linda Garcia needs to sign AOB and provide supplemental documentation. Multiple voicemails left. Try alternative contact methods.',callNotes:'',outcome:''},
-  {id:'HSQ-006',jobId:'J-013',jobNum:'1-25-1013-WTR',taskType:'Silent Lien Monitoring',priority:'P2',status:'In Progress',assignedTo:'Christina',office:'Portland',daysOpen:8,amount:12400,description:'Hartford claim with silent lien active. Monitoring payment timeline. Need to verify if partial payment offer of $7,000 is acceptable or if we hold for full amount.',callNotes:'Spoke with Hartford rep. They are reviewing supplemental docs.',outcome:''},
-  {id:'HSQ-007',jobId:'J-018',jobNum:'1-25-1018-MOLD',taskType:'Supplemental Estimate Review',priority:'P3',status:'Open',assignedTo:'Hannah',office:'Seattle',daysOpen:15,amount:19400,description:'Liberty Mutual requesting additional documentation for mold remediation scope. Need to compile pre/post testing results and photo documentation.',callNotes:'',outcome:''},
-  {id:'HSQ-008',jobId:'J-022',jobNum:'1-25-1022-MOLD',taskType:'AR Reconciliation',priority:'P3',status:'Open',assignedTo:'Christina',office:'Portland',daysOpen:4,amount:15100,description:'Hartford partial payment of $5,000 received. Need to reconcile against invoice line items and determine remaining balance dispute points.',callNotes:'',outcome:''}
-];
+let STRIKE_QUEUE=[];  // REAL-DATA-ONLY: seed removed 2026-07-28 — populated exclusively by loadLiveData()
 
-let AI_INBOX=[
-  {id:'AI-T01',from:'mreynolds@statefarm.com',fromName:'Mike Reynolds',to:'collections@911restoration.com',subject:'RE: Payment Status — Claim CLM-2025-44821',body:'Hi, I have reviewed the documentation for Job 1-25-1001-WTR and we are approving the full amount of $18,750. Payment will be issued to 911 Restoration Portland within 10 business days. Please confirm receipt of this authorization. Reference: SF-AUTH-2026-44821. Best regards, Mike Reynolds, Claims Adjuster, State Farm.',date:'2026-05-24T09:15:00',outcome:'payment confirmed',confidence:0.95,jobId:'J-001',jobNum:'1-25-1001-WTR',carrier:'State Farm',read:false,actionTaken:false},
-  {id:'AI-T02',from:'afoster@nationwide.com',fromName:'Amy Foster',to:'collections@911restoration.com',subject:'RE: Invoice INV-2025-3006 — Partial Approval',body:'Hello, after reviewing the scope for Job 1-25-1006-WTR, we are approving $9,800 of the $15,300 invoiced. The remaining $5,500 relates to line items we believe exceed the policy coverage for Category 3 water damage drying equipment charges. We are open to reviewing supplemental documentation if you believe the full amount is warranted. Please advise. Amy Foster, Senior Adjuster, Nationwide.',date:'2026-05-24T10:30:00',outcome:'payment confirmed',confidence:0.82,jobId:'J-006',jobNum:'1-25-1006-WTR',carrier:'Nationwide',read:false,actionTaken:false},
-  {id:'AI-T03',from:'mthompson@travelers.com',fromName:'Mark Thompson',to:'collections@911restoration.com',subject:'RE: Disputed Charges — Job 1-25-1011-FIRE',body:'Dear 911 Restoration, we have completed our review of the supplemental documentation submitted for Job 1-25-1011-FIRE. Unfortunately, we maintain our position that the depreciation holdback of $15,200 is not recoverable under the current policy terms. Our approved amount remains $37,100 of the $52,300 invoiced. If you wish to proceed with a formal dispute, please submit through our appraisal process per Section 12 of the policy. Mark Thompson, Claims Manager, Travelers.',date:'2026-05-24T08:45:00',outcome:'dispute',confidence:0.91,jobId:'J-011',jobNum:'1-25-1011-FIRE',carrier:'Travelers',read:false,actionTaken:false},
-  {id:'AI-T04',from:'syoung@libertymutual.com',fromName:'Sandra Young',to:'collections@911restoration.com',subject:'Additional Documentation Needed — Claim CLM-2025-85502',body:'Hi, regarding Job 1-25-1018-MOLD, before we can process payment we need the following: 1) Pre-remediation air quality test results, 2) Post-remediation clearance certificate, 3) Itemized equipment log with daily readings. Please send these at your earliest convenience so we can proceed with the review. Sandra Young, Claims Specialist, Liberty Mutual.',date:'2026-05-24T11:00:00',outcome:'info request',confidence:0.94,jobId:'J-018',jobNum:'1-25-1018-MOLD',carrier:'Liberty Mutual',read:false,actionTaken:false},
-  {id:'AI-T05',from:'kwhite@allstate.com',fromName:'Karen White',to:'collections@911restoration.com',subject:'RE: Follow-up Invoice — Job 1-25-1002-FIRE',body:'Good morning, I wanted to let you know that I have submitted the invoice for Job 1-25-1002-FIRE ($34,200) to our payment department. It should be processed within the next 7-10 business days. The full amount has been approved. I will send you the payment confirmation number once it is issued. Karen White, Adjuster, Allstate.',date:'2026-05-23T16:20:00',outcome:'payment confirmed',confidence:0.93,jobId:'J-002',jobNum:'1-25-1002-FIRE',carrier:'Allstate',read:true,actionTaken:false},
-  {id:'AI-T06',from:'panderson@statefarm.com',fromName:'Paul Anderson',to:'collections@911restoration.com',subject:'Payment Update — Claim CLM-2025-54378',body:'Hi team, just following up on our phone conversation. We can approve $23,000 of the $31,000 invoiced for Job 1-25-1015-WTR. The remaining $8,000 pertains to emergency services charges that we feel are above the customary rate for the Portland market. Happy to discuss further. Paul Anderson, State Farm.',date:'2026-05-23T14:10:00',outcome:'payment confirmed',confidence:0.78,jobId:'J-015',jobNum:'1-25-1015-WTR',carrier:'State Farm',read:true,actionTaken:false}
-];
-let COMMS_LOG=[
-  {id:'CL-001',jobId:'J-005',jobNum:'1-25-1005-MOLD',channel:'email',direction:'Outbound',subject:'Escalation Notice - Claim CLM-2025-55092',summary:'Sent 3rd follow-up to adjuster David Chen regarding outstanding $17,100 balance.',date:'2026-05-19T09:15:00',agent:'System (Auto)'},
-  {id:'CL-002',jobId:'J-024',jobNum:'1-25-1024-FIRE',channel:'phone',direction:'Outbound',subject:'Diversion Resolution Call',summary:'Called Allstate claims to report payment diversion. Rep confirmed reissue within 5 business days.',date:'2026-05-19T08:42:00',agent:'Christina'},
-  {id:'CL-003',jobId:'J-008',jobNum:'1-25-1008-WTR',channel:'email',direction:'Inbound',subject:'RE: Payment Status - Claim CLM-2025-33918',summary:'Nicole Parker responded that remaining balance is under review by Allstate special claims unit.',date:'2026-05-18T16:30:00',agent:'System (Auto)'},
-  {id:'CL-004',jobId:'J-011',jobNum:'1-25-1011-FIRE',channel:'email',direction:'Outbound',subject:'Line Item Documentation - Job 1-25-1011-FIRE',summary:'Sent detailed breakdown of disputed $15,200 with supporting photos and contractor invoices to Travelers.',date:'2026-05-18T14:22:00',agent:'Christina'},
-  {id:'CL-005',jobId:'J-003',jobNum:'1-25-1003-WTR',channel:'sms',direction:'Outbound',subject:'AOB Reminder',summary:'SMS to Linda Garcia reminding about AOB signature requirement. Included DocuSign link.',date:'2026-05-18T11:05:00',agent:'Hannah'},
-  {id:'CL-006',jobId:'J-001',jobNum:'1-25-1001-WTR',channel:'email',direction:'Outbound',subject:'Follow-up #2 - Invoice INV-2025-3001',summary:'Second follow-up to State Farm adjuster Mike Reynolds. Balance of $14,550 outstanding for 42 days.',date:'2026-05-17T15:45:00',agent:'System (Auto)'},
-  {id:'CL-007',jobId:'J-015',jobNum:'1-25-1015-WTR',channel:'phone',direction:'Inbound',subject:'State Farm Payment Update',summary:'Paul Anderson called to confirm payment of $8,000 processed. Remaining $23,000 pending supplemental.',date:'2026-05-17T13:20:00',agent:'Christina'},
-  {id:'CL-008',jobId:'J-013',jobNum:'1-25-1013-WTR',channel:'portal',direction:'Outbound',subject:'Carrier Portal Submission',summary:'Uploaded supplemental estimate to Hartford carrier portal. Ref #HTF-2026-88432.',date:'2026-05-17T10:15:00',agent:'Christina'},
-  {id:'CL-009',jobId:'J-009',jobNum:'1-25-1009-MOLD',channel:'email',direction:'Outbound',subject:'Payment Reminder - 78 Days Outstanding',summary:'Automated 60+ day reminder sent to Farmers adjuster Steve Harris. Balance: $7,200.',date:'2026-05-16T09:00:00',agent:'System (Auto)'},
-  {id:'CL-010',jobId:'J-018',jobNum:'1-25-1018-MOLD',channel:'email',direction:'Inbound',subject:'Documentation Request',summary:'Liberty Mutual requesting pre-remediation air quality test results for mold claim.',date:'2026-05-16T08:30:00',agent:'System (Auto)'},
-  {id:'CL-011',jobId:'J-004',jobNum:'1-25-1004-WTR',channel:'phone',direction:'Outbound',subject:'Lien Warning Call',summary:'Called USAA to warn of impending lien filing if payment not received. Adjuster acknowledged urgency.',date:'2026-05-15T14:00:00',agent:'Moshe'},
-  {id:'CL-012',jobId:'J-006',jobNum:'1-25-1006-WTR',channel:'email',direction:'Outbound',subject:'Initial Follow-up - Invoice INV-2025-3006',summary:'First follow-up to Nationwide adjuster Amy Foster. $12,300 outstanding at 55 days.',date:'2026-05-15T11:30:00',agent:'System (Auto)'},
-  {id:'CL-013',jobId:'J-022',jobNum:'1-25-1022-MOLD',channel:'email',direction:'Inbound',subject:'Partial Payment Notification',summary:'Hartford confirmed $5,000 partial payment issued. Remaining $15,100 under supplemental review.',date:'2026-05-15T09:15:00',agent:'System (Auto)'},
-  {id:'CL-014',jobId:'J-014',jobNum:'1-25-1014-MOLD',channel:'sms',direction:'Outbound',subject:'Payment Status Check',summary:'SMS to Allstate adjuster Diana Ross requesting payment ETA for $12,600 balance.',date:'2026-05-14T16:45:00',agent:'Hannah'},
-  {id:'CL-015',jobId:'J-021',jobNum:'1-25-1021-WTR',channel:'email',direction:'Outbound',subject:'Second Notice - Claim CLM-2025-26539',summary:'Follow-up to Erie Insurance. Balance of $10,400 at 52 days. Referenced carrier SLA.',date:'2026-05-14T14:20:00',agent:'System (Auto)'},
-  {id:'CL-016',jobId:'J-002',jobNum:'1-25-1002-FIRE',channel:'email',direction:'Outbound',subject:'Invoice Delivery - Job 1-25-1002-FIRE',summary:'Initial invoice of $34,200 sent to Allstate for fire restoration work.',date:'2026-05-14T10:00:00',agent:'System (Auto)'},
-  {id:'CL-017',jobId:'J-007',jobNum:'1-25-1007-FIRE',channel:'portal',direction:'Outbound',subject:'Estimate Upload',summary:'Uploaded initial estimate and scope documentation to State Farm carrier portal.',date:'2026-05-13T15:30:00',agent:'Christina'},
-  {id:'CL-018',jobId:'J-025',jobNum:'1-25-1025-WTR',channel:'phone',direction:'Outbound',subject:'Collections Call - Farmers',summary:'Called Farmers claims for payment status. Adjuster states check was mailed 5/10.',date:'2026-05-13T11:00:00',agent:'Hannah'},
-  {id:'CL-019',jobId:'J-019',jobNum:'1-25-1019-WTR',channel:'email',direction:'Outbound',subject:'First Follow-up - Job 1-25-1019-WTR',summary:'Follow-up to Travelers. Balance $5,000 at 38 days. Polite tone per Day 30 template.',date:'2026-05-13T09:45:00',agent:'System (Auto)'},
-  {id:'CL-020',jobId:'J-010',jobNum:'1-25-1010-WTR',channel:'email',direction:'Inbound',subject:'Payment Confirmation',summary:'Erie Insurance confirmed final payment of $6,200 has been processed.',date:'2026-05-12T16:00:00',agent:'System (Auto)'},
-  {id:'CL-021',jobId:'J-005',jobNum:'1-25-1005-MOLD',channel:'phone',direction:'Outbound',subject:'Adjuster Voicemail #3',summary:'Left 3rd voicemail for David Chen at Liberty Mutual. Escalating to supervisor.',date:'2026-05-12T14:30:00',agent:'Christina'},
-  {id:'CL-022',jobId:'J-008',jobNum:'1-25-1008-WTR',channel:'email',direction:'Outbound',subject:'Lien Warning Notice',summary:'Formal lien warning sent to Allstate per Oregon statute. 13 days to deadline.',date:'2026-05-12T10:00:00',agent:'System (Auto)'},
-  {id:'CL-023',jobId:'J-016',jobNum:'1-25-1016-FIRE',channel:'email',direction:'Outbound',subject:'Invoice Delivery - Fire Restoration',summary:'Initial invoice of $28,600 sent to Nationwide for Seattle fire job.',date:'2026-05-11T09:00:00',agent:'System (Auto)'},
-  {id:'CL-024',jobId:'J-012',jobNum:'1-25-1012-WTR',channel:'email',direction:'Outbound',subject:'Invoice & Scope - Job 1-25-1012-WTR',summary:'Invoice of $11,200 with full scope documentation sent to USAA.',date:'2026-05-11T08:30:00',agent:'System (Auto)'},
-  {id:'CL-025',jobId:'J-020',jobNum:'1-25-1020-FIRE',channel:'portal',direction:'Outbound',subject:'New Claim Submission',summary:'Initial claim documentation and estimate uploaded to USAA portal for $45,600 fire job.',date:'2026-05-10T14:00:00',agent:'Christina'},
-  {id:'CL-026',jobId:'J-011',jobNum:'1-25-1011-FIRE',channel:'phone',direction:'Inbound',subject:'Travelers Dispute Discussion',summary:'Mark Thompson from Travelers called to discuss depreciation holdback of $15,200.',date:'2026-05-10T11:45:00',agent:'Moshe'},
-  {id:'CL-027',jobId:'J-009',jobNum:'1-25-1009-MOLD',channel:'email',direction:'Outbound',subject:'Payment Follow-up #2',summary:'Second automated follow-up to Farmers for $7,200 balance at 78 days.',date:'2026-05-10T09:00:00',agent:'System (Auto)'},
-  {id:'CL-028',jobId:'J-023',jobNum:'1-25-1023-WTR',channel:'email',direction:'Outbound',subject:'Invoice Delivery',summary:'Invoice of $17,300 sent to State Farm adjuster Kevin Brown.',date:'2026-05-09T10:00:00',agent:'System (Auto)'},
-  {id:'CL-029',jobId:'J-001',jobNum:'1-25-1001-WTR',channel:'email',direction:'Outbound',subject:'Initial Invoice - Claim CLM-2025-44821',summary:'First invoice of $18,750 sent to State Farm. 30-day payment terms.',date:'2026-05-08T09:00:00',agent:'System (Auto)'},
-  {id:'CL-030',jobId:'J-017',jobNum:'1-25-1017-WTR',channel:'email',direction:'Inbound',subject:'Full Payment Confirmation',summary:'Farmers confirmed full payment of $14,700 for Job 1-25-1017-WTR.',date:'2026-05-07T15:00:00',agent:'System (Auto)'}
-];
+let AI_INBOX=[];  // REAL-DATA-ONLY: seed removed 2026-07-28 — populated exclusively by loadLiveData()
+let COMMS_LOG=[];  // REAL-DATA-ONLY: seed removed 2026-07-28 — populated exclusively by loadLiveData()
 
-let PAYMENTS=[
-  {id:'PMT-001',amount:8900,date:'2026-05-15',jobId:'J-004',jobNum:'1-25-1004-WTR',paidTo:'911 Restoration Portland',expectedPayee:'911 Restoration Portland',diversion:false,source:'Check #44821',carrier:'USAA',office:'Portland'},
-  {id:'PMT-002',amount:12000,date:'2026-05-14',jobId:'J-024',jobNum:'1-25-1024-FIRE',paidTo:'Edward Lewis (Homeowner)',expectedPayee:'911 Restoration Portland',diversion:true,source:'Check #51203',carrier:'Allstate',office:'Portland'},
-  {id:'PMT-003',amount:14700,date:'2026-05-12',jobId:'J-017',jobNum:'1-25-1017-WTR',paidTo:'911 Restoration Portland',expectedPayee:'911 Restoration Portland',diversion:false,source:'ACH Transfer',carrier:'Farmers',office:'Portland'},
-  {id:'PMT-004',amount:6200,date:'2026-05-10',jobId:'J-010',jobNum:'1-25-1010-WTR',paidTo:'911 Restoration Portland',expectedPayee:'911 Restoration Portland',diversion:false,source:'Check #62104',carrier:'Erie Insurance',office:'Portland'},
-  {id:'PMT-005',amount:5000,date:'2026-05-08',jobId:'J-022',jobNum:'1-25-1022-MOLD',paidTo:'911 Restoration Portland',expectedPayee:'911 Restoration Portland',diversion:false,source:'ACH Transfer',carrier:'Hartford',office:'Portland'}
-];
+let PAYMENTS=[];  // REAL-DATA-ONLY: seed removed 2026-07-28 — populated exclusively by loadLiveData()
 
-let ERROR_LOG=[
-  {id:'ERR-001',timestamp:'2026-05-19T07:45:00',scenario:'S-03',module:'Email Parser',severity:'HIGH',message:'Failed to parse carrier response from State Farm. Unexpected HTML format in email body.',resolved:false},
-  {id:'ERR-002',timestamp:'2026-05-18T22:15:00',scenario:'S-01',module:'Invoice Monitor',severity:'MEDIUM',message:'Airtable API rate limit reached. Retried after 30s delay. No data loss.',resolved:true},
-  {id:'ERR-003',timestamp:'2026-05-18T16:00:00',scenario:'S-05',module:'SMS Gateway',severity:'LOW',message:'SMS delivery delayed by 45 seconds to Farmers adjuster. Carrier network congestion.',resolved:true},
-  {id:'ERR-004',timestamp:'2026-05-17T14:30:00',scenario:'S-07',module:'Lien Calculator',severity:'CRITICAL',message:'Lien deadline calculation error for J-004. Manual override required. Deadline was showing 15 days instead of 9.',resolved:false},
-  {id:'ERR-005',timestamp:'2026-05-17T09:00:00',scenario:'S-02',module:'PSA Job Sync',severity:'HIGH',message:'Airtable API rate limit during batch sync. Resolved on retry.',resolved:true},
-  {id:'ERR-006',timestamp:'2026-05-16T18:45:00',scenario:'S-04',module:'Payment Reconciler',severity:'MEDIUM',message:'Duplicate payment record detected for PMT-003. Deduplication applied automatically.',resolved:true},
-  {id:'ERR-007',timestamp:'2026-05-16T11:20:00',scenario:'S-08',module:'Report Generator',severity:'LOW',message:'Weekly AR report generation took 47s (threshold: 30s). No functional impact.',resolved:true},
-  {id:'ERR-008',timestamp:'2026-05-15T20:00:00',scenario:'S-06',module:'Diversion Detector',severity:'HIGH',message:'New diversion pattern detected for Allstate payments. Updated detection rules applied.',resolved:true},
-  {id:'ERR-009',timestamp:'2026-05-15T08:30:00',scenario:'S-09',module:'Contact Updater',severity:'MEDIUM',message:'Failed to update adjuster phone number for J-007. Airtable field locked by another process.',resolved:false},
-  {id:'ERR-010',timestamp:'2026-05-14T13:15:00',scenario:'S-01',module:'Invoice Monitor',severity:'LOW',message:'Scheduled invoice scan completed 2 minutes late due to Make.com queue backlog.',resolved:true}
-];
+let ERROR_LOG=[];  // REAL-DATA-ONLY: seed removed 2026-07-28 — populated exclusively by loadLiveData()
 
-let AUTHORIZED_SENDERS=[
-  {id:1,domain:'statefarm.com',name:'State Farm',type:'Carrier',addedDate:'2025-11-01',status:'Active'},
-  {id:2,domain:'allstate.com',name:'Allstate',type:'Carrier',addedDate:'2025-11-01',status:'Active'},
-  {id:3,domain:'farmers.com',name:'Farmers Insurance',type:'Carrier',addedDate:'2025-11-01',status:'Active'},
-  {id:4,domain:'usaa.com',name:'USAA',type:'Carrier',addedDate:'2025-11-01',status:'Active'},
-  {id:5,domain:'libertymutual.com',name:'Liberty Mutual',type:'Carrier',addedDate:'2025-11-01',status:'Active'},
-  {id:6,domain:'nationwide.com',name:'Nationwide',type:'Carrier',addedDate:'2025-11-15',status:'Active'},
-  {id:7,domain:'erieinsurance.com',name:'Erie Insurance',type:'Carrier',addedDate:'2025-11-15',status:'Active'},
-  {id:8,domain:'travelers.com',name:'Travelers',type:'Carrier',addedDate:'2025-11-15',status:'Active'},
-  {id:9,domain:'thehartford.com',name:'The Hartford',type:'Carrier',addedDate:'2025-12-01',status:'Active'},
-  {id:10,domain:'progressive.com',name:'Progressive',type:'Carrier',addedDate:'2025-12-01',status:'Active'},
-  {id:11,domain:'geico.com',name:'GEICO',type:'Carrier',addedDate:'2025-12-01',status:'Active'},
-  {id:12,domain:'chubb.com',name:'Chubb',type:'Carrier',addedDate:'2026-01-10',status:'Active'},
-  {id:13,domain:'amica.com',name:'Amica Mutual',type:'Carrier',addedDate:'2026-01-10',status:'Active'},
-  {id:14,domain:'911restoration.com',name:'911 Restoration (Internal)',type:'Internal',addedDate:'2025-11-01',status:'Active'},
-  {id:15,domain:'xactware.com',name:'Xactware / Xactimate',type:'Vendor',addedDate:'2025-11-01',status:'Active'}
-];
+let AUTHORIZED_SENDERS=[];  // REAL-DATA-ONLY: seed removed 2026-07-28 — populated exclusively by loadLiveData()
 
-let HOLIDAYS_2026=[
-  {id:1,name:"New Year's Day",date:'2026-01-01',type:'Federal'},
-  {id:2,name:"MLK Jr. Day",date:'2026-01-19',type:'Federal'},
-  {id:3,name:"Presidents' Day",date:'2026-02-16',type:'Federal'},
-  {id:4,name:"Memorial Day",date:'2026-05-25',type:'Federal'},
-  {id:5,name:"Independence Day",date:'2026-07-04',type:'Federal'},
-  {id:6,name:"Labor Day",date:'2026-09-07',type:'Federal'},
-  {id:7,name:"Columbus Day",date:'2026-10-12',type:'Federal'},
-  {id:8,name:"Veterans Day",date:'2026-11-11',type:'Federal'},
-  {id:9,name:"Thanksgiving",date:'2026-11-26',type:'Federal'},
-  {id:10,name:"Christmas Day",date:'2026-12-25',type:'Federal'}
-];
+let HOLIDAYS_2026=[];  // REAL-DATA-ONLY: seed removed 2026-07-28 — populated exclusively by loadLiveData()
 
-let SYSTEM_METRICS=[
-  {date:'2026-05-19',emailsSent:24,smssSent:8,apiCalls:342,errors:2,opsUsed:1847},
-  {date:'2026-05-18',emailsSent:31,smssSent:12,apiCalls:418,errors:3,opsUsed:2103},
-  {date:'2026-05-17',emailsSent:28,smssSent:6,apiCalls:385,errors:1,opsUsed:1952},
-  {date:'2026-05-16',emailsSent:19,smssSent:10,apiCalls:298,errors:2,opsUsed:1634},
-  {date:'2026-05-15',emailsSent:35,smssSent:14,apiCalls:456,errors:3,opsUsed:2287}
-];
+let SYSTEM_METRICS=[];  // REAL-DATA-ONLY: seed removed 2026-07-28 — populated exclusively by loadLiveData()
 
-let SCENARIOS=[
-  {id:'S-01',name:'Invoice Aging Monitor',status:'active',lastRun:'2026-05-19T07:00:00',runsToday:12,errors:0},
-  {id:'S-02',name:'PSA Job Sync',status:'active',lastRun:'2026-05-22T11:27:00',runsToday:12,errors:0},
-  {id:'S-03',name:'Email Intake & Parser',status:'active',lastRun:'2026-05-19T09:15:00',runsToday:24,errors:1},
-  {id:'S-04',name:'Payment Reconciler',status:'active',lastRun:'2026-05-19T06:00:00',runsToday:6,errors:0},
-  {id:'S-05',name:'SMS Notification Engine',status:'active',lastRun:'2026-05-19T08:30:00',runsToday:8,errors:0},
-  {id:'S-06',name:'Diversion Detector',status:'active',lastRun:'2026-05-19T06:00:00',runsToday:6,errors:0},
-  {id:'S-07',name:'Lien Deadline Calculator',status:'active',lastRun:'2026-05-22T10:03:00',runsToday:3,errors:0},
-  {id:'S-08',name:'Weekly Report Generator',status:'active',lastRun:'2026-05-16T18:00:00',runsToday:0,errors:0},
-  {id:'S-09',name:'Contact Data Sync',status:'active',lastRun:'2026-05-19T05:00:00',runsToday:4,errors:1},
-  {id:'S-10',name:'Escalation Rules Engine',status:'active',lastRun:'2026-05-19T09:00:00',runsToday:15,errors:0}
+let SCENARIOS=[];  // REAL-DATA-ONLY: seed removed 2026-07-28 — populated exclusively by loadLiveData()
+let METRICS_SUMMARY=null;   // REAL-DATA-ONLY: MetricsSummary "LIVE" snapshot row from Airtable
+let LIEN_DEADLINES=[];      // REAL-DATA-ONLY: LienDeadlines table from Airtable
+let USERS=[];               // REAL-DATA-ONLY: Users table (tbl7dCGCVGuI1Zjnz). Password field is NEVER fetched.
+let _lastLoadAt=null;       // REAL-DATA-ONLY: wall-clock of the last successful Airtable load
+
+// The real Make.com scenario registry (names + live Make IDs). This is configuration,
+// not telemetry — no run counts, no timestamps, no status is asserted here. Status is
+// derived at load time from Error Log evidence only.
+const MAKE_SCENARIO_REGISTRY=[
+  {id:'S-00',  name:'Historical Backfill',            makeId:'5106218'},
+  {id:'S-01',  name:'Zero Hour Clock',                makeId:'4943253'},
+  {id:'S-02',  name:'PSA Job Sync',                   makeId:'4944615'},
+  {id:'S-02.5',name:'QBO Invoice Sync',               makeId:'4987653'},
+  {id:'S-03',  name:'Email Reply Parser (AI)',        makeId:'5025298'},
+  {id:'S-04',  name:'Payment Diversion',              makeId:'5062133'},
+  {id:'S-04B', name:'Recovery Cadence',               makeId:'5139728'},
+  {id:'S-05',  name:'Follow-Up Cadence',              makeId:'4964332'},
+  {id:'S-06',  name:'Lien Alert',                     makeId:'4975688'},
+  {id:'S-10',  name:'Daily SystemMetrics',            makeId:'5063944'},
+  {id:'S-11',  name:'Dispute Resolution Cadence',     makeId:'5140487'},
+  {id:'S-12',  name:'Homeowner Comm Cadence',         makeId:'5203715'},
+  {id:'S-13',  name:'PSA To-Do Write-Back',           makeId:'5401203'},
+  {id:'S-15',  name:'Inbound SMS Handler',            makeId:'5547889'},
+  {id:'S-16',  name:'SMS Opt-In Emailer',             makeId:'5577487'}
 ];
 
 // ============================================================
@@ -969,8 +868,50 @@ function $(id){return document.getElementById(id)}
 function fmt(n){return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:0,maximumFractionDigits:0}).format(n)}
 function fmtNum(n){return new Intl.NumberFormat('en-US').format(n)}
 function randomPastDate(maxDays){const d=new Date('2026-05-19');d.setDate(d.getDate()-Math.floor(Math.random()*Math.min(maxDays,30)));return d.toISOString().split('T')[0]}
+// REAL-DATA-ONLY / F13 (2026-07-28): every screen that touches a homeowner
+// needs the same answer to "may we contact this person, and by what channel" --
+// and, when we may not yet, what the next step towards them actually is. That
+// answer is derived here once, from the Airtable consent columns only, so no
+// screen can invent a consent state. Order matters: a hard block outranks an
+// opt-out, which outranks a granted consent, which outranks a pending request.
+function homeownerConsentState(j){
+  if(!j) return null;
+  if(j.hoDoNotContact) return {label:'Do Not Contact',color:'red',
+    next:'No outbound contact is permitted. Clear the Do Not Contact flag in Airtable before any cadence may run against this job.'};
+  if(j.hoSmsOptOut) return {label:'SMS opted out',color:'orange',
+    next:'The homeowner replied STOP, so texting is blocked. Email remains available; S-04B skips every SMS step for this job.'};
+  if(j.hoSmsConsent) return {label:'SMS consent on file',color:'green',
+    next:'Consent recorded'+(j.hoSmsConsentDate?' on '+j.hoSmsConsentDate:'')+(j.hoConsentedMobile?' for '+j.hoConsentedMobile:'')+'. The SMS cadence may run.'};
+  if(j.hoConsentRequestSent) return {label:'Consent request sent',color:'yellow',
+    next:'Opt-in request sent '+j.hoConsentRequestSent+' \u2014 awaiting the homeowner. Submitting the form writes SMS Consent back to this record; no SMS goes out until it does.'};
+  return {label:'No consent on file',color:'gray',
+    next:'Next step: send the SMS opt-in request (S-16 emails the consent form to the homeowner; their submission sets SMS Consent in Airtable). Until that returns, this homeowner is email-only.'};
+}
 function agingBucket(days){if(days<=30)return'0-30';if(days<=60)return'31-60';if(days<=90)return'61-90';return'90+'}
 function agingColor(days){if(days<=30)return'green';if(days<=60)return'yellow';if(days<=90)return'orange';return'red'}
+// REAL-DATA-ONLY / F12 (2026-07-28): the Job record carries no invoiced date in
+// the live base -- PSA never writes one -- so the Job-derived day-count is zero
+// for every job, while the linked InvoiceRecords row correctly reports 700 / 644
+// / 355 days. Anything that aged off the Job therefore painted two-year-old
+// receivables as current, and the Dashboard contradicted the AR Aging screen on
+// the very next click. Age is now taken from the invoice that owns the money.
+// A job with no invoice returns null -- explicitly unknown -- so that "we have
+// not billed this yet" can never render as "this is current".
+function jobAgeDays(j){
+  if(!j) return null;
+  var best=null;
+  (INVOICES||[]).forEach(function(i){
+    if(i.jobId!==j.id) return;
+    var d=(i.effectiveDaysOut!=null?i.effectiveDaysOut:i.daysOut);
+    if(typeof d==='number'&&isFinite(d)&&(best===null||d>best)) best=d;
+  });
+  if(best!==null) return best;
+  // No invoice row. Fall back to the Job only if it genuinely carries a date.
+  if(j.invoicedDate) return (j.effectiveDaysOut||j.daysOut||0);
+  return null;
+}
+// Bucket key for a job, or null when the job has no aged invoice at all.
+function jobAgeBucketKey(j){var d=jobAgeDays(j);return d===null?null:agingBucket(d)}
 function formatDate(d){if(!d)return'-';return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}
 function formatDateTime(d){if(!d)return'-';const dt=new Date(d);return dt.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}
 function getRole(){
@@ -1303,31 +1244,66 @@ function renderDashboard(){
   var totalInvoiced=jobs.reduce((s,j)=>s+j.amtInvoiced,0);
   var totalPaid=jobs.reduce((s,j)=>s+j.amtPaid,0);
   var collRate=totalInvoiced>0?Math.round(totalPaid/totalInvoiced*100):0;
-  var avgDSO=jobs.length>0?Math.round(jobs.reduce((s,j)=>s+j.daysOut,0)/jobs.length):0;
+  // F12: averaged over jobs that actually have an aged invoice. Jobs with none
+  // are excluded rather than counted as zero, which used to drag the average to 0.
+  var _aged=jobs.map(jobAgeDays).filter(function(d){return d!==null});
+  var avgDSO=_aged.length?Math.round(_aged.reduce(function(a,b){return a+b},0)/_aged.length):null;
   var openInv=invoices.filter(i=>i.amtDue>0).length;
   var allPayments=filterByDashOffice(PAYMENTS);
   var activeDiversions=allPayments.filter(p=>p.diversion&&p.recoveryStatus==='Active').length;
   var escalatedDiversions=allPayments.filter(p=>p.recoveryStatus==='Escalated to Legal').length;
   var resolvedDiversions=allPayments.filter(p=>p.recoveryStatus==='Resolved — Payment Forwarded').length;
   var totalDiversionAmt=allPayments.filter(p=>p.diversion&&p.recoveryStatus==='Active').reduce((s,p)=>s+p.amount,0);
-  var lienAlerts=jobs.filter(j=>j.lienDaysLeft<=30&&j.lienDaysLeft<999).length;
+  // REAL-DATA-ONLY / F12 (2026-07-28): this card counted every job whose lien
+  // clock was at or below 30 days and then labelled the whole count as being
+  // within the next 30 days. All three live jobs are past their statutory date
+  // by 281 / 553 / 626 days, so the card claimed an actionable deadline while
+  // the Lien Zone screen correctly said the remedy had already lapsed. Expired
+  // and upcoming are now counted separately and labelled for what they are.
+  var lienExpired=jobs.filter(function(j){return j.lienDaysLeft<0&&j.lienDaysLeft>-9000}).length;
+  var lienUpcoming=jobs.filter(function(j){return j.lienDaysLeft>=0&&j.lienDaysLeft<=30&&j.lienDaysLeft<999}).length;
+  var lienAlerts=lienExpired+lienUpcoming;
+  var lienAlertLabel=lienExpired
+    ? (lienExpired+' expired'+(lienUpcoming?' \u00b7 '+lienUpcoming+' within 30 days':''))
+    : (lienUpcoming?'Within 30 days':'None pending');
+
+  // F9: real week-over-week / month-over-month deltas from SystemMetrics.
+  var pm7=priorMetric(7), pm30=priorMetric(30);
+  var tAR   = trendFrom(totalAR, pm7?(pm7.totalInvoiced-pm7.totalCollected):null, 'pct', 'vs last week', false);
+  var tRate = trendFrom(collRate, (pm30&&pm30.totalInvoiced)?Math.round(pm30.totalCollected/pm30.totalInvoiced*100):null, 'abs', 'pts vs last month', true);
+  var tDSO  = (avgDSO===null) ? {text:'No aged invoices yet',dir:null}
+            : trendFrom(avgDSO, pm7?pm7.avgDSO:null, 'abs', 'days vs last week', false);
 
   $('dashKPIs').innerHTML=[
-    kpiCard('Total AR Outstanding',fmt(totalAR),'↑ 3.2% vs last week','down','💰','rgba(74,124,255,.15) 0%,rgba(74,124,255,.05) 100%'),
-    kpiCard('Collection Rate',collRate+'%','↑ 1.5% vs last month','up','🎯','rgba(52,211,153,.15) 0%,rgba(52,211,153,.05) 100%'),
-    kpiCard('Avg DSO',avgDSO+' days','↓ 2 days vs prior','up','⏱️','rgba(34,211,238,.15) 0%,rgba(34,211,238,.05) 100%'),
+    kpiCard('Total AR Outstanding',fmt(totalAR),tAR.text,tAR.dir,'💰','rgba(74,124,255,.15) 0%,rgba(74,124,255,.05) 100%'),
+    kpiCard('Collection Rate',collRate+'%',tRate.text,tRate.dir,'🎯','rgba(52,211,153,.15) 0%,rgba(52,211,153,.05) 100%'),
+    kpiCard('Avg DSO',(avgDSO===null?'\u2014':avgDSO+' days'),tDSO.text,tDSO.dir,'⏱️','rgba(34,211,238,.15) 0%,rgba(34,211,238,.05) 100%'),
     kpiCard('Open Invoices',openInv,openInv>0?openInv+' need follow-up':'',null,'📄','rgba(167,139,250,.15) 0%,rgba(167,139,250,.05) 100%','navigate(\'ar-aging\')'),
     kpiCard('Active Diversions',activeDiversions,activeDiversions>0?fmt(totalDiversionAmt)+' at risk':'All clear',activeDiversions>0?'down':'up','🚨','rgba(239,68,68,.15) 0%,rgba(239,68,68,.05) 100%','scrollToDiversions()'),
-    kpiCard('Lien Alerts',lienAlerts,lienAlerts>0?'Within 30 days':'None pending',lienAlerts>0?'down':'up','⚖️','rgba(251,191,36,.15) 0%,rgba(251,191,36,.05) 100%','navigate(\'lien-zone\')')
+    kpiCard('Lien Alerts',lienAlerts,lienAlertLabel,lienAlerts>0?'down':'up','⚖️','rgba(251,191,36,.15) 0%,rgba(251,191,36,.05) 100%','navigate(\'lien-zone\')')
   ].join('');
 
+  // REAL-DATA-ONLY / F12 (2026-07-28): this chart aged off the Job, so on live
+  // data it reported the entire receivable as current while the AR Aging table
+  // on the next screen reported the same money at 90+ days. It now buckets by
+  // the age of the invoice that owns the money, and money on jobs with no
+  // invoice is shown in its own bucket instead of being counted as current.
   var buckets={'0-30':0,'31-60':0,'61-90':0,'90+':0};
-  jobs.forEach(function(j){buckets[agingBucket(j.effectiveDaysOut||j.daysOut)]+=(j.amtInvoiced-j.amtPaid)});
+  var bucketCounts={'0-30':0,'31-60':0,'61-90':0,'90+':0};
+  var _unagedAmt=0,_unagedCt=0;
+  jobs.forEach(function(j){
+    var k=jobAgeBucketKey(j);
+    var amt=(j.amtInvoiced||0)-(j.amtPaid||0);
+    if(k===null){_unagedAmt+=amt;_unagedCt++;return}
+    buckets[k]+=amt;bucketCounts[k]++;
+  });
+  if(_unagedCt){buckets['Unaged']=_unagedAmt;bucketCounts['Unaged']=_unagedCt}
   var maxB=Math.max.apply(null,Object.values(buckets).concat([1]));
   var totalAging=Object.values(buckets).reduce(function(a,b){return a+b},0)||1;
-  var bColors={'0-30':['#34d399','#22d3ee'],'31-60':['#fbbf24','#fb923c'],'61-90':['#fb923c','#ef4444'],'90+':['#ef4444','#dc2626']};
-  var bIcons={'0-30':'\u2705','31-60':'\u26a0\ufe0f','61-90':'\ud83d\udfe0','90+':'\ud83d\udd34'};
-  $('agingChart').innerHTML='<div style="display:flex;gap:2px;height:12px;border-radius:6px;overflow:hidden;margin-bottom:20px">'+Object.entries(buckets).map(function(e){var k=e[0],v=e[1];var pct=totalAging>0?Math.max(v/totalAging*100,2):25;var c=bColors[k];return '<div style="flex:0 0 '+pct+'%;background:linear-gradient(90deg,'+c[0]+','+c[1]+');transition:width .6s ease" title="'+k+' days: '+fmt(v)+'"></div>'}).join('')+'</div><div class="aging-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">'+Object.entries(buckets).map(function(e){var k=e[0],v=e[1];var pct=maxB>0?Math.round(v/maxB*100):0;var c=bColors[k];var ic=bIcons[k];var count=jobs.filter(function(j){return agingBucket(j.daysOut)===k}).length;return '<div style="background:var(--bg-input);border-radius:10px;padding:16px;text-align:center;position:relative;overflow:hidden;min-width:0"><div style="position:absolute;bottom:0;left:0;right:0;height:'+Math.max(pct,4)+'%;background:linear-gradient(180deg,'+c[0]+'22,'+c[0]+'08);transition:height .8s ease"></div><div style="position:relative;z-index:1"><div style="font-size:1.3rem;margin-bottom:4px">'+ic+'</div><div style="font-size:1.2rem;font-weight:800;color:'+c[0]+'">'+fmt(v)+'</div><div style="font-size:.78rem;color:var(--text-muted);margin-top:2px">'+k+' days</div><div style="font-size:.72rem;color:var(--text-secondary);margin-top:4px">'+count+' job'+(count!==1?'s':'')+'</div></div></div>'}).join('')+'</div>';
+  var bColors={'0-30':['#34d399','#22d3ee'],'31-60':['#fbbf24','#fb923c'],'61-90':['#fb923c','#ef4444'],'90+':['#ef4444','#dc2626'],'Unaged':['#6b6c85','#94a3b8']};
+  var bIcons={'0-30':'\u2705','31-60':'\u26a0\ufe0f','61-90':'\ud83d\udfe0','90+':'\ud83d\udd34','Unaged':'\u2b1c'};
+  var bLabel=function(k){return k==='Unaged'?'not yet invoiced':k+' days'};
+  $('agingChart').innerHTML='<div style="display:flex;gap:2px;height:12px;border-radius:6px;overflow:hidden;margin-bottom:20px">'+Object.entries(buckets).map(function(e){var k=e[0],v=e[1];var pct=totalAging>0?Math.max(v/totalAging*100,2):25;var c=bColors[k];return '<div style="flex:0 0 '+pct+'%;background:linear-gradient(90deg,'+c[0]+','+c[1]+');transition:width .6s ease" title="'+bLabel(k)+': '+fmt(v)+'"></div>'}).join('')+'</div><div class="aging-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">'+Object.entries(buckets).map(function(e){var k=e[0],v=e[1];var pct=maxB>0?Math.round(v/maxB*100):0;var c=bColors[k];var ic=bIcons[k];var count=bucketCounts[k]||0;return '<div style="background:var(--bg-input);border-radius:10px;padding:16px;text-align:center;position:relative;overflow:hidden;min-width:0"><div style="position:absolute;bottom:0;left:0;right:0;height:'+Math.max(pct,4)+'%;background:linear-gradient(180deg,'+c[0]+'22,'+c[0]+'08);transition:height .8s ease"></div><div style="position:relative;z-index:1"><div style="font-size:1.3rem;margin-bottom:4px">'+ic+'</div><div style="font-size:1.2rem;font-weight:800;color:'+c[0]+'">'+fmt(v)+'</div><div style="font-size:.78rem;color:var(--text-muted);margin-top:2px">'+bLabel(k)+'</div><div style="font-size:.72rem;color:var(--text-secondary);margin-top:4px">'+count+' job'+(count!==1?'s':'')+'</div></div></div>'}).join('')+'</div>';
 
   var logs=filterByDashOffice(COMMS_LOG).slice(0,10);
   var actIcons={email:'&#9993;',phone:'&#128222;',sms:'&#128172;',system:'&#9881;',portal:'&#127760;'};
@@ -1357,10 +1333,44 @@ function renderDashboard(){
     $('officeComparison').innerHTML=r.offices.map(off=>{
       const oj=JOBS.filter(function(j){return officeEq(j.office,off)});
       const oar=oj.reduce((s,j)=>s+(j.amtInvoiced-j.amtPaid),0);
-      const odso=oj.length?Math.round(oj.reduce((s,j)=>s+(j.effectiveDaysOut||j.daysOut),0)/oj.length):0;
-      return '<div class="card"><div class="card-header"><span class="card-title">'+off+' Office</span><span class="badge badge-blue">'+oj.length+' jobs</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><div style="font-size:1rem;color:var(--text-muted)">AR Outstanding</div><div style="font-size:1.3rem;font-weight:700;margin-top:4px">'+fmt(oar)+'</div></div><div><div style="font-size:1rem;color:var(--text-muted)">Avg DSO</div><div style="font-size:1.3rem;font-weight:700;margin-top:4px">'+odso+' days</div></div></div></div>';
+      // F12: same invoice-derived basis as the headline Avg DSO card.
+      const oaged=oj.map(jobAgeDays).filter(function(d){return d!==null});
+      const odso=oaged.length?Math.round(oaged.reduce(function(a,b){return a+b},0)/oaged.length):null;
+      return '<div class="card"><div class="card-header"><span class="card-title">'+off+' Office</span><span class="badge badge-blue">'+oj.length+' jobs</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><div style="font-size:1rem;color:var(--text-muted)">AR Outstanding</div><div style="font-size:1.3rem;font-weight:700;margin-top:4px">'+fmt(oar)+'</div></div><div><div style="font-size:1rem;color:var(--text-muted)">Avg DSO</div><div style="font-size:1.3rem;font-weight:700;margin-top:4px">'+(odso===null?'\u2014':odso+' days')+'</div></div></div></div>';
     }).join('');
   }else{$('officeComparison').innerHTML=''}
+}
+// REAL-DATA-ONLY / F9 (2026-07-28): the three headline KPI cards used to carry
+// invented deltas (a fixed percentage 'vs last week', a fixed percentage 'vs last
+// month' and a fixed day-count 'vs prior') -- hardcoded string literals that moved
+// no matter what the data did. They are now computed against the SystemMetrics daily series, and
+// when no prior snapshot exists the card says exactly that instead of inventing a
+// trend. SystemMetrics was archived and cleared on 28 Jul 2026, so until S-10 has
+// written a few days of the new series every one of these reads
+// 'No prior snapshot' -- which is the truth.
+function priorMetric(daysBack){
+  if(!SYSTEM_METRICS||!SYSTEM_METRICS.length) return null;
+  var target=Date.now()-daysBack*86400000;
+  var tol=Math.max(2,Math.round(daysBack*0.5));
+  var best=null,bestGap=Infinity;
+  SYSTEM_METRICS.forEach(function(m){
+    var d=new Date(String(m.date)+'T00:00:00');
+    if(isNaN(d.getTime())) return;
+    var gap=Math.abs(d.getTime()-target)/86400000;
+    if(gap<=tol&&gap<bestGap){bestGap=gap;best=m;}
+  });
+  return best;
+}
+// higherIsBetter drives only the colour class, not the arrow.
+function trendFrom(current,prior,mode,suffix,higherIsBetter){
+  if(prior===null||prior===undefined||!isFinite(prior)) return {text:'No prior snapshot',dir:null};
+  if(mode==='pct'&&!prior) return {text:'No prior baseline',dir:null};
+  var diff=current-prior;
+  var txt = (mode==='pct')
+    ? (diff>=0?'\u2191 ':'\u2193 ')+Math.abs(diff/Math.abs(prior)*100).toFixed(1)+'% '+suffix
+    : (diff>=0?'\u2191 ':'\u2193 ')+Math.abs(Math.round(diff))+' '+suffix;
+  var good = diff===0 ? null : ((diff>0)===!!higherIsBetter);
+  return {text:txt, dir: good===null?null:(good?'up':'down')};
 }
 function kpiCard(label,value,change,dir,icon,grad,onclick){
   var ic=icon||'';var g=grad||'';
@@ -1394,7 +1404,11 @@ function renderARTable(){
   const r=getRole();let invoices=filterByOffice(INVOICES);const isGuided=r.mode==='Guided';
 
   const carriers=[...new Set(invoices.map(i=>i.carrier))].sort();
-  $('arFilters').innerHTML='<div><span class="filter-label">Status</span><select id="arFS" onchange="arFilterState.status=this.value;arPage=0;applyARFilters()"><option value="">All</option><option>Current</option><option>Follow-up</option><option>Past Due</option><option>Escalated</option></select></div><div><span class="filter-label">Office</span><select id="arFO" onchange="arFilterState.office=this.value;arPage=0;applyARFilters()"><option value="">All</option>'+r.offices.map(o=>'<option>'+o+'</option>').join('')+'</select></div><div><span class="filter-label">Carrier</span><select id="arFC" onchange="arFilterState.carrier=this.value;arPage=0;applyARFilters()"><option value="">All</option>'+carriers.map(c=>'<option>'+c+'</option>').join('')+'</select></div><div><span class="filter-label">Aging</span><select id="arFA" onchange="arFilterState.aging=this.value;arPage=0;applyARFilters()"><option value="">All</option><option>0-30</option><option>31-60</option><option>61-90</option><option>90+</option></select></div>';
+  // REAL-DATA-ONLY / F11 (2026-07-28): the Status dropdown offered four fixed
+  // labels that were an artefact of the old synthetic INVOICES derivation and
+  // match nothing in the InvoiceRecords table. Built from live values now.
+  const invStatuses=[...new Set(invoices.map(i=>i.status).filter(Boolean))].sort();
+  $('arFilters').innerHTML='<div><span class="filter-label">Status</span><select id="arFS" onchange="arFilterState.status=this.value;arPage=0;applyARFilters()"><option value="">All</option>'+invStatuses.map(function(x){return '<option>'+x+'</option>'}).join('')+'</select></div><div><span class="filter-label">Office</span><select id="arFO" onchange="arFilterState.office=this.value;arPage=0;applyARFilters()"><option value="">All</option>'+r.offices.map(o=>'<option>'+o+'</option>').join('')+'</select></div><div><span class="filter-label">Carrier</span><select id="arFC" onchange="arFilterState.carrier=this.value;arPage=0;applyARFilters()"><option value="">All</option>'+carriers.map(c=>'<option>'+c+'</option>').join('')+'</select></div><div><span class="filter-label">Aging</span><select id="arFA" onchange="arFilterState.aging=this.value;arPage=0;applyARFilters()"><option value="">All</option><option>0-30</option><option>31-60</option><option>61-90</option><option>90+</option></select></div>';
   if($('arFS'))$('arFS').value=arFilterState.status;
   if($('arFO'))$('arFO').value=arFilterState.office;
   if($('arFC'))$('arFC').value=arFilterState.carrier;
@@ -1424,6 +1438,23 @@ function applyARFilters(){
 // ============================================================
 // 3. STRIKE QUEUE
 // ============================================================
+// REAL-DATA-ONLY / D-53 (2026-07-28): HumanStrikeQueue.Status carries seven options in
+// Airtable — the three designed tokens (OPEN / IN_PROGRESS / DONE) plus four that past
+// typecast:true writes minted (SNOOZED, Resolved, Open, In Progress). The Command Center
+// now writes only the canonical tokens, but historical rows still hold the variants, so
+// every read is normalised here and every comparison uses the canonical token.
+function hsqStatus(v) {
+  var t = String(v == null ? '' : v).trim().toUpperCase().replace(/[\s-]+/g, '_');
+  if (t === 'OPEN') return 'OPEN';
+  if (t === 'IN_PROGRESS') return 'IN_PROGRESS';
+  if (t === 'DONE' || t === 'RESOLVED' || t === 'CLOSED') return 'DONE';
+  if (t === 'SNOOZED') return 'SNOOZED';
+  return t || 'OPEN';
+}
+function hsqStatusLabel(v) {
+  var m = { OPEN:'Open', IN_PROGRESS:'In Progress', DONE:'Done', SNOOZED:'Snoozed' };
+  return m[hsqStatus(v)] || hsqStatus(v);
+}
 function renderStrikeQueue(){
 
   const r=getRole();
@@ -1436,9 +1467,9 @@ function renderStrikeQueue(){
   else{$('strikeGuidedMode').innerHTML=''}
   if(!tasks.length){$('strikeQueueList').innerHTML='<div class="empty-state"><div class="empty-icon">&#10003;</div><h3>Queue Clear</h3><p>No pending tasks for your office.</p></div>';return}
   $('strikeQueueList').innerHTML=tasks.map(t=>{
-    const sb=t.status==='In Progress'?'badge-blue':'badge-gray';
+    const sb=hsqStatus(t.status)==='IN_PROGRESS'?'badge-blue':'badge-gray';
     const pc=t.priority==='P1'?'red':t.priority==='P2'?'orange':'blue';
-    return '<div class="task-card" id="task-'+t.id+'" onclick="toggleTask(\''+t.id+'\')"><div class="task-card-header"><div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0"><span class="priority-'+(t.priority||'P3').toLowerCase()+'">'+t.priority+'</span><div style="min-width:0"><strong>'+t.taskType+'</strong><div style="font-size:.95rem;color:var(--text-muted)">'+t.id+' · '+t.jobNum+'</div></div></div><div style="display:flex;align-items:center;gap:12px"><span class="badge '+sb+'">'+t.status+'</span><span style="font-size:1.1rem;font-weight:700;color:var(--accent-'+pc+')">'+fmt(t.amount)+'</span></div></div><div class="task-card-meta"><span>&#128100; '+t.assignedTo+'</span><span>&#128197; '+t.daysOpen+' days open</span><span>&#127970; '+t.office+'</span></div><div class="task-card-body"><p style="font-size:1rem;color:var(--text-secondary);margin-bottom:12px">'+t.description+'</p>'+(t.callNotes?'<div style="margin-bottom:12px"><strong style="font-size:.95rem">Call Notes:</strong><p style="font-size:1rem;color:var(--text-secondary)">'+t.callNotes+'</p></div>':'')+'<div style="display:flex;gap:8px;flex-wrap:wrap">'+(t.status!=='In Progress'?'<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();startTask(\''+t.id+'\')">&#9742; Start Call</button>':'')+'<button class="btn btn-success btn-sm" onclick="event.stopPropagation();resolveTask(\''+t.id+'\')">&#10003; Resolve</button><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openCaseFile(\''+t.jobId+'\')">&#128193; View Case</button>'+(isGuided?'<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();showGuidedHelp(\''+t.id+'\')">&#128161; What Should I Do?</button>':'')+'</div></div></div>';
+    return '<div class="task-card" id="task-'+t.id+'" onclick="toggleTask(\''+t.id+'\')"><div class="task-card-header"><div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0"><span class="priority-'+(t.priority||'P3').toLowerCase()+'">'+t.priority+'</span><div style="min-width:0"><strong>'+(t.taskType||'Untyped task')+'</strong><div style="font-size:.95rem;color:var(--text-muted)">'+t.id+' · '+t.jobNum+'</div></div></div><div style="display:flex;align-items:center;gap:12px"><span class="badge '+sb+'">'+hsqStatusLabel(t.status)+'</span><span style="font-size:1.1rem;font-weight:700;color:var(--accent-'+pc+')">'+(t.amount?fmt(t.amount):'\u2014')+'</span></div></div><div class="task-card-meta"><span>&#128100; '+(t.assignedTo||'Unassigned')+'</span><span>&#128197; '+(t.daysOpen?t.daysOpen+' days open':'Age not recorded')+'</span><span>&#127970; '+(t.office||'\u2014')+'</span></div><div class="task-card-body"><p style="font-size:1rem;color:var(--text-secondary);margin-bottom:12px">'+(t.description||'No description recorded on the Airtable task.')+'</p>'+(t.callNotes?'<div style="margin-bottom:12px"><strong style="font-size:.95rem">Call Notes:</strong><p style="font-size:1rem;color:var(--text-secondary)">'+t.callNotes+'</p></div>':'')+'<div style="display:flex;gap:8px;flex-wrap:wrap">'+(hsqStatus(t.status)!=='IN_PROGRESS'?'<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();startTask(\''+t.id+'\')">&#9742; Start Call</button>':'')+'<button class="btn btn-success btn-sm" onclick="event.stopPropagation();resolveTask(\''+t.id+'\')">&#10003; Resolve</button><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openCaseFile(\''+t.jobId+'\')">&#128193; View Case</button>'+(isGuided?'<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();showGuidedHelp(\''+t.id+'\')">&#128161; What Should I Do?</button>':'')+'</div></div></div>';
   }).join('');
 }
 function toggleTask(id){var el=document.getElementById('task-'+id);if(el)el.classList.toggle('expanded')}
@@ -1486,14 +1517,14 @@ function startTask(id){
     +'<div class="form-group" style="margin-top:12px"><label>Outcome</label><select id="callOutcome" style="width:100%;font-size:1rem"><option value="">— Select —</option><option>Left Voicemail</option><option>Spoke with Adjuster</option><option>Spoke with Homeowner</option><option>No Answer</option><option>Callback Scheduled</option><option>Payment Promised</option><option>Dispute Discussed</option><option>Escalated</option></select></div>'
     +'<div class="form-actions" style="flex-wrap:wrap"><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button><button class="btn btn-primary" onclick="saveCallAndLog(\''+id+'\')">&#128190; Save &amp; Log Call</button></div>'
   );
-  t.status='In Progress';
+  t.status='IN_PROGRESS';
   (function(){
     var pat=getAirtablePAT();
     var recId=t.recId||(String(t.id).indexOf('rec')===0?t.id:'');
     if(pat&&recId){
       fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.hsq+'/'+recId,{
         method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
-        body:JSON.stringify({typecast:true,fields:{'Status':'In Progress'}})
+        body:JSON.stringify({typecast:false,fields:{'Status':'IN_PROGRESS'}})
       }).catch(function(e){console.warn('HSQ status patch failed',e)});
     }
   })();
@@ -1527,7 +1558,7 @@ function saveCallAndLog(taskId){
     if(hsqRecId){
       fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.hsq+'/'+hsqRecId,{
         method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
-        body:JSON.stringify({typecast:true,fields:{'Call Notes':(t.callNotes||'')+(outcome?'\nOutcome: '+outcome:''),'Status':'In Progress'}})
+        body:JSON.stringify({typecast:false,fields:{'Call Notes':(t.callNotes||'')+(outcome?'\nOutcome: '+outcome:''),'Status':'IN_PROGRESS'}})
       }).catch(function(e){console.warn('HSQ call-notes patch failed',e)});
     }
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{
@@ -1562,14 +1593,14 @@ function confirmResolve(id){
   if(!t){showToast('Task not found: '+id,'error');return;}
   var resType=(document.getElementById('resType')||{}).value||'Resolved';
   var resNotes=(document.getElementById('resNotes')||{}).value||'';
-  t.status='Resolved';t.outcome=resType;t.callNotes=resNotes;
+  t.status='DONE';t.outcome=resType;t.callNotes=resNotes;
   var pat=getAirtablePAT();
   var recId=t.recId||(String(t.id).indexOf('rec')===0?t.id:'');
   if(pat&&recId){
     var today=new Date().toISOString().split('T')[0];
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.hsq+'/'+recId,{
       method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
-      body:JSON.stringify({typecast:true,fields:{'Status':'Resolved','Description':(t.description||'')+'\n\nRESOLVED '+today+': '+resType+(resNotes?' — '+resNotes:'')}})
+      body:JSON.stringify({typecast:false,fields:{'Status':'DONE','Description':(t.description||'')+'\n\nRESOLVED '+today+': '+resType+(resNotes?' — '+resNotes:'')}})
     }).then(function(r){if(!r.ok)throw new Error('HSQ PATCH failed '+r.status)})
       .catch(function(e){showToast('Airtable update failed: '+e.message,'error')});
   }
@@ -1683,10 +1714,11 @@ function renderCaseFileList(){
   if(!alljobs.length){$('caseFileContent').innerHTML='<div class="empty-state"><div class="empty-icon">&#128193;</div><h3>No Cases Available</h3><p>No jobs are visible for your offices.</p></div>';return}
   var rows=alljobs.map(function(j){
     var out=(j.amtInvoiced||0)-(j.amtPaid||0);
-    var d=j.effectiveDaysOut||j.daysOut||0;
-    var c=agingColor(d);
+    // F12: age from the invoice that owns the money; blank when none exists.
+    var d=jobAgeDays(j);
+    var c=(d===null)?'blue':agingColor(d);
     var carrier=(j.carrier&&String(j.carrier).indexOf('rec')!==0)?j.carrier:'—';
-    return '<tr style="cursor:pointer" onclick="openCaseFile(\''+j.id+'\')"><td><span style="color:var(--accent-blue);font-weight:600">'+(j.jobNum||'—')+'</span></td><td>'+(j.claimNum||'—')+'</td><td>'+(j.office||'—')+'</td><td>'+carrier+'</td><td><span class="badge badge-'+c+'">'+(j.status||'—')+'</span></td><td data-sort="'+d+'">'+d+'</td><td data-sort="'+out+'">'+fmt(out)+'</td></tr>';
+    return '<tr style="cursor:pointer" onclick="openCaseFile(\''+j.id+'\')"><td><span style="color:var(--accent-blue);font-weight:600">'+(j.jobNum||'—')+'</span></td><td>'+(j.claimNum||'—')+'</td><td>'+(j.office||'—')+'</td><td>'+carrier+'</td><td><span class="badge badge-'+c+'">'+(j.status||'—')+'</span></td><td data-sort="'+(d===null?-1:d)+'">'+(d===null?'\u2014':d)+'</td><td data-sort="'+out+'">'+fmt(out)+'</td></tr>';
   }).join('');
   $('caseFileContent').innerHTML='<div class="card"><div class="card-header"><span class="card-title">&#128193; All Cases</span><span class="card-subtitle">Click any row to open its full case file</span></div><div class="table-container" id="caseListContainer"><table><thead><tr><th>Job #</th><th>Claim #</th><th>Office</th><th>Carrier</th><th>Status</th><th>Days Out</th><th>Outstanding</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
   try{makeSortable('caseListContainer')}catch(e){}
@@ -1696,8 +1728,13 @@ function renderCaseFile(){
   const j=selectedCaseJob;const r=getRole();
   if(!r.offices.some(function(o){return o.toLowerCase()===(j.office||'').toLowerCase()})){$('caseFileContent').innerHTML='<div class="no-permission"><div class="lock-icon">&#128274;</div><h3>Access Restricted</h3><p>You don\'t have permission to view '+j.office+' cases.</p></div>';return}
   $('caseFileTitle').innerHTML='<button onclick="navigate(previousScreen||\'dashboard\')" style="background:none;border:1px solid var(--text-muted);color:var(--text-secondary);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:.85rem;margin-right:12px">&#8592; Back</button>Case: '+j.jobNum;$('caseFileSubtitle').textContent=j.claimNum+' · '+(j.carrier&&!j.carrier.startsWith('rec')?j.carrier:'')+' · '+j.office;
-  const outstanding=j.amtInvoiced-j.amtPaid;const sc=agingColor(j.effectiveDaysOut||j.daysOut);
-  let html='<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px"><div class="kpi-card" style="flex:1;min-width:140px"><div class="kpi-label">Amount Invoiced</div><div class="kpi-value">'+fmt(j.amtInvoiced)+'</div></div><div class="kpi-card" style="flex:1;min-width:140px"><div class="kpi-label">Amount Paid</div><div class="kpi-value" style="color:var(--accent-green)">'+fmt(j.amtPaid)+'</div></div><div class="kpi-card" style="flex:1;min-width:140px"><div class="kpi-label">Outstanding</div><div class="kpi-value" style="color:var(--accent-'+sc+')">'+fmt(outstanding)+'</div></div><div class="kpi-card" style="flex:1;min-width:140px"><div class="kpi-label">Days Outstanding</div><div class="kpi-value">'+(j.effectiveDaysOut||j.daysOut)+'<span style="font-size:.75rem;color:var(--accent-yellow)">'+(j.agingPaused?' &#9208; PAUSED':'')+' </span></div><span class="badge badge-'+sc+'">'+agingBucket(j.daysOut)+' days</span></div><div class="kpi-card" style="flex:1;min-width:140px"><div class="kpi-label">Status</div><div class="kpi-value" style="font-size:1.2rem"><span class="badge badge-'+sc+'">'+j.status+'</span></div></div></div>';
+  const outstanding=j.amtInvoiced-j.amtPaid;
+  // REAL-DATA-ONLY / F14 (2026-07-28): one age, taken from the invoice that
+  // owns the money, used for the number, the bucket badge and the colour alike.
+  // null means no invoice exists for this job -- shown as a dash, never as 0.
+  const cfDays=jobAgeDays(j);
+  const sc=(cfDays===null)?'blue':agingColor(cfDays);
+  let html='<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px"><div class="kpi-card" style="flex:1;min-width:140px"><div class="kpi-label">Amount Invoiced</div><div class="kpi-value">'+fmt(j.amtInvoiced)+'</div></div><div class="kpi-card" style="flex:1;min-width:140px"><div class="kpi-label">Amount Paid</div><div class="kpi-value" style="color:var(--accent-green)">'+fmt(j.amtPaid)+'</div></div><div class="kpi-card" style="flex:1;min-width:140px"><div class="kpi-label">Outstanding</div><div class="kpi-value" style="color:var(--accent-'+sc+')">'+fmt(outstanding)+'</div></div><div class="kpi-card" style="flex:1;min-width:140px"><div class="kpi-label">Days Outstanding</div><div class="kpi-value">'+(cfDays===null?'\u2014':cfDays)+'<span style="font-size:.75rem;color:var(--accent-yellow)">'+(j.agingPaused?' &#9208; PAUSED':'')+' </span></div><span class="badge badge-'+sc+'">'+(cfDays===null?'Not yet invoiced':agingBucket(cfDays)+' days')+'</span></div><div class="kpi-card" style="flex:1;min-width:140px"><div class="kpi-label">Status</div><div class="kpi-value" style="font-size:1.2rem"><span class="badge badge-'+sc+'">'+j.status+'</span></div></div></div>';
   // Communication Track badge
   var trackColors={'1 - Not Answering':'red','2 - Went Silent':'orange','3 - Fully Responding':'green','4 - Lowball/Escalation':'yellow','5 - Good Faith':'blue'};
   var trackWeek='';
@@ -1865,7 +1902,7 @@ function renderCaseFile(){
       }
     }
   }else if(caseFileTab==='contacts'){
-    html+='<div class="two-col"><div class="card"><div class="card-header"><span class="card-title">Adjuster</span><span class="badge badge-blue">'+(j.carrier&&!j.carrier.startsWith("rec")?j.carrier:"Unknown Carrier")+'</span></div><div style="margin-bottom:8px"><strong>'+(j.adjuster&&!j.adjuster.startsWith("rec")?j.adjuster:"Unknown Adjuster")+'</strong></div><div style="font-size:1rem;color:var(--text-secondary);margin-bottom:4px">&#9742; '+(j.adjPhone||"No phone on file")+'</div><div style="font-size:1rem;color:var(--text-secondary);margin-bottom:12px">&#9993; '+(j.adjEmail||"No email on file")+'</div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Communication Rating</div><div class="stars" id="adjStars">'+[1,2,3,4,5].map(i=>'<span class="star '+(i<=(j.adjusterRating||3)?'filled':'')+'" onclick="rateAdjuster(&#39;'+j.id+'&#39;,'+i+')">&#9733;</span>').join('')+'</div></div><div class="card"><div class="card-header"><span class="card-title">Homeowner</span>'+(j.communicationTrack?'<span class="badge badge-'+(trackColors[j.communicationTrack]||'blue')+'">'+j.communicationTrack+'</span>':'')+'</div><div style="margin-bottom:8px"><strong>'+(j.homeowner||"Unknown Homeowner")+'</strong></div><div style="font-size:1rem;color:var(--text-secondary);margin-bottom:4px">&#9742; '+(j.hoPhone||"No phone on file")+'</div><div style="font-size:1rem;color:var(--text-secondary)">&#9993; '+(j.hoEmail||"No email on file")+'</div></div></div>';
+    html+='<div class="two-col"><div class="card"><div class="card-header"><span class="card-title">Adjuster</span><span class="badge badge-blue">'+(j.carrier&&!j.carrier.startsWith("rec")?j.carrier:"Unknown Carrier")+'</span></div><div style="margin-bottom:8px"><strong>'+(j.adjuster&&!j.adjuster.startsWith("rec")?j.adjuster:"Unknown Adjuster")+'</strong></div><div style="font-size:1rem;color:var(--text-secondary);margin-bottom:4px">&#9742; '+(j.adjPhone||"No phone on file")+'</div><div style="font-size:1rem;color:var(--text-secondary);margin-bottom:12px">&#9993; '+(j.adjEmail||"No email on file")+'</div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Communication Rating</div><div class="stars" id="adjStars">'+[1,2,3,4,5].map(i=>'<span class="star '+(i<=(j.adjusterRating||3)?'filled':'')+'" onclick="rateAdjuster(&#39;'+j.id+'&#39;,'+i+')">&#9733;</span>').join('')+'</div></div><div class="card"><div class="card-header"><span class="card-title">Homeowner</span>'+(j.communicationTrack?'<span class="badge badge-'+(trackColors[j.communicationTrack]||'blue')+'">'+j.communicationTrack+'</span>':'')+'</div><div style="margin-bottom:8px"><strong>'+(j.homeowner||"Unknown Homeowner")+'</strong></div><div style="font-size:1rem;color:var(--text-secondary);margin-bottom:4px">&#9742; '+(j.hoPhone||"No phone on file")+'</div><div style="font-size:1rem;color:var(--text-secondary)">&#9993; '+(j.hoEmail||"No email on file")+'</div>'+(function(){var cs=homeownerConsentState(j);if(!cs)return '';return '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)"><span class="badge badge-'+cs.color+'">'+cs.label+'</span><div style="font-size:.92rem;color:var(--text-muted);margin-top:6px;line-height:1.45">'+cs.next+'</div></div>';})()+'</div></div>';
   }else if(caseFileTab==='actions'){
     html+=renderCommunicationTrackCard(j)+renderCarrierResponseCard(j)+renderInfoRequestCard(j)+'<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px"><button class="btn btn-primary" onclick="openEmailCompose(\''+j.id+'\')">&#9993; Draft Email</button><button class="btn btn-secondary" onclick="openCallLog(\''+j.id+'\')">&#9742; Log Call</button><button class="btn btn-secondary" style="display:none" onclick="generateStatement(\''+j.id+'\')">&#128196; Generate Statement</button></div><div class="card"><div class="card-header"><span class="card-title">Payment Stop</span><span class="card-subtitle">Prevent payments to unauthorized payees</span></div><div style="display:flex;align-items:center;gap:12px"><label class="toggle"><input type="checkbox" '+(j.paymentStop?'checked ':'')+'onchange="setPaymentStop(\''+j.id+'\',this.checked)"><span class="toggle-slider"></span></label><span style="font-size:1rem">Enable Payment Stop for this job</span></div></div>';
   }
@@ -1879,7 +1916,7 @@ function rateAdjuster(jobId,n){
   if(pat&&j&&j.adjusterId&&String(j.adjusterId).indexOf('rec')===0){
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.adjusters+'/'+j.adjusterId,{
       method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
-      body:JSON.stringify({typecast:true,fields:{'Rating':n}})
+      body:JSON.stringify({typecast:false,fields:{'Rating':n}})
     }).then(function(r){if(!r.ok)throw new Error('PATCH failed '+r.status);showToast('Adjuster rating saved: '+n+' stars','success')})
       .catch(function(e){showToast('Rating not saved to Airtable: '+e.message,'error')});
   } else {
@@ -1895,7 +1932,7 @@ function setPaymentStop(jobId,val){
   if(pat&&j.id.indexOf('rec')===0){
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.jobs+'/'+j.id,{
       method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
-      body:JSON.stringify({typecast:true,fields:{'Payment Stop':!!val}})
+      body:JSON.stringify({typecast:false,fields:{'Payment Stop':!!val}})
     }).then(function(r){if(!r.ok)throw new Error('PATCH failed '+r.status);showToast(val?'Payment stop activated for '+j.jobNum:'Payment stop removed for '+j.jobNum,'success')})
       .catch(function(e){j.paymentStop=!val;showToast('Airtable update failed: '+e.message,'error')});
   } else {
@@ -1965,7 +2002,7 @@ function saveCaseCallLog(jobId){
   if(pat&&jobId.indexOf('rec')===0){
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{
       method:'POST',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
-      body:JSON.stringify({typecast:false,fields:{'Message':msg,'Channel':'Phone','Direction':direction,'Source':'Command Center','Log Entry':today+' — Call ('+outcome+') — '+j.jobNum,'Date':nowIso,'Logged By':'Command Center','Linked Job':[jobId]}})
+      body:JSON.stringify({typecast:false,fields:{'Message':msg,'Channel':'Phone Call','Direction':direction,'Source':'Command Center','Log Entry':today+' — Call ('+outcome+') — '+j.jobNum,'Date':nowIso,'Logged By':'Command Center','Linked Job':[jobId]}})
     }).then(function(r){if(!r.ok)throw new Error('CommsLog POST failed '+r.status)})
       .catch(function(e){showToast('Airtable log failed: '+e.message,'error')});
   }
@@ -2083,7 +2120,10 @@ function generateStatement(jobId){
     ['Office',j.office||'—','Status',j.collectionsStatus||j.status||'Active'],
     ['Carrier',j.carrier||'—','Adjuster',j.adjuster||'—'],
     ['Homeowner',j.homeowner||'—','Property State',j.propState||'—'],
-    ['Invoice Date',j.invoicedDate?formatDate(j.invoicedDate):'—','Days Outstanding',String(j.daysOut||0)],
+    // F14: the PDF is the artefact that leaves the building -- it must not be
+    // the one place that still reports a two-year-old receivable as zero days.
+    ['Invoice Date',j.invoicedDate?formatDate(j.invoicedDate):'—','Days Outstanding',
+      (function(){var d=jobAgeDays(j);return d===null?'Not yet invoiced':String(d)})()],
     ['Lien Deadline',j.lienDeadline?formatDate(j.lienDeadline):'N/A','Lien Days Left',j.lienDaysLeft<999?String(j.lienDaysLeft):'N/A']
   ];
   fields.forEach(function(row){
@@ -2241,13 +2281,37 @@ function generateStatement(jobId){
 // ============================================================
 function renderLienZone(){
 
-  const r=getRole();const jobs=filterByOffice(JOBS).filter(j=>j.lienDaysLeft<999&&j.lienDeadline).sort((a,b)=>a.lienDaysLeft-b.lienDaysLeft);
-  const urgent=jobs.filter(j=>j.lienDaysLeft<=10);
+  const r=getRole();
+  // REAL-DATA-ONLY / D-48: the lien clock is unbounded below, so an expired window
+  // produced a large NEGATIVE "days remaining" that the old code classified as the
+  // most urgent state possible. An expired lien is the opposite of urgent — the
+  // remedy is gone. Expired jobs are now separated out and labelled as expired.
+  const jobs=filterByOffice(JOBS).filter(j=>j.lienDaysLeft<999&&j.lienDeadline).sort((a,b)=>a.lienDaysLeft-b.lienDaysLeft);
+  const expired=jobs.filter(j=>j.lienDaysLeft<0);
+  const urgent =jobs.filter(j=>j.lienDaysLeft>=0&&j.lienDaysLeft<=10);
   $('lienNoPermission').innerHTML='';$('lienAlerts').innerHTML='';
-  if(urgent.length>0){$('lienAlerts').innerHTML='<div class="alert-banner alert-danger">&#9888; <strong>'+urgent.length+' job'+(urgent.length>1?'s':'')+' under 10 days to lien deadline!</strong> Immediate action required: '+urgent.map(j=>j.jobNum).join(', ')+'</div>'}
+
+  var banners='';
+  if(urgent.length>0){banners+='<div class="alert-banner alert-danger">&#9888; <strong>'+urgent.length+' job'+(urgent.length>1?'s':'')+' under 10 days to lien deadline!</strong> Immediate action required: '+urgent.map(j=>j.jobNum).join(', ')+'</div>'}
+  if(expired.length>0){banners+='<div class="alert-banner" style="background:rgba(107,114,128,.15);border-left:4px solid var(--text-muted);color:var(--text-primary)">&#128683; <strong>'+expired.length+' job'+(expired.length>1?'s have':' has')+' passed the statutory lien deadline — no lien remedy remains.</strong> These need a written collection disposition, not a lien filing: '+expired.map(j=>j.jobNum).join(', ')+'</div>'}
+  if(jobs.length===0){banners+='<div class="alert-banner" style="background:rgba(59,130,246,.10);border-left:4px solid var(--accent-blue);color:var(--text-primary)">No jobs currently carry a lien deadline. This screen shows Airtable data only — if you expected rows here, check that Jobs have a Lien Deadline set and that S-06 has run.</div>'}
+  $('lienAlerts').innerHTML=banners;
+
+  if(jobs.length===0){ $('lienGrid').innerHTML=''; return; }
+
   $('lienGrid').innerHTML=jobs.map(j=>{
-    const dc=j.lienDaysLeft>30?'var(--accent-green)':j.lienDaysLeft>20?'var(--accent-yellow)':'var(--accent-red)';
-    return '<div class="lien-card" style="border-left:4px solid '+dc+';cursor:pointer" onclick="openCaseFile(\''+j.id+'\')"><div style="display:flex;justify-content:space-between;align-items:start"><div><strong>'+j.jobNum+'</strong><div style="font-size:.95rem;color:var(--text-muted)">'+j.claimNum+'</div></div><div class="lien-days" style="color:'+dc+'">'+j.lienDaysLeft+'</div></div><div style="font-size:.95rem;color:var(--text-muted);margin:8px 0">days remaining</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.95rem;margin-bottom:8px"><div><span style="color:var(--text-muted)">State:</span> '+j.lienState+'</div><div><span style="color:var(--text-muted)">Deadline:</span> '+formatDate(j.lienDeadline)+'</div><div><span style="color:var(--text-muted)">Outstanding:</span> '+fmt(j.amtInvoiced-j.amtPaid)+'</div><div><span style="color:var(--text-muted)">Carrier:</span> '+(j.carrier&&!j.carrier.startsWith('rec')?j.carrier:'—')+'</div></div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Lien Mode</div><div class="lien-mode-selector"><div class="lien-mode-btn '+(j.lienMode==='Regular'?'active-regular':'')+'" onclick="event.stopPropagation();setLienMode(\''+j.id+'\',\'Regular\')">Regular</div><div class="lien-mode-btn '+(j.lienMode==='Silent'?'active-silent':'')+'" onclick="event.stopPropagation();setLienMode(\''+j.id+'\',\'Silent\')">Silent</div><div class="lien-mode-btn '+(j.lienMode==='None'?'active-none':'')+'" onclick="event.stopPropagation();setLienMode(\''+j.id+'\',\'None\')">None</div></div></div>';
+    const isExp = j.lienDaysLeft < 0;
+    const dc = isExp ? 'var(--text-muted)' : j.lienDaysLeft>30?'var(--accent-green)':j.lienDaysLeft>20?'var(--accent-yellow)':'var(--accent-red)';
+    const bigNum = isExp ? 'EXPIRED' : String(j.lienDaysLeft);
+    const bigLbl = isExp ? Math.abs(j.lienDaysLeft)+' days past the statutory deadline' : 'days remaining';
+    // Cross-reference the LienDeadlines table row when one exists, so the card shows
+    // the recorded decision rather than an inference from the Jobs formula alone.
+    const ld = (LIEN_DEADLINES||[]).find(function(x){ return x.jobNum && j.jobNum && x.jobNum === j.jobNum; });
+    const decision = ld && ld.decisionBy ? '<div style="font-size:.85rem;color:var(--text-muted);margin-bottom:6px">Disposition recorded by '+ld.decisionBy+(ld.decisionDate?' on '+formatDate(ld.decisionDate):'')+'</div>' : '';
+    const modeBtns = isExp
+      ? '<div style="font-size:.85rem;color:var(--text-muted)">Lien mode is not offered on an expired window.</div>'
+      : '<div class="lien-mode-selector"><div class="lien-mode-btn '+(String(j.lienMode).toUpperCase()==='REGULAR'?'active-regular':'')+'" onclick="event.stopPropagation();setLienMode(\''+j.id+'\',\'REGULAR\')">Regular</div><div class="lien-mode-btn '+(String(j.lienMode).toUpperCase()==='SILENT'?'active-silent':'')+'" onclick="event.stopPropagation();setLienMode(\''+j.id+'\',\'SILENT\')">Silent</div><div class="lien-mode-btn '+(String(j.lienMode).toUpperCase()==='NONE'?'active-none':'')+'" onclick="event.stopPropagation();setLienMode(\''+j.id+'\',\'NONE\')">None</div></div>';
+    return '<div class="lien-card" style="border-left:4px solid '+dc+';cursor:pointer'+(isExp?';opacity:.85':'')+'" onclick="openCaseFile(\''+j.id+'\')"><div style="display:flex;justify-content:space-between;align-items:start"><div><strong>'+j.jobNum+'</strong><div style="font-size:.95rem;color:var(--text-muted)">'+j.claimNum+'</div></div><div class="lien-days" style="color:'+dc+';font-size:'+(isExp?'1.1rem':'')+'">'+bigNum+'</div></div><div style="font-size:.95rem;color:var(--text-muted);margin:8px 0">'+bigLbl+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.95rem;margin-bottom:8px"><div><span style="color:var(--text-muted)">State:</span> '+j.lienState+'</div><div><span style="color:var(--text-muted)">Deadline:</span> '+formatDate(j.lienDeadline)+'</div><div><span style="color:var(--text-muted)">Outstanding:</span> '+fmt(j.amtInvoiced-j.amtPaid)+'</div><div><span style="color:var(--text-muted)">Carrier:</span> '+(j.carrier&&!j.carrier.startsWith('rec')?j.carrier:'&mdash;')+'</div></div>'+decision+'<div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Lien Mode</div>'+modeBtns+'</div>';
   }).join('');
 }
 function setLienMode(jobId,mode){
@@ -2260,7 +2324,10 @@ function setLienMode(jobId,mode){
   fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.jobs+'/'+jobId,{
     method:'PATCH',
     headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
-    body:JSON.stringify({fields:{'Lien Mode':mode},typecast:true})
+    // REAL-DATA-ONLY: typecast:false here is what minted the duplicate case-variant
+    // Lien Mode options (Regular/Silent/None alongside REGULAR/SILENT/NONE).
+    // Send the canonical option and let Airtable reject anything unknown.
+    body:JSON.stringify({fields:{'Lien Mode':String(mode).toUpperCase()},typecast:false})
   }).then(function(resp){
     if(!resp.ok) throw new Error('Airtable update failed ('+resp.status+')');
     return resp.json();
@@ -2311,7 +2378,7 @@ function confirmResolvePayment(paymentId){
     // Write to Airtable if connected
     var pat=getAirtablePAT();
     if(pat&&p.id.startsWith('rec')){
-      fetch('https://api.airtable.com/v0/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.payments+'/'+p.id,{method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},body:JSON.stringify({fields:{'Recovery Status':resolution,'Recovery Step':9},typecast:true})}).then(function(){showToast('Airtable updated','success')}).catch(function(){showToast('Local only — Airtable update failed','warning')});
+      fetch('https://api.airtable.com/v0/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.payments+'/'+p.id,{method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},body:JSON.stringify({fields:{'Recovery Status':resolution,'Recovery Step':9},typecast:false})}).then(function(){showToast('Airtable updated','success')}).catch(function(){showToast('Local only — Airtable update failed','warning')});
     }
   }
   closeModalForce();
@@ -2357,7 +2424,7 @@ function toggleError(id,val){
   if(pat&&String(id).indexOf('rec')===0){
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.errorLog+'/'+id,{
       method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
-      body:JSON.stringify({typecast:true,fields:{'Resolved':!!val}})
+      body:JSON.stringify({typecast:false,fields:{'Resolved':!!val}})
     }).then(function(r){if(!r.ok)throw new Error('PATCH failed '+r.status)})
       .catch(function(err){e.resolved=!val;showToast('Airtable update failed: '+err.message,'error');applyErrFilters&&applyErrFilters()});
   }
@@ -2373,9 +2440,9 @@ function renderSettings(){
   var currentPAT = getAirtablePAT();
   var maskedPAT = currentPAT ? currentPAT.substring(0,6) + '...' + currentPAT.substring(currentPAT.length-4) : 'Not set';
   var isLive = currentPAT && _liveDataLoaded && !_dataLoadError;
-  $('settingsContent').innerHTML='<div class="card"><div class="card-header"><span class="card-title">&#128273; Airtable Connection</span></div><div style="padding:4px 0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span class="status-dot '+(currentPAT?'active':'')+'"></span><span style="font-size:.95rem">'+(currentPAT?'PAT configured: <code style="background:var(--bg-tertiary);padding:2px 6px;border-radius:4px">'+maskedPAT+'</code>':'No PAT configured — enter your Airtable Personal Access Token below')+'</span></div><div style="display:flex;gap:8px;align-items:center"><input type="password" id="settingsPATInput" placeholder="pat-xxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" value="'+currentPAT+'" style="flex:1;padding:10px 12px;border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border-color);font-family:monospace;font-size:.9rem"><button class="btn btn-secondary btn-sm" onclick="var i=$(\'settingsPATInput\');i.type=i.type===\'password\'?\'text\':\'password\'">&#128065; Show</button><button class="btn btn-primary btn-sm" onclick="var v=$(\'settingsPATInput\').value.trim();if(!v){showToast(\'Please enter a PAT\',\'error\');return}setAirtablePAT(v);showToast(\'PAT saved successfully\',\'success\');renderSettings()">Save PAT</button></div><div style="margin-top:8px;font-size:.85rem;color:var(--text-muted)">Your PAT is stored locally in this browser. Get one from <a href=\'https://airtable.com/create/tokens\' target=\'_blank\' style=\'color:var(--accent-blue)\'>airtable.com/create/tokens</a> with read access to the 911 base.</div></div></div><div class="card"><div class="card-header"><span class="card-title">&#128268; Data Mode</span></div><div style="padding:4px 0"><div style="display:flex;align-items:center;gap:16px;margin-bottom:12px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 16px;border-radius:8px;border:2px solid '+(!isLive?'var(--accent-blue)':'var(--border-color)')+';background:'+(!isLive?'rgba(59,130,246,.08)':'transparent')+'"><input type="radio" name="dataMode" value="demo" '+(isLive?'':'checked')+' onchange="switchDataMode(\'demo\')"> <span style="font-weight:600">&#127922; Demo Data</span></label><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 16px;border-radius:8px;border:2px solid '+(isLive?'var(--accent-green)':'var(--border-color)')+';background:'+(isLive?'rgba(34,197,94,.08)':'transparent')+'"><input type="radio" name="dataMode" value="live" '+(isLive?'checked':'')+' onchange="switchDataMode(\'live\')"> <span style="font-weight:600">&#128994; Live Airtable</span></label></div><div style="font-size:.9rem;color:var(--text-muted)">'+(_dataLoadError?'<span style="color:var(--accent-red)">&#9888;&#65039; Last sync error: '+_dataLoadError+'</span>':isLive?'<span style="color:var(--accent-green)">&#9989; Connected — showing live Airtable data</span>':'Showing built-in demo data. Save a valid PAT and switch to Live to pull from Airtable.')+'</div></div></div><div class="card"><div class="card-header"><span class="card-title">Authorized Senders</span><button class="btn btn-primary btn-sm" onclick="openAddSender()">+ Add Domain</button></div><div class="table-container"><table><thead><tr><th>Domain</th><th>Name</th><th>Type</th><th>Added</th><th>Status</th><th>Actions</th></tr></thead><tbody>'+AUTHORIZED_SENDERS.map(s=>'<tr><td><strong>@'+s.domain+'</strong></td><td>'+s.name+'</td><td><span class="badge badge-'+(s.type==='Carrier'?'blue':s.type==='Internal'?'purple':'cyan')+'">'+s.type+'</span></td><td>'+formatDate(s.addedDate)+'</td><td><span class="badge badge-'+(s.status==='Active'?'green':'gray')+'">'+s.status+'</span></td><td><button class="btn btn-ghost btn-sm" onclick="openEditSender(\''+s.id+'\')">Edit</button> <button class="btn btn-ghost btn-sm" style="color:var(--accent-red)" onclick="toggleSenderActive(\''+s.id+'\')">'+(s.status==='Active'?'Deactivate':'Activate')+'</button></td></tr>').join('')+'</tbody></table></div></div><div class="card"><div class="card-header"><span class="card-title">Holiday Calendar 2026</span><button class="btn btn-primary btn-sm" onclick="openAddHoliday()">+ Add Holiday</button></div><div class="table-container"><table><thead><tr><th>Holiday</th><th>Date</th><th>Type</th><th>Actions</th></tr></thead><tbody>'+HOLIDAYS_2026.map(h=>'<tr><td>'+h.name+'</td><td>'+formatDate(h.date)+'</td><td><span class="badge badge-blue">'+h.type+'</span></td><td><button class="btn btn-ghost btn-sm" style="color:var(--accent-red)" onclick="removeHoliday(\''+h.id+'\')">Remove</button></td></tr>').join('')+'</tbody></table></div></div><div class="card"><div class="card-header"><span class="card-title">System Status</span></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px"><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Airtable Connection</div><div style="display:flex;align-items:center;gap:6px"><span class="status-dot active"></span> Connected</div></div><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Make.com Status</div><div style="display:flex;align-items:center;gap:6px"><span class="status-dot active"></span> Operational</div></div><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Last Sync</div><div style="font-size:1rem">May 19, 2026 9:15 AM</div></div></div></div><div class="card"><div class="card-header"><span class="card-title">User Roles</span></div><div class="table-container"><table><thead><tr><th>User</th><th>Mode</th><th>Offices</th><th>Permissions</th></tr></thead><tbody><tr><td><strong>Moshe</strong></td><td><span class="badge badge-green">Full Access</span></td><td>Portland, Seattle</td><td>All features, settings, admin</td></tr><tr><td><strong>Christina</strong></td><td><span class="badge badge-blue">Full Mode</span></td><td>Portland</td><td>Collections, payments, errors, ops</td></tr><tr><td><strong>Hannah</strong></td><td><span class="badge badge-yellow">Guided Mode</span></td><td>Seattle</td><td>Guided AR, Strike Queue, Lien Zone</td></tr></tbody></table></div></div>';
+  $('settingsContent').innerHTML='<div class="card"><div class="card-header"><span class="card-title">&#128273; Airtable Connection</span></div><div style="padding:4px 0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span class="status-dot '+(currentPAT?'active':'')+'"></span><span style="font-size:.95rem">'+(currentPAT?'PAT configured: <code style="background:var(--bg-tertiary);padding:2px 6px;border-radius:4px">'+maskedPAT+'</code>':'No PAT configured — enter your Airtable Personal Access Token below')+'</span></div><div style="display:flex;gap:8px;align-items:center"><input type="password" id="settingsPATInput" placeholder="pat-xxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" value="'+currentPAT+'" style="flex:1;padding:10px 12px;border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border-color);font-family:monospace;font-size:.9rem"><button class="btn btn-secondary btn-sm" onclick="var i=$(\'settingsPATInput\');i.type=i.type===\'password\'?\'text\':\'password\'">&#128065; Show</button><button class="btn btn-primary btn-sm" onclick="var v=$(\'settingsPATInput\').value.trim();if(!v){showToast(\'Please enter a PAT\',\'error\');return}setAirtablePAT(v);showToast(\'PAT saved successfully\',\'success\');renderSettings()">Save PAT</button></div><div style="margin-top:8px;font-size:.85rem;color:var(--text-muted)">Your PAT is stored locally in this browser. Get one from <a href=\'https://airtable.com/create/tokens\' target=\'_blank\' style=\'color:var(--accent-blue)\'>airtable.com/create/tokens</a> with read access to the 911 base.</div></div></div><div class="card"><div class="card-header"><span class="card-title">&#128268; Data Source</span></div><div style="padding:4px 0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span class="status-dot '+(isLive?'active':'')+'"></span><span style="font-weight:600">Live Airtable &mdash; base '+AIRTABLE_CONFIG.baseId+'</span></div><div style="font-size:.9rem;color:var(--text-muted)">'+(_dataLoadError?'<span style="color:var(--accent-red)">&#9888;&#65039; Last sync error: '+_dataLoadError+'</span>':isLive?'<span style="color:var(--accent-green)">&#9989; Connected &mdash; every screen is rendering Airtable records.</span>':'Not connected. Save a valid PAT above, then reload. Screens will stay empty until Airtable answers.')+'</div><div style="margin-top:10px;padding:10px 12px;border-radius:6px;background:var(--bg-tertiary);font-size:.85rem;color:var(--text-muted)">Demo mode was removed on 28 Jul 2026. This console now has no built-in sample data of any kind &mdash; a screen that shows nothing means Airtable holds nothing, which is the honest answer.</div></div></div><div class="card"><div class="card-header"><span class="card-title">Authorized Senders</span><button class="btn btn-primary btn-sm" onclick="openAddSender()">+ Add Domain</button></div><div class="table-container"><table><thead><tr><th>Domain</th><th>Name</th><th>Type</th><th>Added</th><th>Status</th><th>Actions</th></tr></thead><tbody>'+AUTHORIZED_SENDERS.map(s=>'<tr><td><strong>@'+s.domain+'</strong></td><td>'+s.name+'</td><td><span class="badge badge-'+(s.type==='Carrier'?'blue':s.type==='Internal'?'purple':s.type?'cyan':'gray')+'">'+(s.type||'\u2014')+'</span></td><td>'+formatDate(s.addedDate)+'</td><td><span class="badge badge-'+(s.status==='Active'?'green':'gray')+'">'+s.status+'</span></td><td><button class="btn btn-ghost btn-sm" onclick="openEditSender(\''+s.id+'\')">Edit</button> <button class="btn btn-ghost btn-sm" style="color:var(--accent-red)" onclick="toggleSenderActive(\''+s.id+'\')">'+(s.status==='Active'?'Deactivate':'Activate')+'</button></td></tr>').join('')+'</tbody></table></div></div><div class="card"><div class="card-header"><span class="card-title">Holiday Calendar 2026</span><button class="btn btn-primary btn-sm" onclick="openAddHoliday()">+ Add Holiday</button></div><div class="table-container"><table><thead><tr><th>Holiday</th><th>Date</th><th>Type</th><th>Actions</th></tr></thead><tbody>'+HOLIDAYS_2026.map(h=>'<tr><td>'+h.name+'</td><td>'+formatDate(h.date)+'</td><td><span class="badge badge-blue">'+h.type+'</span></td><td><button class="btn btn-ghost btn-sm" style="color:var(--accent-red)" onclick="removeHoliday(\''+h.id+'\')">Remove</button></td></tr>').join('')+'</tbody></table></div></div><div class="card"><div class="card-header"><span class="card-title">System Status</span></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px"><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Airtable Connection</div><div style="display:flex;align-items:center;gap:6px"><span class="status-dot '+(isLive?'active':'')+'"></span> '+(isLive?'Connected':(_dataLoadError?'Error':'Not connected'))+'</div></div><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Make.com Status</div><div style="display:flex;align-items:center;gap:6px"><span class="status-dot"></span> Not instrumented</div><div style="font-size:.8rem;color:var(--text-muted);margin-top:2px">No Make health feed reaches Airtable yet. This panel will not claim &quot;Operational&quot; without evidence.</div></div><div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Last Sync</div><div style="font-size:1rem">'+(_lastLoadAt?formatDateTime(_lastLoadAt):'Never this session')+'</div><div style="font-size:.8rem;color:var(--text-muted);margin-top:2px">Time this browser last pulled Airtable &mdash; not a scenario run time.</div></div></div></div><div class="card"><div class="card-header"><span class="card-title">User Roles</span><span style="font-size:.8rem;color:var(--text-muted)">Airtable &middot; Users</span></div>'+(USERS.length?'<div class="table-container"><table><thead><tr><th>User</th><th>Email</th><th>Role</th><th>Offices</th><th>Settings</th><th>Ops</th><th>Active</th><th>Last Login</th></tr></thead><tbody>'+USERS.map(function(u){return '<tr><td><strong>'+(u.name||'&mdash;')+'</strong></td><td style="font-size:.85rem">'+(u.email||'&mdash;')+'</td><td><span class="badge badge-'+(u.role==='Admin'?'red':u.role==='Manager'?'blue':'green')+'">'+(u.role||'&mdash;')+'</span></td><td style="font-size:.85rem">'+((u.offices||[]).join(', ')||'&mdash;')+'</td><td>'+(u.settingsAccess?'&#10003;':'&mdash;')+'</td><td>'+(u.opsAccess?'&#10003;':'&mdash;')+'</td><td>'+(u.active?'<span class="badge badge-green">Active</span>':'<span class="badge badge-gray">Inactive</span>')+'</td><td style="font-size:.85rem">'+(u.lastLogin?formatDateTime(u.lastLogin):'&mdash;')+'</td></tr>'}).join('')+'</tbody></table></div>':'<div style="padding:16px;color:var(--text-muted);font-size:.9rem">No user roster loaded. This table is read live from Airtable &rarr; Users; it holds no built-in rows.</div>')+'</div>';
 }
-function openAddSender(){openModal('<div class="modal-header"><h2>Add Authorized Sender</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>Domain</label><input id="senderDomain" type="text" placeholder="e.g., progressive.com"></div><div class="form-group"><label>Organization Name</label><input id="senderOrg" type="text" placeholder="e.g., Progressive Insurance"></div><div class="form-group"><label>Type</label><select id="senderType"><option>Carrier</option><option>Vendor</option><option>Internal</option></select></div><div class="form-actions"><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button><button class="btn btn-primary" onclick="saveNewSender()">Add Sender</button></div>')}
+function openAddSender(){openModal('<div class="modal-header"><h2>Add Authorized Sender</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>Domain</label><input id="senderDomain" type="text" placeholder="e.g., progressive.com"></div><div class="form-group"><label>Organization Name</label><input id="senderOrg" type="text" placeholder="e.g., Progressive Insurance"></div><div class="form-group"><label>Type</label><select id="senderType"><option>Carrier</option><option>Third-Party Processor</option><option>Other</option></select></div><div class="form-actions"><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button><button class="btn btn-primary" onclick="saveNewSender()">Add Sender</button></div>')}
 function saveNewSender(){
   var domain=(document.getElementById('senderDomain')||{}).value||'';
   var org=(document.getElementById('senderOrg')||{}).value||'';
@@ -2388,7 +2455,7 @@ function saveNewSender(){
   if(pat){
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/tbloXKsztyfjrrFF6',{
       method:'POST',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
-      body:JSON.stringify({typecast:true,fields:{'Domain':domain.trim(),'Organization Name':org.trim()||domain.trim(),'Type':type,'Active':true,'Added Date':today,'Notes':'Added via Command Center'}})
+      body:JSON.stringify({typecast:false,fields:{'Domain':domain.trim(),'Organization Name':org.trim()||domain.trim(),'Type':type,'Active':true,'Added Date':today,'Notes':'Added via Command Center'}})
     }).then(function(r){if(!r.ok)throw new Error('POST failed '+r.status);return r.json();})
       .then(function(data){if(data&&data.id){newSender.id=data.id;renderSettings();}showToast('Sender added to AuthorizedSenders','success')})
       .catch(function(e){showToast('Airtable write failed: '+e.message,'error')});
@@ -2419,7 +2486,7 @@ function saveEditSender(id){
   if(pat&&String(id).indexOf('rec')===0){
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/tbloXKsztyfjrrFF6/'+id,{
       method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
-      body:JSON.stringify({typecast:true,fields:{'Domain':s.domain,'Organization Name':s.name,'Type':s.type}})
+      body:JSON.stringify({typecast:false,fields:{'Domain':s.domain,'Organization Name':s.name,'Type':s.type}})
     }).then(function(r){if(!r.ok)throw new Error('PATCH failed '+r.status);showToast('Sender updated in AuthorizedSenders','success')})
       .catch(function(e){showToast('Airtable update failed: '+e.message,'error')});
   } else {
@@ -2436,7 +2503,7 @@ function toggleSenderActive(id){
   if(pat&&String(id).indexOf('rec')===0){
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/tbloXKsztyfjrrFF6/'+id,{
       method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
-      body:JSON.stringify({typecast:true,fields:{'Active':makeActive}})
+      body:JSON.stringify({typecast:false,fields:{'Active':makeActive}})
     }).then(function(r){if(!r.ok)throw new Error('PATCH failed '+r.status);showToast('@'+s.domain+' '+(makeActive?'activated':'deactivated')+' — S-03 gate updated','success')})
       .catch(function(e){s.status=makeActive?'Inactive':'Active';showToast('Airtable update failed: '+e.message,'error');renderSettings()});
   } else {
@@ -2480,7 +2547,7 @@ function saveNewHoliday(){
   if(pat){
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/tbl1vSkWPrLwbxEn3',{
       method:'POST',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
-      body:JSON.stringify({typecast:true,fields:{'Holiday Name':name.trim(),'Date':date,'Year':parseInt(date.split('-')[0],10),'Notes':type+' — added via Command Center'}})
+      body:JSON.stringify({typecast:false,fields:{'Holiday Name':name.trim(),'Date':date,'Year':parseInt(date.split('-')[0],10),'Notes':type+' — added via Command Center'}})
     }).then(function(r){if(!r.ok)throw new Error('POST failed '+r.status);return r.json();})
       .then(function(data){if(data&&data.id){newHoliday.id=data.id;renderSettings();}showToast('Holiday added to HolidayCalendar','success')})
       .catch(function(e){showToast('Airtable write failed: '+e.message,'error')});
@@ -2493,7 +2560,66 @@ function saveNewHoliday(){
 // ============================================================
 // 9. OPS DASHBOARD
 // ============================================================
+// REAL-DATA-ONLY / F15 (2026-07-28): the homeowner SMS-consent ledger.
+// Every row is derived from the Homeowners record linked to a live Job --
+// there is no seeded row, no assumed consent and no invented next step. The
+// state and the wording both come from homeownerConsentState(), so this panel
+// and the Case File contacts card can never disagree.
+function renderInboxConsentPanel(){
+  var el = $('aiInboxConsentPanel');
+  if (!el) return;
+  var jobs = filterByOffice(JOBS || []);
+  if (!jobs.length) {
+    el.innerHTML = '<div class="table-container" style="margin-bottom:20px;padding:18px">'
+      + '<h3 style="margin:0 0 6px">&#128274; Homeowner SMS Consent</h3>'
+      + '<div style="color:var(--text-muted);font-size:.92rem">No jobs are loaded, so there is no homeowner to request consent from yet.</div>'
+      + '</div>';
+    return;
+  }
+  var rows = jobs.map(function(j){
+    var cs = homeownerConsentState(j);
+    return { j: j, cs: cs };
+  });
+  var n = function(lab){ return rows.filter(function(r){ return r.cs && r.cs.label === lab; }).length; };
+  var granted = n('SMS consent on file');
+  var pending = n('Consent request sent');
+  var none    = n('No consent on file');
+  var blocked = n('SMS opted out') + n('Do Not Contact');
+
+  var html = '<div class="table-container" style="margin-bottom:20px">'
+    + '<div style="padding:16px 18px 10px">'
+    + '<h3 style="margin:0 0 4px">&#128274; Homeowner SMS Consent &mdash; next step per job</h3>'
+    + '<div style="color:var(--text-muted);font-size:.9rem;line-height:1.5">'
+    + 'Two routes exist and both write back to Airtable. <strong>Route A (email):</strong> S-16 emails the homeowner a Fillout consent form; their submission sets <em>SMS Consent</em>, <em>Consented Mobile Number</em> and <em>SMS Consent Date</em> on the Homeowners record. '
+    + '<strong>Route B (at job start):</strong> the office sends the same opt-in link by SMS when the job opens, and S-15 records the reply &mdash; START grants, STOP revokes and sets <em>SMS Opt-Out Date</em>. '
+    + 'Until one of those returns, the homeowner is <strong>email-only</strong> and S-04B skips every SMS step.'
+    + '</div>'
+    + '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">'
+    + '<span class="badge badge-green">' + granted + ' consented</span>'
+    + '<span class="badge badge-yellow">' + pending + ' awaiting reply</span>'
+    + '<span class="badge badge-gray">' + none + ' not yet asked</span>'
+    + '<span class="badge badge-red">' + blocked + ' blocked</span>'
+    + '</div></div>'
+    + '<table><thead><tr><th>Job #</th><th>Homeowner</th><th>Mobile</th><th>Email</th><th>Consent</th><th>Next step</th></tr></thead><tbody>';
+
+  rows.forEach(function(r){
+    var j = r.j, cs = r.cs;
+    var who = j.homeowner || (j.hoRecordId ? '(unnamed homeowner record)' : 'No homeowner linked');
+    html += '<tr>'
+      + '<td><strong>' + (j.jobNum || '&mdash;') + '</strong></td>'
+      + '<td>' + who + '</td>'
+      + '<td>' + (j.hoPhone || '<span style="color:var(--text-muted)">no mobile on file</span>') + '</td>'
+      + '<td>' + (j.hoEmail || '<span style="color:var(--text-muted)">no email on file</span>') + '</td>'
+      + '<td><span class="badge badge-' + (cs ? cs.color : 'gray') + '">' + (cs ? cs.label : 'Unknown') + '</span></td>'
+      + '<td style="max-width:520px;line-height:1.45">' + (cs ? cs.next : '') + '</td>'
+      + '</tr>';
+  });
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
 function renderAIInbox(){
+  renderInboxConsentPanel();
 
   var data = filterByOffice(AI_INBOX);
   // Normalize field names (handle both Airtable and demo data formats)
@@ -2812,7 +2938,7 @@ function confirmOpenDispute(jobId) {
   fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
     method: 'PATCH',
     headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ fields: fields, typecast: true })
+    body: JSON.stringify({ fields: fields, typecast: false })
   }).then(function(resp) {
     if (!resp.ok) throw new Error('Airtable update failed');
     return resp.json();
@@ -2840,7 +2966,7 @@ function updateDisputeStatus(jobId, newStatus) {
   fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
     method: 'PATCH',
     headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ fields: fields, typecast: true })
+    body: JSON.stringify({ fields: fields, typecast: false })
   }).then(function(resp) {
     if (!resp.ok) return resp.text().then(function(t){ throw new Error('Update failed (' + resp.status + '): ' + t); });
     return resp.json();
@@ -2895,7 +3021,7 @@ function confirmResolveDispute(jobId) {
   fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
     method: 'PATCH',
     headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ fields: fields, typecast: true })
+    body: JSON.stringify({ fields: fields, typecast: false })
   }).then(function(resp) {
     if (!resp.ok) return resp.text().then(function(t){ throw new Error('Update failed (' + resp.status + '): ' + t); });
     return resp.json();
@@ -2923,9 +3049,56 @@ function confirmResolveDispute(jobId) {
   }).catch(function(err) { showToast('Error: ' + err.message,'error'); });
 }
 
+// REAL-DATA-ONLY (2026-07-28): the old Scenario Health card listed ten scenarios that
+// do not exist under those names (e.g. "S-05 SMS Notification Engine", "S-07 Lien
+// Deadline Calculator") and painted every one of them green with invented run counts
+// and timestamps. It now lists the real Make registry and asserts a status only where
+// there is evidence for it: an unresolved Error Log row in the last 24h means "Error";
+// anything else means "No data", never "Active".
+function renderScenarioHealthCard(){
+  var cards=(SCENARIOS||[]).map(function(sc){
+    var isErr = sc.status==='error';
+    var st = isErr?'error':'unknown';
+    var sl = isErr?'Error (last 24h)':'No data';
+    var icon = isErr?'&#10060;':'&#9711;';
+    var dot = isErr?'error':'';
+    return '<div class="scenario-card"'+(isErr?'':' style="opacity:.75"')+'><div class="sc-glow '+st+'"></div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">'+
+      '<div><div class="scenario-id" style="font-size:.8rem;opacity:.6">'+sc.id+(sc.makeId?' &middot; '+sc.makeId:'')+'</div>'+
+      '<div class="scenario-name" style="margin-bottom:0">'+sc.name+'</div></div>'+
+      '<div style="font-size:1.2rem">'+icon+'</div></div>'+
+      '<div class="scenario-status" style="margin-bottom:8px"><span class="status-dot '+dot+'"></span> '+sl+'</div>'+
+      '<div style="font-size:.85rem;color:var(--text-muted)">Unresolved errors 24h: <span style="color:'+(isErr?'var(--accent-red)':'var(--text-muted)')+';font-weight:600">'+(sc.errors||0)+'</span></div>'+
+      '</div>';
+  }).join('');
+  var errCount=(SCENARIOS||[]).filter(function(s){return s.status==='error'}).length;
+  var unknownCount=(SCENARIOS||[]).length-errCount;
+  return '<div class="card" style="margin-bottom:16px"><div class="card-header">'+
+    '<span class="card-title">&#127919; Scenario Health</span>'+
+    '<span class="card-subtitle">'+(errCount?'<span style="color:var(--accent-red)">'+errCount+' with unresolved errors</span> &middot; ':'')+
+    unknownCount+' with no telemetry</span></div>'+
+    '<div style="padding:0 0 10px;font-size:.85rem;color:var(--text-muted)">Run status is not yet instrumented into Airtable. Until it is, this card reports only what the Error Log proves &mdash; it will not claim a scenario is healthy.</div>'+
+    '<div class="scenario-grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px">'+cards+'</div></div>';
+}
+
 function renderOps(){
   var r=getRole();$('opsNoPermission').innerHTML='';
   if(!r.canViewOps){$('opsNoPermission').innerHTML='<div class="no-permission"><div class="lock-icon">&#128274;</div><h3>Restricted Access</h3><p>Operational metrics not available in Guided Mode.</p></div>';$('opsContent').innerHTML='';return}
+  // REAL-DATA-ONLY (2026-07-28): this screen used to render from a hardcoded
+  // 5-day SYSTEM_METRICS array and a hardcoded 10-scenario "all green" registry.
+  // It now renders Airtable's SystemMetrics table. If that table is empty we say so
+  // rather than drawing zero-height bars that read as "quiet day".
+  if (!SYSTEM_METRICS.length) {
+    $('opsContent').innerHTML =
+      '<div class="card"><div class="card-header"><span class="card-title">&#128202; Operational Telemetry</span></div>' +
+      '<div class="empty-state" style="padding:28px 12px"><div class="empty-icon">&#128202;</div>' +
+      '<h3>No telemetry recorded yet</h3>' +
+      '<p>The SystemMetrics table is empty, so there is nothing to chart. The pre-cohort history was archived and cleared on 28 Jul 2026; the first row of the new series is written by the next scheduled S-10 (Daily SystemMetrics) run.</p>' +
+      '<p style="margin-top:8px;color:var(--text-muted);font-size:.9rem">This screen deliberately shows nothing rather than sample figures.</p></div></div>' +
+      renderScenarioHealthCard();
+    return;
+  }
+  var windowDays=SYSTEM_METRICS.length;
   var totalOps=SYSTEM_METRICS.reduce(function(s,m){return s+m.opsUsed},0);
   var budget=40000;var pct=Math.round(totalOps/budget*100);
   var totEmails=SYSTEM_METRICS.reduce(function(s,m){return s+m.emailsSent},0);
@@ -2940,15 +3113,13 @@ function renderOps(){
   var gaugeColor=pct>80?'var(--accent-red)':pct>60?'var(--accent-yellow)':'var(--accent-green)';
   var gaugeDeg=Math.min(pct,100)*1.8;
   var gaugeArc='<svg viewBox="0 0 200 110" style="width:100%;max-width:220px;display:block;margin:0 auto"><defs><linearGradient id="gg1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#34d399"/><stop offset="60%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#ef4444"/></linearGradient></defs><path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="rgba(45,46,74,.6)" stroke-width="14" stroke-linecap="round"/><path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="url(#gg1)" stroke-width="14" stroke-linecap="round" stroke-dasharray="'+Math.round(251.3*pct/100)+' 251.3" style="transition:stroke-dasharray 1s ease"/><text x="100" y="88" text-anchor="middle" fill="'+gaugeColor+'" font-size="32" font-weight="700">'+pct+'%</text><text x="100" y="106" text-anchor="middle" fill="#6b6c85" font-size="12">of '+fmtNum(budget)+' ops</text></svg>';
-  var scenarioHtml=SCENARIOS.map(function(s){var now=new Date();var h24=new Date(now-86400000);var recent=ERROR_LOG.filter(function(e){return e.scenario===s.id&&new Date(e.timestamp)>=h24&&!e.resolved}).length;var st=recent>0?'error':s.status;var sl=st==='active'?'Active':st==='warning'?'Warning':'Error';var icon=st==='active'?'&#9989;':st==='warning'?'&#9888;&#65039;':'&#10060;';return'<div class="scenario-card"><div class="sc-glow '+st+'"></div><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px"><div><div class="scenario-id" style="font-size:.8rem;opacity:.6">'+s.id+'</div><div class="scenario-name" style="margin-bottom:0">'+s.name+'</div></div><div style="font-size:1.2rem">'+icon+'</div></div><div class="scenario-status" style="margin-bottom:8px"><span class="status-dot '+st+'"></span> '+sl+'</div><div style="display:flex;justify-content:space-between;font-size:.85rem;color:var(--text-muted)"><span>Runs: '+s.runsToday+'</span><span>Errors 24h: <span style="color:'+(recent>0?'var(--accent-red)':'var(--accent-green)')+';font-weight:600">'+recent+'</span></span></div><div style="font-size:.8rem;color:var(--text-muted);margin-top:6px;opacity:.7">Last: '+formatDateTime(s.lastRun)+'</div></div>'}).join('');
-  var activeCount=0;var warnCount=0;var errCount=0;
-  SCENARIOS.forEach(function(s){var now=new Date();var h24=new Date(now-86400000);var recent=ERROR_LOG.filter(function(e){return e.scenario===s.id&&new Date(e.timestamp)>=h24&&!e.resolved}).length;var st=recent>0?'error':s.status;if(st==='active')activeCount++;else if(st==='warning')warnCount++;else errCount++});
+  // REAL-DATA-ONLY: scenario health is built by renderScenarioHealthCard() from evidence only.
   $('opsContent').innerHTML=
     '<div class="kpi-grid" style="margin-bottom:24px">'+
-    '<div class="kpi-card ops-kpi kpi-emails"><div class="ops-kpi-icon">&#128231;</div><div class="kpi-label">Emails Sent (5d)</div><div class="kpi-value" style="color:var(--accent-blue)">'+totEmails+'</div><div class="kpi-change" style="color:var(--text-muted)">avg '+Math.round(totEmails/5)+'/day</div></div>'+
-    '<div class="kpi-card ops-kpi kpi-sms"><div class="ops-kpi-icon">&#128172;</div><div class="kpi-label">SMS Sent (5d)</div><div class="kpi-value" style="color:var(--accent-purple)">'+totSMS+'</div><div class="kpi-change" style="color:var(--text-muted)">avg '+Math.round(totSMS/5)+'/day</div></div>'+
-    '<div class="kpi-card ops-kpi kpi-api"><div class="ops-kpi-icon">&#9889;</div><div class="kpi-label">API Calls (5d)</div><div class="kpi-value" style="color:var(--accent-cyan)">'+fmtNum(totAPI)+'</div><div class="kpi-change" style="color:var(--text-muted)">avg '+fmtNum(Math.round(totAPI/5))+'/day</div></div>'+
-    '<div class="kpi-card ops-kpi kpi-errors"><div class="ops-kpi-icon">&#128680;</div><div class="kpi-label">Errors (5d)</div><div class="kpi-value" style="color:'+(totErrors>10?'var(--accent-red)':'var(--accent-green)')+'">'+totErrors+'</div><div class="kpi-change" style="color:var(--text-muted)">avg '+Math.round(totErrors/5*10)/10+'/day</div></div>'+
+    '<div class="kpi-card ops-kpi kpi-emails"><div class="ops-kpi-icon">&#128231;</div><div class="kpi-label">Emails Sent ('+windowDays+'d)</div><div class="kpi-value" style="color:var(--accent-blue)">'+totEmails+'</div><div class="kpi-change" style="color:var(--text-muted)">avg '+Math.round(totEmails/windowDays)+'/day</div></div>'+
+    '<div class="kpi-card ops-kpi kpi-sms"><div class="ops-kpi-icon">&#128172;</div><div class="kpi-label">SMS Sent ('+windowDays+'d)</div><div class="kpi-value" style="color:var(--accent-purple)">'+totSMS+'</div><div class="kpi-change" style="color:var(--text-muted)">avg '+Math.round(totSMS/windowDays)+'/day</div></div>'+
+    '<div class="kpi-card ops-kpi kpi-api"><div class="ops-kpi-icon">&#9889;</div><div class="kpi-label">API Calls ('+windowDays+'d)</div><div class="kpi-value" style="color:var(--accent-cyan)">'+fmtNum(totAPI)+'</div><div class="kpi-change" style="color:var(--text-muted)">avg '+fmtNum(Math.round(totAPI/windowDays))+'/day</div></div>'+
+    '<div class="kpi-card ops-kpi kpi-errors"><div class="ops-kpi-icon">&#128680;</div><div class="kpi-label">Errors ('+windowDays+'d)</div><div class="kpi-value" style="color:'+(totErrors>10?'var(--accent-red)':'var(--accent-green)')+'">'+totErrors+'</div><div class="kpi-change" style="color:var(--text-muted)">avg '+Math.round(totErrors/windowDays*10)/10+'/day</div></div>'+
     '<div class="kpi-card ops-kpi kpi-ops"><div class="ops-kpi-icon">&#9881;&#65039;</div><div class="kpi-label">Make.com Ops</div><div class="kpi-value" style="color:'+gaugeColor+'">'+fmtNum(totalOps)+'</div><div class="kpi-change '+(pct>80?'down':'up')+'">'+pct+'% of budget</div></div>'+
     '</div>'+
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">'+
@@ -2960,7 +3131,7 @@ function renderOps(){
     '<div class="ops-chart-card"><div class="chart-title">&#128680; Error Trends</div><div class="chart-subtitle">Scenario failures &amp; retries</div>'+hBar(SYSTEM_METRICS,'errors',maxEr,'#ef4444,#fb923c')+'</div>'+
     '</div>'+
     '<div class="card" style="margin-bottom:16px"><div class="card-header"><span class="card-title">&#9881;&#65039; Make.com Operations Budget</span><span class="card-subtitle">Monthly consumption gauge</span></div><div style="padding:20px 0">'+gaugeArc+'<div style="display:flex;justify-content:space-between;max-width:220px;margin:12px auto 0;font-size:.85rem;color:var(--text-muted)"><span>0</span><span>'+fmtNum(budget)+'</span></div><div style="text-align:center;margin-top:8px;font-size:.9rem;color:var(--text-secondary)">'+fmtNum(totalOps)+' ops used (5-day sample) &middot; projected '+fmtNum(Math.round(totalOps/5*30))+'/month</div></div></div>'+
-    '<div class="card" style="margin-bottom:16px"><div class="card-header"><span class="card-title">&#127919; Scenario Health</span><span class="card-subtitle">Make.com automation status &middot; <span style="color:var(--accent-green)">'+activeCount+' active</span>'+(warnCount?' &middot; <span style="color:var(--accent-yellow)">'+warnCount+' warning</span>':'')+(errCount?' &middot; <span style="color:var(--accent-red)">'+errCount+' error</span>':'')+'</span></div><div class="scenario-grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px">'+scenarioHtml+'</div></div>';
+    renderScenarioHealthCard();
 }
 
 
@@ -2993,20 +3164,16 @@ let _dataLoadError = null;
 function getAirtablePAT() { return localStorage.getItem('airtable_pat') || ''; }
 function setAirtablePAT(pat) { localStorage.setItem('airtable_pat', pat); }
 
+// REAL-DATA-ONLY (2026-07-28): demo mode is gone. The seed arrays are empty and every
+// screen renders Airtable or an honest empty state. This function is retained only so any
+// stale onclick handler still resolves; it always reloads live data and never "switches".
 function switchDataMode(mode) {
-  if (mode === 'live') {
-    var pat = getAirtablePAT();
-    if (!pat) { showToast('Please save your Airtable PAT first', 'error'); renderSettings(); return; }
-    showToast('Switching to live data...', 'info');
-    _liveDataLoaded = false; _dataLoadError = null;
-    loadLiveData().then(function() { renderSettings(); navigate(currentScreen); }).catch(function(e) { _dataLoadError = e.message; renderSettings(); });
-  } else {
-    _liveDataLoaded = false; _dataLoadError = null;
-    localStorage.removeItem('data_mode');
-    showToast('Switched to demo data', 'success');
-    renderSettings();
-    navigate(currentScreen);
-  }
+  if (mode === 'demo') { showToast('Demo mode has been removed. This console shows live Airtable data only.', 'info'); renderSettings(); return; }
+  var pat = getAirtablePAT();
+  if (!pat) { showToast('Please save your Airtable PAT first', 'error'); renderSettings(); return; }
+  showToast('Reloading live data...', 'info');
+  _liveDataLoaded = false; _dataLoadError = null;
+  loadLiveData().then(function() { renderSettings(); navigate(currentScreen); }).catch(function(e) { _dataLoadError = e.message; renderSettings(); });
 }
 
 async function fetchAllRecords(tableId, fields, pat) {
@@ -3060,7 +3227,7 @@ async function loadLiveData() {
     // Fetch Jobs
     var sel = function(v){ return Array.isArray(v)?v[0]:(v||''); };
     var num = function(v){ return typeof v==='number'?v:(parseFloat(v)||0); };
-    var jobRecs = await fetchAllRecords(T.jobs, ['Job ID','Claim Number','Office','Primary Status','Alternative Status','Collections Status','Amount Invoiced','Total Paid','Invoiced Date','Lien Deadline','Lien Mode','Property State','Days to Lien Deadline','Diversion Flag','Carriers','Homeowners','Adjusters','Lien Eligible','Dispute Status','Dispute Date','Our Estimate','Adjuster Estimate','Dispute Gap','Dispute Category','Dispute Notes','Supplement Sent Date','Carrier Response Status','Carrier Agreed Amount','Carrier Response Date','Carrier Response Notes','Partial Gap Decision','Carrier Info Request Status','Info Request Date','Info Requested Items','Info Docs Sent Date','Info Response Deadline','Aging Paused','Aging Pause Start','Aging Pause Days','InvoiceRecords','Payment Stop','Communication Track','Track Assigned Date','Homeowner Email'], pat);
+    var jobRecs = await fetchAllRecords(T.jobs, ['Job ID','Claim Number','Office','Primary Status','Alternative Status','Collections Status','Amount Invoiced','Total Paid','Invoiced Date','Lien Deadline','Lien Mode','Property State','Days to Lien Deadline','Diversion Flag','Carriers','Homeowners','Adjusters','Dispute Status','Dispute Date','Our Estimate','Adjuster Estimate','Dispute Gap','Dispute Category','Dispute Notes','Supplement Sent Date','Carrier Response Status','Carrier Agreed Amount','Carrier Response Date','Carrier Response Notes','Partial Gap Decision','Carrier Info Request Status','Info Request Date','Info Requested Items','Info Docs Sent Date','Info Response Deadline','Aging Paused','Aging Pause Start','Aging Pause Days','InvoiceRecords','Payment Stop','Communication Track','Track Assigned Date','Homeowner Email'], pat);
     // Fetch Carriers table to resolve linked record IDs to names
     var carrierMap = {};
     try {
@@ -3086,8 +3253,51 @@ async function loadLiveData() {
         };
       });
     } catch(e) { /* adjusters table optional */ }
+    // ============================================================
+    // REAL-DATA-ONLY / F13 (2026-07-28): the Homeowners table was listed in
+    // AIRTABLE_CONFIG but never read. The Job mapper therefore received an
+    // array of raw record IDs, deliberately blanked anything starting with
+    // 'rec', and hardcoded the phone to an empty string -- so every Case File
+    // showed "Unknown Homeowner / No phone on file / No email on file" even
+    // though all four homeowners exist in Airtable with a name, a phone and an
+    // email. The consent columns are read in the same pass so the system can
+    // state the actual next step towards each homeowner instead of assuming
+    // one. A field that is absent in Airtable stays absent here.
+    // ============================================================
+    var homeownerDetails = {};
+    try {
+      var hoRecs = await fetchAllRecords(T.homeowners, [
+        'Client Name','Phone','Email','Preferred Contact Channel','Do Not Contact',
+        'SMS Opt Out','SMS Consent','SMS Consent Date','SMS Consent Request Sent',
+        'Consented Mobile Number','SMS Opt-Out Date','Preferred Language'], pat);
+      hoRecs.forEach(function(r) {
+        var f = r.fields;
+        homeownerDetails[r.id] = {
+          name: (f['Client Name'] || '').trim(),
+          phone: f['Phone'] || '',
+          email: f['Email'] || '',
+          channel: sel(f['Preferred Contact Channel']) || '',
+          language: sel(f['Preferred Language']) || '',
+          doNotContact: !!f['Do Not Contact'],
+          smsOptOut: !!f['SMS Opt Out'],
+          smsConsent: !!f['SMS Consent'],
+          smsConsentDate: f['SMS Consent Date'] || '',
+          consentRequestSent: f['SMS Consent Request Sent'] || '',
+          consentedMobile: f['Consented Mobile Number'] || '',
+          smsOptOutDate: f['SMS Opt-Out Date'] || ''
+        };
+      });
+    } catch(e) { /* homeowners table optional */ }
+    // Resolve the first linked Homeowner on a Job to its record, or null.
+    var hoOf = function(f) {
+      var ids = f['Homeowners'];
+      if (!ids) return null;
+      var id = Array.isArray(ids) ? ids[0] : ids;
+      if (!id || typeof id !== 'string' || id.indexOf('rec') !== 0) return null;
+      return homeownerDetails[id] || null;
+    };
 
-    if (jobRecs.length) {
+    if (true) { // REAL-DATA-ONLY: was `jobRecs.length` — an empty Airtable table must render an empty screen, never silently retain seed data
       JOBS = jobRecs.map(function(r) {
         var f = r.fields;
         return {
@@ -3109,13 +3319,24 @@ async function loadLiveData() {
           adjusterRating: (function(){ var ids = f['Adjusters']; if (!ids || !ids.length) return 0; var id = Array.isArray(ids) ? ids[0] : ids; var d = adjusterDetails[id]; return (d && d.rating) || 0; })(),
           adjPhone: (function(){ var ids = f['Adjusters']; if (!ids || !ids.length) return ''; var id = Array.isArray(ids) ? ids[0] : ids; var d = adjusterDetails[id]; return d ? d.phone : ''; })(),
           adjEmail: (function(){ var ids = f['Adjusters']; if (!ids || !ids.length) return ''; var id = Array.isArray(ids) ? ids[0] : ids; var d = adjusterDetails[id]; return d ? d.email : ''; })(),
-          homeowner: (function(){ var v = f['Homeowners']; if (!v) return ''; if (Array.isArray(v)) { var val = v[0]; return (val && val.startsWith && val.startsWith('rec')) ? '' : val; } return v; })() || '',
-          hoPhone: '',
+          // F13: resolved through the Homeowners table. A linked record with
+          // no Client Name still yields '', because an unnamed record is not a
+          // name -- it is just an unnamed record.
+          homeowner: (function(){ var h = hoOf(f); if (h) return h.name || ''; var v = f['Homeowners']; if (!v) return ''; if (Array.isArray(v)) { var val = v[0]; return (val && val.startsWith && val.startsWith('rec')) ? '' : val; } return v; })() || '',
+          hoPhone: (function(){ var h = hoOf(f); return h ? h.phone : ''; })(),
+          hoChannel: (function(){ var h = hoOf(f); return h ? h.channel : ''; })(),
+          hoLanguage: (function(){ var h = hoOf(f); return h ? h.language : ''; })(),
+          hoDoNotContact: (function(){ var h = hoOf(f); return h ? h.doNotContact : false; })(),
+          hoSmsOptOut: (function(){ var h = hoOf(f); return h ? h.smsOptOut : false; })(),
+          hoSmsConsent: (function(){ var h = hoOf(f); return h ? h.smsConsent : false; })(),
+          hoSmsConsentDate: (function(){ var h = hoOf(f); return h ? h.smsConsentDate : ''; })(),
+          hoConsentRequestSent: (function(){ var h = hoOf(f); return h ? h.consentRequestSent : ''; })(),
+          hoConsentedMobile: (function(){ var h = hoOf(f); return h ? h.consentedMobile : ''; })(),
+          hoRecordId: (function(){ var ids = f['Homeowners']; var id = Array.isArray(ids) ? ids[0] : ids; return (typeof id === 'string' && id.indexOf('rec') === 0) ? id : ''; })(),
           propState: f['Property State'] || '',
           lienDeadline: f['Lien Deadline'] || '',
           lienDaysLeft: num(f['Days to Lien Deadline']) || 999,
           lienMode: sel(f['Lien Mode']) || 'None',
-          lienEligible: f['Lien Eligible'] || false,
           diversionFlag: sel(f['Diversion Flag']) || '',
           disputeStatus: sel(f['Dispute Status']) || '',
           disputeDate: f['Dispute Date'] || '',
@@ -3144,7 +3365,9 @@ async function loadLiveData() {
           effectiveDaysOut: 0,
           communicationTrack: sel(f['Communication Track']) || '',
           trackAssignedDate: f['Track Assigned Date'] || '',
-          hoEmail: f['Homeowner Email'] || ''
+          // F13: the Job carries a redirected contact email for QA. When it is
+          // blank, fall back to the Homeowners record rather than showing none.
+          hoEmail: f['Homeowner Email'] || (function(){ var h = hoOf(f); return h ? h.email : ''; })()
         };
       });
       // Calculate effectiveDaysOut after mapping
@@ -3160,7 +3383,7 @@ async function loadLiveData() {
 
     // Fetch CommsLog
     var commsRecs = await fetchAllRecords(T.commsLog, ['Linked Job','Channel','Direction','Subject','Message','Date','Logged By','Log Entry','Scenario Name'], pat);
-    if (commsRecs.length) {
+    if (true) { // REAL-DATA-ONLY: was `commsRecs.length` — an empty Airtable table must render an empty screen, never silently retain seed data
       COMMS_LOG = commsRecs.map(function(r) {
         var f = r.fields;
         return {
@@ -3234,7 +3457,7 @@ async function loadLiveData() {
 
     // Fetch Payments
     var pmtRecs = await fetchAllRecords(T.payments, ['Amount','Payment Date','Jobs','PSA Job Number','Paid To','Expected Payee','Diversion Flag','Source','Claim Number','Recovery Status','Recovery Step','Payment ID','Diversion Type'], pat);
-    if (pmtRecs.length) {
+    if (true) { // REAL-DATA-ONLY: was `pmtRecs.length` — an empty Airtable table must render an empty screen, never silently retain seed data
       PAYMENTS = pmtRecs.map(function(r) {
         var f = r.fields;
         return {
@@ -3257,7 +3480,7 @@ async function loadLiveData() {
 
     // Fetch Strike Queue
     var hsqRecs = await fetchAllRecords(T.hsq, ['Task ID','Jobs','PSA Job Number','Task Type','Priority','Description','Status','Due Date','Assignee','Escalation Level','Amount at Stake','Days Outstanding'], pat);
-    if (hsqRecs.length) {
+    if (true) { // REAL-DATA-ONLY: was `hsqRecs.length` — an empty Airtable table must render an empty screen, never silently retain seed data
       STRIKE_QUEUE = hsqRecs.map(function(r) {
         var f = r.fields;
         return {
@@ -3267,7 +3490,7 @@ async function loadLiveData() {
           jobNum: f['PSA Job Number'] || '',
           taskType: f['Task Type'] || '',
           priority: f['Priority'] || 'P2',
-          status: sel(f['Status']) || 'Open',
+          status: hsqStatus(sel(f['Status'])),
           assignedTo: f['Assignee'] || '',
           office: '',
           daysOpen: num(f['Days Outstanding']),
@@ -3295,7 +3518,7 @@ async function loadLiveData() {
 
     // Fetch Error Log
     var errRecs = await fetchAllRecords(T.errorLog, ['Timestamp','Scenario Name','Module Name','Severity','Error Message','Resolved','Error Type','Source'], pat);
-    if (errRecs.length) {
+    if (true) { // REAL-DATA-ONLY: was `errRecs.length` — an empty Airtable table must render an empty screen, never silently retain seed data
       ERROR_LOG = errRecs.map(function(r) {
         var f = r.fields;
         return {
@@ -3313,16 +3536,18 @@ async function loadLiveData() {
     // Fetch AuthorizedSenders + HolidayCalendar so Settings shows and edits live config
     try {
       var senderRecs = await fetchAllRecords('tbloXKsztyfjrrFF6', ['Domain','Organization Name','Type','Active','Added Date'], pat);
-      if (senderRecs.length) {
+      if (true) { // REAL-DATA-ONLY: was `senderRecs.length` — an empty Airtable table must render an empty screen, never silently retain seed data
         AUTHORIZED_SENDERS = senderRecs.map(function(r){ var f = r.fields; return {
           id: r.id, domain: f['Domain'] || '', name: f['Organization Name'] || f['Domain'] || '',
-          type: sel(f['Type']) || 'Carrier', addedDate: f['Added Date'] || '', status: f['Active'] ? 'Active' : 'Inactive'
+          // REAL-DATA-ONLY / F12: an absent Type used to default to the carrier
+          // label, so a row with no classification rendered as a classified one.
+          type: sel(f['Type']) || '', addedDate: f['Added Date'] || '', status: f['Active'] ? 'Active' : 'Inactive'
         }; }).sort(function(a,b){ return (a.domain||'').localeCompare(b.domain||''); });
       }
     } catch(e) { console.warn('AuthorizedSenders fetch failed:', e); }
     try {
       var holRecs = await fetchAllRecords('tbl1vSkWPrLwbxEn3', ['Holiday Name','Date','Year','Notes'], pat);
-      if (holRecs.length) {
+      if (true) { // REAL-DATA-ONLY: was `holRecs.length` — an empty Airtable table must render an empty screen, never silently retain seed data
         HOLIDAYS_2026 = holRecs.map(function(r){ var f = r.fields; return {
           id: r.id, name: f['Holiday Name'] || '', date: f['Date'] || '',
           type: (f['Notes'] || '').indexOf('Federal') === 0 ? 'Federal' : ((f['Notes'] || '').indexOf('State') === 0 ? 'State' : 'Company')
@@ -3346,28 +3571,189 @@ async function loadLiveData() {
       }
     });
 
-    // Rebuild INVOICES from live JOBS so AR table row IDs match real Airtable record IDs
-    INVOICES = JOBS.filter(function(j){ return j.status !== 'Payment Pending'; }).map(function(j, i){
+    // ============================================================
+    // REAL-DATA-ONLY / F11 (2026-07-28): INVOICES used to be manufactured from
+    // the Jobs array. It minted sequential invoice numbers that exist nowhere
+    // in Airtable or QuickBooks, invented a Status and an Escalation label from
+    // a day-count computed off the Job's invoiced date, and reported the Job's
+    // invoiced date as 'Last Contact'. Meanwhile the real InvoiceRecords table
+    // -- which carries the true Invoice ID, Sent Date, Total, Amount Due,
+    // Amount Paid, and the three Airtable formulas Days Outstanding (Calc),
+    // Escalation Level and Aging Bucket -- was never read at all. Three fields
+    // the Case File invoice table renders (sentDate, total, agingBucket) were
+    // never even set, so that table showed dashes for invoices that do exist.
+    // INVOICES is now the InvoiceRecords table, verbatim.
+    // ============================================================
+    try {
+      var invRecs = await fetchAllRecords(T.invoices, [
+        'Invoice ID','Linked Job','Status','Invoice Date','Sent Date','Total',
+        'Amount Due','Amount Paid','Days Outstanding (Calc)','Escalation Level',
+        'Aging Bucket','PSA Job Number','Sequence Halted'], pat);
+
+      // Real last-contact = the most recent CommsLog row for that job. CommsLog
+      // is already loaded above. No row for the job means no contact has been
+      // logged, and the column stays blank rather than borrowing another date.
+      var lastContactByJob = {};
+      COMMS_LOG.forEach(function(c) {
+        if (!c.jobId || !c.date) return;
+        if (!lastContactByJob[c.jobId] || c.date > lastContactByJob[c.jobId]) {
+          lastContactByJob[c.jobId] = c.date;
+        }
+      });
+
+      INVOICES = invRecs.map(function(r) {
+        var f = r.fields;
+        var jobId = (f['Linked Job'] && f['Linked Job'][0]) || '';
+        var job = JOBS.find(function(j) { return j.id === jobId; }) || null;
+        var lookup = function(v) { return Array.isArray(v) ? (v[0] || '') : (v || ''); };
+        var days = Number(f['Days Outstanding (Calc)'] || 0);
+        return {
+          id: f['Invoice ID'] || r.id,
+          recordId: r.id,
+          jobId: jobId,
+          jobNum: String(lookup(f['PSA Job Number']) || (job ? job.jobNum : '')),
+          carrier: job ? job.carrier : '',
+          office: job ? job.office : '',
+          status: f['Status'] || '',
+          daysOut: days,
+          // The Airtable formula counts calendar days from Sent Date and knows
+          // nothing about an aging pause, so the pause is applied here from the
+          // Job that owns the invoice -- the same arithmetic JOBS already uses.
+          effectiveDaysOut: (function() {
+            if (!job || !job.agingPaused) return days;
+            var extra = job.agingPauseStart
+              ? Math.floor((Date.now() - new Date(job.agingPauseStart).getTime()) / 86400000) : 0;
+            return Math.max(0, days - (job.agingPauseDays || 0) - extra);
+          })(),
+          agingPaused: job ? !!job.agingPaused : false,
+          total: Number(f['Total'] || 0),
+          amtInvoiced: Number(f['Total'] || 0),
+          amtDue: Number(f['Amount Due'] || 0),
+          amtPaid: Number(f['Amount Paid'] || 0),
+          escalationLevel: f['Escalation Level'] || '',
+          agingBucket: f['Aging Bucket'] || '',
+          sentDate: f['Sent Date'] || '',
+          invoiceDate: f['Invoice Date'] || '',
+          sequenceHalted: !!f['Sequence Halted'],
+          lastContact: (jobId && lastContactByJob[jobId]) || ''
+        };
+      });
+    } catch(e) { INVOICES = []; console.warn('InvoiceRecords load failed:', e.message); }
+
+    // ============================================================
+    // REAL-DATA-ONLY (2026-07-28): Ops Dashboard + Lien Zone were the last
+    // two screens still rendering from hardcoded constants. They now read
+    // Airtable. If a table is empty the screen shows an honest empty state.
+    // ============================================================
+
+    // --- SystemMetrics (tblNu3JZ8XnP34PqT) -> Ops Dashboard trend charts ---
+    try {
+      var smRecs = await fetchAllRecords(T.systemMetrics, [
+        'Metric Date','Emails Sent','SMS Sent','API Calls PSA','API Calls QBO',
+        'API Calls Gmail','API Calls Twilio','Errors Warn','Errors Critical',
+        'Make Ops Used','Scenario Failures','Scenarios Run',
+        'Total Invoiced','Total Collected','Avg DSO','Open Invoice Count'], pat);
+      SYSTEM_METRICS = smRecs.map(function(r){
+        var f = r.fields; var num = function(k){ return Number(f[k] || 0); };
+        return {
+          date: f['Metric Date'] || '',
+          emailsSent: num('Emails Sent'),
+          smssSent:   num('SMS Sent'),
+          apiCalls:   num('API Calls PSA') + num('API Calls QBO') + num('API Calls Gmail') + num('API Calls Twilio'),
+          errors:     num('Errors Warn') + num('Errors Critical'),
+          opsUsed:    num('Make Ops Used'),
+          scenarioFailures: num('Scenario Failures'),
+          scenariosRun: num('Scenarios Run'),
+          totalInvoiced: num('Total Invoiced'),
+          totalCollected: num('Total Collected'),
+          avgDSO: num('Avg DSO'),
+          openInvoiceCount: num('Open Invoice Count')
+        };
+      }).filter(function(m){ return m.date; })
+        .sort(function(a,b){ return a.date < b.date ? 1 : -1; })
+        .slice(0, 14);
+    } catch(e) { SYSTEM_METRICS = []; console.warn('SystemMetrics load failed:', e.message); }
+
+    // --- MetricsSummary (tblfasmXanr8c6ET5) -> live KPI snapshot row ---
+    try {
+      var msRecs = await fetchAllRecords(T.metrics, [
+        'Snapshot ID','Total Invoiced','Total Collected','Open Invoice Count','DSO Average',
+        'Diversion Flag Count','Open HSQ Tasks','Today Info Events','Today Warning Events',
+        'Today Critical Events','Today SMS Sent','Today Emails Sent','Last Updated'], pat);
+      METRICS_SUMMARY = msRecs.length ? msRecs[0].fields : null;
+    } catch(e) { METRICS_SUMMARY = null; console.warn('MetricsSummary load failed:', e.message); }
+
+    // --- LienDeadlines (tbloK5k8FaiYr7tkb) -> Lien Zone ---
+    try {
+      var lienRecs = await fetchAllRecords(T.lienDeadlines, [
+        'Lien Record ID','PSA Job Number','State','Statutory Deadline','System Target Date',
+        'Days Remaining','Lien Mode','Lien Eligible','Lien Filed','Filed Date',
+        'Decision Made By','Decision Date','Notes'], pat);
+      LIEN_DEADLINES = lienRecs.map(function(r){
+        var f = r.fields;
+        var days = (f['Days Remaining'] === undefined || f['Days Remaining'] === null) ? null : Number(f['Days Remaining']);
+        return {
+          id: r.id,
+          lienRecordId: f['Lien Record ID'] || '',
+          jobNum: f['PSA Job Number'] || '',
+          state: f['State'] || '',
+          statutoryDeadline: f['Statutory Deadline'] || '',
+          systemTarget: f['System Target Date'] || '',
+          daysRemaining: days,
+          expired: days !== null && days < 0,
+          lienMode: f['Lien Mode'] || '',
+          eligible: !!f['Lien Eligible'],
+          filed: !!f['Lien Filed'],
+          filedDate: f['Filed Date'] || '',
+          decisionBy: f['Decision Made By'] || '',
+          decisionDate: f['Decision Date'] || '',
+          notes: f['Notes'] || ''
+        };
+      });
+    } catch(e) { LIEN_DEADLINES = []; console.warn('LienDeadlines load failed:', e.message); }
+
+    // --- Users (tbl7dCGCVGuI1Zjnz) — real roster for the Settings > User Roles table ---
+    // SECURITY: the 'Password' field is deliberately NOT requested. It must never reach the browser.
+    try {
+      var userRecs = await fetchAllRecords(AIRTABLE_CONFIG.tables.users,
+        ['fld1eBaRuFSDPxKmz','fldxxKtzQAy0sMfDA','fldSjjlgfkHDDhdfz','fld1xE5e1Ocjq4wmr',
+         'fld6XXkPIds6C8qji','fld1EbVIMDoGKOwMl','fldVFKS5Qg2iAzm13','fld9ShwB36fKFih9k'], pat);
+      USERS = userRecs.map(function(r){
+        var f = r.fields;
+        return {
+          id: r.id,
+          name: f['Display Name'] || '',
+          email: f['Email'] || '',
+          role: f['Role'] || '',
+          offices: f['Offices'] || [],
+          settingsAccess: !!f['Settings Access'],
+          opsAccess: !!f['Ops Dashboard Access'],
+          active: !!f['Active'],
+          lastLogin: f['Last Login'] || ''
+        };
+      });
+    } catch(e) { USERS = []; console.warn('Users load failed:', e.message); }
+
+    // --- Scenario Health: real Make registry, status derived ONLY from Error Log evidence ---
+    // No scenario is ever painted green without evidence. Absent evidence => "No data".
+    SCENARIOS = MAKE_SCENARIO_REGISTRY.map(function(sc){
+      var since = new Date(Date.now() - 24*3600*1000);
+      var open24 = ERROR_LOG.filter(function(e){
+        return (e.scenario === sc.id || (e.scenario||'').indexOf(sc.id) === 0) &&
+               e.timestamp && new Date(e.timestamp) >= since && !e.resolved;
+      });
       return {
-        id: 'INV-' + (3001 + i),
-        jobId: j.id,
-        jobNum: j.jobNum,
-        carrier: j.carrier,
-        office: j.office,
-        status: (j.effectiveDaysOut||j.daysOut) > 90 ? 'Escalated' : (j.effectiveDaysOut||j.daysOut) > 60 ? 'Past Due' : (j.effectiveDaysOut||j.daysOut) > 30 ? 'Follow-up' : 'Current',
-        daysOut: j.daysOut,
-        effectiveDaysOut: j.effectiveDaysOut || j.daysOut,
-        agingPaused: j.agingPaused || false,
-        amtDue: j.amtInvoiced - j.amtPaid,
-        amtPaid: j.amtPaid,
-        amtInvoiced: j.amtInvoiced,
-        escalationLevel: (j.effectiveDaysOut||j.daysOut) > 90 ? 'Level 3' : (j.effectiveDaysOut||j.daysOut) > 60 ? 'Level 2' : (j.effectiveDaysOut||j.daysOut) > 30 ? 'Level 1' : 'None',
-        lastContact: j.invoicedDate || ''
+        id: sc.id, name: sc.name, makeId: sc.makeId,
+        status: open24.length ? 'error' : 'unknown',
+        errors: open24.length,
+        lastRun: null,
+        runsToday: null
       };
     });
 
     _liveDataLoaded = true;
     _dataLoadError = null;
+    _lastLoadAt = new Date().toISOString();
     // Calculate effectiveDaysOut for demo mode jobs too
     JOBS.forEach(function(j) {
       if (j.effectiveDaysOut === undefined || j.effectiveDaysOut === 0) {
@@ -3399,7 +3785,7 @@ function setInvoicesSequenceHalted(j, halted, pat) {
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.invoices + '/' + invId, {
       method: 'PATCH',
       headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ typecast: true, fields: { 'Sequence Halted': halted } })
+      body: JSON.stringify({ typecast: false, fields: { 'Sequence Halted': halted } })
     }).catch(function(e){ console.warn('Sequence Halted patch failed for ' + invId, e); });
   });
 }
@@ -3479,7 +3865,7 @@ function confirmCarrierInfoRequest(jobId) {
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
       method: 'PATCH',
       headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ typecast: true, fields: jobFields })
+      body: JSON.stringify({ typecast: false, fields: jobFields })
     }).then(function(r){ if (!r.ok) throw new Error('Jobs PATCH failed ' + r.status); })
       .catch(function(e){ showToast('Airtable update failed: ' + e.message, 'error'); });
 
@@ -3488,11 +3874,11 @@ function confirmCarrierInfoRequest(jobId) {
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.hsq, {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ typecast: true, fields: {
+      body: JSON.stringify({ typecast: false, fields: {
         'Task Type': 'Carrier Info Request — Gather & Send Docs',
         'Priority': 'P2',
         'Description': taskDesc,
-        'Status': 'Open',
+        'Status': 'OPEN',
         'Due Date': deadline || today,
         'Assignee': 'Command Center',
         'Jobs': [jobId],
@@ -3501,7 +3887,7 @@ function confirmCarrierInfoRequest(jobId) {
     }).then(function(r){ if (!r.ok) throw new Error('HSQ POST failed'); return r.json(); })
       .then(function(data){
         if (data && data.id) {
-          STRIKE_QUEUE.unshift({ id: data.id, recId: data.id, jobId: jobId, jobNum: j.jobNum || '', taskType: 'Carrier Info Request — Gather & Send Docs', priority: 'P2', status: 'Open', assignedTo: 'Command Center', office: j.office || 'Portland', daysOpen: 0, amount: Math.max(0, (j.amtInvoiced||0) - (j.amtPaid||0)), description: taskDesc, callNotes: '', outcome: '' });
+          STRIKE_QUEUE.unshift({ id: data.id, recId: data.id, jobId: jobId, jobNum: j.jobNum || '', taskType: 'Carrier Info Request — Gather & Send Docs', priority: 'P2', status: 'OPEN', assignedTo: 'Command Center', office: j.office || 'Portland', daysOpen: 0, amount: Math.max(0, (j.amtInvoiced||0) - (j.amtPaid||0)), description: taskDesc, callNotes: '', outcome: '' });
           updateMyTasksBadge();
         }
       })
@@ -3573,7 +3959,7 @@ function confirmMarkDocsSent(jobId) {
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
       method: 'PATCH',
       headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ typecast: true, fields: jobFields })
+      body: JSON.stringify({ typecast: false, fields: jobFields })
     }).then(function(r){ if (!r.ok) throw new Error('Jobs PATCH failed'); })
       .catch(function(e){ showToast('Airtable update failed: ' + e.message, 'error'); });
 
@@ -3583,30 +3969,34 @@ function confirmMarkDocsSent(jobId) {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
       body: JSON.stringify({ typecast: false, fields: {
-        'Message': logMsg, 'Channel': sentVia, 'Direction': 'Outbound',
+        // D-56 FIX: CommsLog.Channel only accepts Email / SMS / Phone Call / Internal Note /
+        // System Event. 'Portal Upload', 'Mail' and 'Fax' are delivery methods, not channels —
+        // with typecast off they would 422 and the send would go unlogged. The method itself is
+        // already recorded in the message body ('Sent via: ...').
+        'Message': logMsg, 'Channel': (sentVia === 'Email' ? 'Email' : 'Internal Note'), 'Direction': 'Outbound',
         'Source': 'Command Center', 'Log Entry': sentDate + ' — Docs Sent — ' + j.jobNum,
         'Date': new Date().toISOString(), 'Logged By': 'Command Center', 'Linked Job': [jobId]
       }})
     }).catch(function(e){ console.warn('CommsLog failed:', e); });
-    pushLocalComms(j, 'Email', 'Outbound', sentDate + ' — Docs Sent — ' + j.jobNum, logMsg);
+    pushLocalComms(j, (sentVia === 'Email' ? 'Email' : 'Internal Note'), 'Outbound', sentDate + ' — Docs Sent — ' + j.jobNum, logMsg);
 
     // Create follow-up task
     if (responseExpected) {
       fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.hsq, {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ typecast: true, fields: {
+        body: JSON.stringify({ typecast: false, fields: {
           'Task Type': 'Carrier Info Request — Follow Up',
           'Priority': 'P2',
           'Description': 'Follow up with carrier on docs sent ' + sentDate + ' via ' + sentVia + '. Response expected by ' + responseExpected,
-          'Status': 'Open', 'Due Date': responseExpected,
+          'Status': 'OPEN', 'Due Date': responseExpected,
           'Assignee': 'Command Center', 'Jobs': [jobId],
           'PSA Job Number': j.jobNum || ''
         }})
       }).then(function(r){ if (r.ok) return r.json(); })
         .then(function(data){
           if (data && data.id) {
-            STRIKE_QUEUE.unshift({ id: data.id, recId: data.id, jobId: jobId, jobNum: j.jobNum || '', taskType: 'Carrier Info Request — Follow Up', priority: 'P2', status: 'Open', assignedTo: 'Command Center', office: j.office || 'Portland', daysOpen: 0, amount: Math.max(0, (j.amtInvoiced||0) - (j.amtPaid||0)), description: 'Follow up with carrier on docs sent ' + sentDate + '. Response expected by ' + responseExpected, callNotes: '', outcome: '' });
+            STRIKE_QUEUE.unshift({ id: data.id, recId: data.id, jobId: jobId, jobNum: j.jobNum || '', taskType: 'Carrier Info Request — Follow Up', priority: 'P2', status: 'OPEN', assignedTo: 'Command Center', office: j.office || 'Portland', daysOpen: 0, amount: Math.max(0, (j.amtInvoiced||0) - (j.amtPaid||0)), description: 'Follow up with carrier on docs sent ' + sentDate + '. Response expected by ' + responseExpected, callNotes: '', outcome: '' });
             updateMyTasksBadge();
           }
         }).catch(function(){});
@@ -3825,7 +4215,7 @@ function confirmCarrierFullAgreement(jobId) {
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
       method: 'PATCH',
       headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ typecast: true, fields: jobFields })
+      body: JSON.stringify({ typecast: false, fields: jobFields })
     }).then(function(r){ if (!r.ok) throw new Error('Jobs PATCH failed ' + r.status); })
       .catch(function(e){ showToast('Airtable update failed: ' + e.message, 'error'); });
 
@@ -4011,7 +4401,7 @@ function confirmCarrierPartialAgreement(jobId) {
     fetch(AIRTABLE_CONFIG.apiUrl + '/' + AIRTABLE_CONFIG.baseId + '/' + AIRTABLE_CONFIG.tables.jobs + '/' + jobId, {
       method: 'PATCH',
       headers: { 'Authorization': 'Bearer ' + pat, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ typecast: true, fields: jobFields })
+      body: JSON.stringify({ typecast: false, fields: jobFields })
     }).then(function(r){ if (!r.ok) throw new Error('Jobs PATCH failed ' + r.status); })
       .catch(function(e){ showToast('Airtable update failed: ' + e.message, 'error'); });
 
@@ -4076,15 +4466,15 @@ function setCommTrack(jobId, track) {
     var fields={'Communication Track':track||null,'Track Assigned Date':j.trackAssignedDate||null};
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.jobs+'/'+jobId,{
       method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
-      body:JSON.stringify({typecast:true,fields:fields})
+      body:JSON.stringify({typecast:false,fields:fields})
     }).then(function(r){if(!r.ok)throw new Error('PATCH failed '+r.status)})
       .catch(function(e){showToast('Airtable update failed: '+e.message,'error')});
     // Log track assignment to CommsLog
     fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.commsLog,{
       method:'POST',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
-      body:JSON.stringify({typecast:false,fields:{'Message':'Communication Track set to: '+track+' for '+j.jobNum,'Channel':'system','Direction':'Outbound','Source':'Command Center','Log Entry':new Date().toISOString().split('T')[0]+' — Track assigned: '+track+' — '+j.jobNum,'Date':new Date().toISOString(),'Logged By':'Command Center','Linked Job':[jobId]}})
+      body:JSON.stringify({typecast:false,fields:{'Message':'Communication Track set to: '+track+' for '+j.jobNum,'Channel':'System Event','Direction':'Outbound','Source':'Command Center','Log Entry':new Date().toISOString().split('T')[0]+' — Track assigned: '+track+' — '+j.jobNum,'Date':new Date().toISOString(),'Logged By':'Command Center','Linked Job':[jobId]}})
     }).catch(function(e){console.warn('CommsLog failed:',e)});
-    pushLocalComms(j,'system','Outbound',new Date().toISOString().split('T')[0]+' — Track assigned: '+track+' — '+j.jobNum,'Communication Track set to: '+track+' for '+j.jobNum);
+    pushLocalComms(j,'System Event','Outbound',new Date().toISOString().split('T')[0]+' — Track assigned: '+track+' — '+j.jobNum,'Communication Track set to: '+track+' for '+j.jobNum);
   }
   showToast('Communication track set to: '+(track||'None'),'success');
   renderCaseFile();
@@ -4121,7 +4511,7 @@ function daysBetween(dateStr) {
 function getStrikeQueueTasks() {
   var tasks = [];
   (STRIKE_QUEUE||[]).forEach(function(t) {
-    if (!t || t.status === 'Resolved') return;
+    if (!t || hsqStatus(t.status) === 'DONE') return;
     tasks.push({
       id: 'SQ-' + t.id,
       source: 'Strike Queue',
@@ -4366,7 +4756,14 @@ function renderMyTasks() {
   var tierColors = ['var(--accent-red)','var(--accent-orange)','var(--accent-yellow)','var(--text-muted)'];
   var tiers = [[],[],[],[]];
   allItems.forEach(function(item) {
-    var u = Math.min(3, Math.max(0, item.urgency||3));
+    // REAL-DATA-ONLY / F13 (2026-07-28): the old expression defaulted the
+    // urgency with a logical OR, and urgency 0 is the CRITICAL tier. Zero is falsy, so
+    // every P1 strike-queue task silently fell through to UPCOMING while the
+    // header still counted it -- the screen read "3 action items, 0 urgent"
+    // with three P1 rows sitting in the grey tier, and it disagreed with the
+    // sidebar badge, which tests urgency===0 and was therefore already right.
+    // Only a genuinely absent urgency may default.
+    var u = Math.min(3, Math.max(0, (item.urgency == null ? 3 : item.urgency)));
     tiers[u].push(item);
   });
 
