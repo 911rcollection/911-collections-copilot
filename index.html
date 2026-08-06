@@ -1723,11 +1723,12 @@ function renderCaseFileList(){
   $('caseFileContent').innerHTML='<div class="card"><div class="card-header"><span class="card-title">&#128193; All Cases</span><span class="card-subtitle">Click any row to open its full case file</span></div><div class="table-container" id="caseListContainer"><table><thead><tr><th>Job #</th><th>Claim #</th><th>Office</th><th>Carrier</th><th>Status</th><th>Days Out</th><th>Outstanding</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
   try{makeSortable('caseListContainer')}catch(e){}
 }
+function backToCaseList(){selectedCaseJob=null;caseFileTab='timeline';if(currentScreen!=='case-file'){navigate('case-file');return}renderCaseFile();try{window.scrollTo(0,0)}catch(e){}}
 function renderCaseFile(){
   if(!selectedCaseJob){renderCaseFileList();return}
   const j=selectedCaseJob;const r=getRole();
   if(!r.offices.some(function(o){return o.toLowerCase()===(j.office||'').toLowerCase()})){$('caseFileContent').innerHTML='<div class="no-permission"><div class="lock-icon">&#128274;</div><h3>Access Restricted</h3><p>You don\'t have permission to view '+j.office+' cases.</p></div>';return}
-  $('caseFileTitle').innerHTML='<button onclick="navigate(previousScreen||\'dashboard\')" style="background:none;border:1px solid var(--text-muted);color:var(--text-secondary);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:.85rem;margin-right:12px">&#8592; Back</button>Case: '+j.jobNum;$('caseFileSubtitle').textContent=j.claimNum+' · '+(j.carrier&&!j.carrier.startsWith('rec')?j.carrier:'')+' · '+j.office;
+  $('caseFileTitle').innerHTML='<button onclick="backToCaseList()" style="background:none;border:1px solid var(--text-muted);color:var(--text-secondary);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:.85rem;margin-right:12px">&#8592; All Cases</button>Case: '+j.jobNum;$('caseFileSubtitle').textContent=j.claimNum+' · '+(j.carrier&&!j.carrier.startsWith('rec')?j.carrier:'')+' · '+j.office;
   const outstanding=j.amtInvoiced-j.amtPaid;
   // REAL-DATA-ONLY / F14 (2026-07-28): one age, taken from the invoice that
   // owns the money, used for the number, the bucket badge and the colour alike.
@@ -1941,7 +1942,7 @@ function setPaymentStop(jobId,val){
 }
 function openEmailCompose(jobId){
   const j=JOBS.find(x=>x.id===jobId);
-  var defaultBody='Dear '+j.adjuster+',\n\nI am writing to follow up on the outstanding balance of '+fmt(j.amtInvoiced-j.amtPaid)+' for Claim '+j.claimNum+' (Job '+j.jobNum+').\n\nThis balance has been outstanding for '+j.daysOut+' days. Please advise on the expected payment timeline.\n\nThank you,\n911 Restoration Collections Team';
+  var defaultBody='Dear '+j.adjuster+',\n\nI am writing to follow up on the outstanding balance of '+fmt(j.amtInvoiced-j.amtPaid)+' for Claim '+j.claimNum+' (Job '+j.jobNum+').\n\nThis balance has been outstanding for '+(function(){var d=jobAgeDays(j);return d===null?'(not yet invoiced)':d})()+' days. Please advise on the expected payment timeline.\n\nThank you,\n911 Restoration Collections Team';
   openModal('<div class="modal-header"><h2>&#9993; Draft Email</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>To</label><input id="emailTo" type="email" value="'+j.adjEmail+'"></div><div class="form-group"><label>Subject</label><input id="emailSubject" type="text" value="RE: Claim '+j.claimNum+' - Payment Follow-up"></div><div class="form-group"><label>Template</label><select id="emailTemplate" onchange="applyEmailTemplate(\''+j.id+'\',this.value)"><option value="day30">Day 30 - Polite Follow-up</option><option value="day60">Day 60 - Firm Follow-up</option><option value="day90">Day 90 - Escalation Notice</option><option value="lien">Lien Warning</option><option value="custom">Custom</option></select></div><div class="form-group"><label>Body</label><textarea id="emailBody" rows="9">'+defaultBody+'</textarea></div><div class="form-actions"><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button><button class="btn btn-primary" onclick="sendEmailAndLog(\''+j.id+'\')">&#9993; Send via Email</button></div>');
 }
 function applyEmailTemplate(jobId,tpl){
@@ -3302,7 +3303,7 @@ async function loadLiveData() {
         var f = r.fields;
         return {
           id: r.id,
-          jobNum: f['Job ID'] || '',
+          jobNum: f['PSA Job Number'] || f['Job ID'] || '',
           claimNum: f['Claim Number'] || '',
           office: sel(f['Office']) || 'Portland',
           carrier: (function(){ var ids = f['Carriers']; if (!ids || !ids.length) return ''; return carrierMap[ids[0]] || ids[0] || ''; })() || '',
@@ -3310,8 +3311,9 @@ async function loadLiveData() {
           altStatus: sel(f['Alternative Status']) || '',
           collectionsStatus: sel(f['Collections Status']) || '',
           status: sel(f['Collections Status']) || sel(f['Primary Status']) || 'Active',
-          amtInvoiced: num(f['Amount Invoiced']),
+          amtInvoiced: num(f['Amount Invoiced']) || num(f['PSA Outstanding']),
           amtPaid: num(f['Total Paid']),
+          psaOutstanding: num(f['PSA Outstanding']),
           daysOut: f['Invoiced Date'] ? Math.max(0, Math.floor((Date.now() - new Date(f['Invoiced Date']).getTime()) / 86400000)) : 0,
           invoicedDate: f['Invoiced Date'] || '',
           adjuster: (function(){ var ids = f['Adjusters']; if (!ids || !ids.length) return ''; var id = Array.isArray(ids) ? ids[0] : ids; return adjusterMap[id] || id || ''; })() || '',
