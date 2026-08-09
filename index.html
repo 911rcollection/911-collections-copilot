@@ -1461,7 +1461,7 @@ function renderStrikeQueue(){
   // Inject escalated diversion recoveries as virtual P1 strike tasks
   var escalatedDivs=filterByOffice(PAYMENTS).filter(p=>p.recoveryStatus==='Escalated to Legal');
   var divTasks=escalatedDivs.map(function(p){var j=JOBS.find(function(x){return x.id===p.jobId})||{};return{id:'DIV-'+p.id,jobId:p.jobId,jobNum:j.jobNum||p.jobNum||'',taskType:'Payment Diversion — Legal Escalation',priority:'P1',status:'Pending',assignedTo:'Collections Manager',amount:p.amount,description:'Insurance payment of '+fmt(p.amount)+' diverted to homeowner. 8-step automated recovery exhausted (30 days). Paid to: '+p.paidTo+', Expected: '+p.expectedPayee+'. Ready for legal action / lien filing.',callNotes:'',daysOpen:p.diversionDetectedDate?Math.round((Date.now()-new Date(p.diversionDetectedDate))/(1000*60*60*24)):30,office:j.office||'Portland'}});
-  const tasks=filterByOffice(STRIKE_QUEUE).concat(divTasks).sort((a,b)=>{const p={P1:0,P2:1,P3:2};return(p[a.priority]||9)-(p[b.priority]||9)});
+  const tasks=filterByOffice(STRIKE_QUEUE).filter(function(t){return hsqStatus(t.status)!=='DONE'}).concat(divTasks).sort((a,b)=>{const p={P1:0,P2:1,P3:2};return(p[a.priority]||9)-(p[b.priority]||9)});
   const isGuided=r.mode==='Guided';
   if(isGuided){$('strikeGuidedMode').innerHTML='<div class="guided-highlight"><div class="guided-title">&#128161; Guided Mode - Follow these steps</div><p style="font-size:1rem;color:var(--text-secondary)">Tasks sorted by priority. Click each task to see details, then use buttons to complete the workflow.</p></div>'}
   else{$('strikeGuidedMode').innerHTML=''}
