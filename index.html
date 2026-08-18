@@ -499,7 +499,7 @@ td{font-size:1rem}
       <div class="nav-item active" data-screen="dashboard" onclick="navigate('dashboard')"><span class="nav-icon">&#9634;</span><span>Dashboard</span></div>
       <div class="nav-item" data-screen="ar-aging" onclick="navigate('ar-aging')"><span class="nav-icon">&#9776;</span><span>AR Aging Table</span></div>
       <div class="nav-item" data-screen="strike-queue" onclick="navigate('strike-queue')"><span class="nav-icon">&#9888;</span><span>Strike Queue</span></div>
-      <div class="nav-item" data-screen="case-file" onclick="navigate('case-file')"><span class="nav-icon">&#128193;</span><span>Case File</span></div>
+      <div class="nav-item" data-screen="case-file" onclick="selectedCaseJob=null;navigate('case-file')"><span class="nav-icon">&#128193;</span><span>Case File</span></div>
       <div class="nav-item" data-screen="lien-zone" onclick="navigate('lien-zone')"><span class="nav-icon">&#9878;</span><span>Lien Zone</span></div>
       <div class="nav-item" data-screen="payments" onclick="navigate('payments')"><span class="nav-icon">&#128176;</span><span>Payments</span></div>
       <div class="nav-item" data-screen="error-log" onclick="navigate('error-log')"><span class="nav-icon">&#128030;</span><span>Error Log</span></div>
@@ -1151,7 +1151,7 @@ function switchRole(role){
 function renderScreen(screen){
   switch(screen){
     case'dashboard':renderDashboard();break;case'ar-aging':renderARTable();break;
-    case'strike-queue':renderStrikeQueue();break;case'case-file':renderCaseFile();break;
+    case'strike-queue':renderStrikeQueue();break;case'case-file':selectedCaseJob=null;renderCaseFile();break;
     case'lien-zone':renderLienZone();break;case'payments':renderPayments();break;
     case'error-log':renderErrorLog();break;case'settings':renderSettings();break;
     case'ops':renderOps();break;
@@ -1586,9 +1586,14 @@ function saveCallAndLog(taskId){
   renderStrikeQueue();
 }
 function resolveTask(id){
-  openModal('<div class="modal-header"><h2>Resolve Task '+id+'</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>Resolution Type</label><select id="resType"><option>Payment Received</option><option>Carrier Responded</option><option>Escalated to Supervisor</option><option>Deferred - Follow Up Later</option><option>No Action Needed</option></select></div><div class="form-group"><label>Notes</label><textarea id="resNotes" placeholder="Describe the outcome..."></textarea></div><div class="form-actions"><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button><button class="btn btn-success" onclick="closeModalForce();confirmResolve(\''+id+'\')">Resolve Task</button></div>');
+  var t=STRIKE_QUEUE.find(x=>x.id===id)||(AI_INBOX||[]).find(x=>('AI-'+x.id)===id)||(AI_INBOX||[]).find(x=>x.id===id);
+  var hasEmail=t&&(String(id).indexOf('AI-')===0||String(id).indexOf('rec')===0&&t.senderEmail);
+  var jobRef=(t&&(t.jobNum||t.claimNum))||'this claim';
+  var emailSection=hasEmail?'<div class="form-group"><label>Draft Reply (optional)</label><textarea id="resDraft" rows="5" style="font-size:.85rem">Hi,\n\nThank you for your response regarding '+jobRef+'.\n\nWe have noted your update and will follow up accordingly.\n\nBest regards,\n911 Restoration Collections</textarea></div>':'';
+  var followUpSection='<div class="form-group"><label>Follow-Up Reminder (optional)</label><input type="date" id="resFollowUp" style="width:100%"><div style="font-size:.8rem;color:var(--text-muted);margin-top:4px">A follow-up task will be created on this date if no response is received.</div></div>';
+  openModal('<div class="modal-header"><h2>Resolve Task</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>Resolution Type</label><select id="resType"><option>Payment Received</option><option>Carrier Responded</option><option>Escalated to Supervisor</option><option>Deferred - Follow Up Later</option><option>No Action Needed</option></select></div>'+emailSection+followUpSection+'<div class="form-group"><label>Notes</label><textarea id="resNotes" placeholder="Describe the outcome..."></textarea></div><div class="form-actions">'+(hasEmail?'<button class="btn btn-primary" onclick="closeModalForce();confirmResolve(\''+id+'\',true)">Send Reply &amp; Resolve</button> ':'')+' <button class="btn btn-success" onclick="closeModalForce();confirmResolve(\''+id+'\',false)">Mark Resolved</button><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button></div>');
 }
-function confirmResolve(id){
+function confirmResolve(id,sendReply){
   const t=STRIKE_QUEUE.find(x=>x.id===id);
   if(!t){showToast('Task not found: '+id,'error');return;}
   var resType=(document.getElementById('resType')||{}).value||'Resolved';
@@ -1718,9 +1723,9 @@ function renderCaseFileList(){
     var d=jobAgeDays(j);
     var c=(d===null)?'blue':agingColor(d);
     var carrier=(j.carrier&&String(j.carrier).indexOf('rec')!==0)?j.carrier:'—';
-    return '<tr style="cursor:pointer" onclick="openCaseFile(\''+j.id+'\')"><td><span style="color:var(--accent-blue);font-weight:600">'+(j.jobNum||'—')+'</span></td><td>'+(j.claimNum||'—')+'</td><td>'+(j.office||'—')+'</td><td>'+carrier+'</td><td><span class="badge badge-'+c+'">'+(j.status||'—')+'</span></td><td data-sort="'+(d===null?-1:d)+'">'+(d===null?'\u2014':d)+'</td><td data-sort="'+out+'">'+fmt(out)+'</td></tr>';
+    return '<tr style="cursor:pointer" onclick="openCaseFile(\''+j.id+'\')"><td><span style="color:var(--accent-blue);font-weight:600">'+(j.jobNum||'—')+'</span></td><td>'+(j.homeowner||'—')+'</td><td>'+(j.claimNum||'—')+'</td><td>'+(j.office||'—')+'</td><td>'+carrier+'</td><td><span class="badge badge-'+c+'">'+(j.status||'—')+'</span></td><td data-sort="'+(d===null?-1:d)+'">'+(d===null?'\u2014':d)+'</td><td data-sort="'+out+'">'+fmt(out)+'</td></tr>';
   }).join('');
-  $('caseFileContent').innerHTML='<div class="card"><div class="card-header"><span class="card-title">&#128193; All Cases</span><span class="card-subtitle">Click any row to open its full case file</span></div><div class="table-container" id="caseListContainer"><table><thead><tr><th>Job #</th><th>Claim #</th><th>Office</th><th>Carrier</th><th>Status</th><th>Days Out</th><th>Outstanding</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+  $('caseFileContent').innerHTML='<div class="card"><div class="card-header"><span class="card-title">&#128193; All Cases</span><span class="card-subtitle">Click any row to open its full case file</span></div><div class="table-container" id="caseListContainer"><table><thead><tr><th>Job #</th><th>Homeowner</th><th>Claim #</th><th>Office</th><th>Carrier</th><th>Status</th><th>Days Out</th><th>Outstanding</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
   try{makeSortable('caseListContainer')}catch(e){}
 }
 function backToCaseList(){selectedCaseJob=null;caseFileTab='timeline';if(currentScreen!=='case-file'){navigate('case-file');return}renderCaseFile();try{window.scrollTo(0,0)}catch(e){}}
@@ -1728,7 +1733,7 @@ function renderCaseFile(){
   if(!selectedCaseJob){renderCaseFileList();return}
   const j=selectedCaseJob;const r=getRole();
   if(!r.offices.some(function(o){return o.toLowerCase()===(j.office||'').toLowerCase()})){$('caseFileContent').innerHTML='<div class="no-permission"><div class="lock-icon">&#128274;</div><h3>Access Restricted</h3><p>You don\'t have permission to view '+j.office+' cases.</p></div>';return}
-  $('caseFileTitle').innerHTML='<button onclick="backToCaseList()" style="background:none;border:1px solid var(--text-muted);color:var(--text-secondary);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:.85rem;margin-right:12px">&#8592; All Cases</button>Case: '+j.jobNum;$('caseFileSubtitle').textContent=j.claimNum+' · '+(j.carrier&&!j.carrier.startsWith('rec')?j.carrier:'')+' · '+j.office;
+  $('caseFileTitle').innerHTML='<button onclick="backToCaseList()" style="background:none;border:1px solid var(--text-muted);color:var(--text-secondary);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:.85rem;margin-right:12px">&#8592; All Cases</button>Case: '+j.jobNum+(j.homeowner?' <span style="color:var(--accent-blue);font-weight:400;font-size:.9em">— '+j.homeowner+'</span>':'');$('caseFileSubtitle').textContent=j.claimNum+' · '+(j.carrier&&!j.carrier.startsWith('rec')?j.carrier:'')+' · '+j.office;
   const outstanding=j.amtInvoiced-j.amtPaid;
   // REAL-DATA-ONLY / F14 (2026-07-28): one age, taken from the invoice that
   // owns the money, used for the number, the bucket badge and the colour alike.
@@ -4732,6 +4737,10 @@ function renderMyTaskCard(item) {
     html += '<div style="font-size:.8rem;color:var(--text-muted)">Due: ' + dueHtml + '</div>';
   }
   html += '<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();' + item.navigateFn + '" style="margin-top:4px;white-space:nowrap">&#8594; Take Action</button>';
+  var resolveId = item.id ? (item.id.indexOf('SQ-')===0 ? item.id.substring(3) : item.id) : null;
+  if (resolveId) {
+    html += '<button class="btn btn-success btn-sm" onclick="event.stopPropagation();resolveTask(\'' + resolveId + '\')" style="margin-top:4px;white-space:nowrap">&#10003; Resolve</button>';
+  }
   html += '</div>';
 
   html += '</div>'; // end flex row
