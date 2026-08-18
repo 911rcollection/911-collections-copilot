@@ -1587,11 +1587,18 @@ function saveCallAndLog(taskId){
 }
 function resolveTask(id){
   var t=STRIKE_QUEUE.find(x=>x.id===id)||(AI_INBOX||[]).find(x=>('AI-'+x.id)===id)||(AI_INBOX||[]).find(x=>x.id===id);
-  var hasEmail=t&&(String(id).indexOf('AI-')===0||String(id).indexOf('rec')===0&&t&&t.senderEmail);
+  var isSQ=t&&t.source==='Strike Queue';
+  var isAI=t&&(String(id).indexOf('AI-')===0);
+  var hasEmail=isAI;
   var jobRef=(t&&(t.jobNum||t.claimNum))||'this claim';
+  var resOptions=isSQ
+    ? '<option>Adjuster email added to PSA</option><option>Homeowner data updated in PSA</option><option>Data entry completed</option><option>Deferred — Follow Up Later</option><option>No Action Needed</option>'
+    : isAI
+    ? '<option>Carrier Responded — Payment Expected</option><option>Carrier Responded — Dispute Raised</option><option>Carrier Responded — Info Request</option><option>Carrier Responded — No Action Needed</option><option>Escalated to Supervisor</option><option>Deferred — Follow Up Later</option>'
+    : '<option>Payment Received</option><option>Carrier Responded</option><option>Escalated to Supervisor</option><option>Deferred — Follow Up Later</option><option>No Action Needed</option>';
   var emailSection=hasEmail?'<div class="form-group"><label>Draft Reply (optional)</label><textarea id="resDraft" rows="5" style="font-size:.85rem">Hi,\n\nThank you for your response regarding '+jobRef+'.\n\nWe have noted your update and will follow up accordingly.\n\nBest regards,\n911 Restoration Collections</textarea></div>':'';
   var followUpSection='<div class="form-group"><label>Follow-Up Reminder (optional)</label><input type="date" id="resFollowUp" style="width:100%"><div style="font-size:.8rem;color:var(--text-muted);margin-top:4px">A follow-up task will be created on this date if no response is received.</div></div>';
-  openModal('<div class="modal-header"><h2>Resolve Task</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>Resolution Type</label><select id="resType"><option>Payment Received</option><option>Carrier Responded</option><option>Escalated to Supervisor</option><option>Deferred - Follow Up Later</option><option>No Action Needed</option></select></div>'+emailSection+followUpSection+'<div class="form-group"><label>Notes</label><textarea id="resNotes" placeholder="Describe the outcome..."></textarea></div><div class="form-actions">'+(hasEmail?'<button class="btn btn-primary" onclick="closeModalForce();confirmResolve(\''+id+'\',true)">Send Reply &amp; Resolve</button> ':'')+' <button class="btn btn-success" onclick="closeModalForce();confirmResolve(\''+id+'\',false)">Mark Resolved</button><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button></div>');
+  openModal('<div class="modal-header"><h2>Resolve Task</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>Resolution Type</label><select id="resType">'+resOptions+'</select></div>'+emailSection+followUpSection+'<div class="form-group"><label>Notes</label><textarea id="resNotes" placeholder="Describe the outcome..."></textarea></div><div class="form-actions">'+(hasEmail?'<button class="btn btn-primary" onclick="closeModalForce();confirmResolve(\''+id+'\',true)">Send Reply &amp; Resolve</button> ':'')+' <button class="btn btn-success" onclick="closeModalForce();confirmResolve(\''+id+'\',false)">Mark Resolved</button><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button></div>');
 }
 function confirmResolve(id,sendReply){
   const t=STRIKE_QUEUE.find(x=>x.id===id);
