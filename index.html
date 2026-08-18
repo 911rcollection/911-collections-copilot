@@ -1151,7 +1151,7 @@ function switchRole(role){
 function renderScreen(screen){
   switch(screen){
     case'dashboard':renderDashboard();break;case'ar-aging':renderARTable();break;
-    case'strike-queue':renderStrikeQueue();break;case'case-file':selectedCaseJob=null;renderCaseFile();break;
+    case'strike-queue':renderStrikeQueue();break;case'case-file':renderCaseFile();break;
     case'lien-zone':renderLienZone();break;case'payments':renderPayments();break;
     case'error-log':renderErrorLog();break;case'settings':renderSettings();break;
     case'ops':renderOps();break;
@@ -1587,7 +1587,7 @@ function saveCallAndLog(taskId){
 }
 function resolveTask(id){
   var t=STRIKE_QUEUE.find(x=>x.id===id)||(AI_INBOX||[]).find(x=>('AI-'+x.id)===id)||(AI_INBOX||[]).find(x=>x.id===id);
-  var hasEmail=t&&(String(id).indexOf('AI-')===0||String(id).indexOf('rec')===0&&t.senderEmail);
+  var hasEmail=t&&(String(id).indexOf('AI-')===0||String(id).indexOf('rec')===0&&t&&t.senderEmail);
   var jobRef=(t&&(t.jobNum||t.claimNum))||'this claim';
   var emailSection=hasEmail?'<div class="form-group"><label>Draft Reply (optional)</label><textarea id="resDraft" rows="5" style="font-size:.85rem">Hi,\n\nThank you for your response regarding '+jobRef+'.\n\nWe have noted your update and will follow up accordingly.\n\nBest regards,\n911 Restoration Collections</textarea></div>':'';
   var followUpSection='<div class="form-group"><label>Follow-Up Reminder (optional)</label><input type="date" id="resFollowUp" style="width:100%"><div style="font-size:.8rem;color:var(--text-muted);margin-top:4px">A follow-up task will be created on this date if no response is received.</div></div>';
