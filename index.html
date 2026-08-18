@@ -1915,7 +1915,36 @@ function renderCaseFile(){
       }
     }
   }else if(caseFileTab==='contacts'){
-    html+='<div class="two-col"><div class="card"><div class="card-header"><span class="card-title">Adjuster</span><span class="badge badge-blue">'+(j.carrier&&!j.carrier.startsWith("rec")?j.carrier:"Unknown Carrier")+'</span></div><div style="margin-bottom:8px"><strong>'+(j.adjuster&&!j.adjuster.startsWith("rec")?j.adjuster:"Unknown Adjuster")+'</strong></div><div style="font-size:1rem;color:var(--text-secondary);margin-bottom:4px">&#9742; '+(j.adjPhone||"No phone on file")+'</div><div style="font-size:1rem;color:var(--text-secondary);margin-bottom:12px">&#9993; '+(j.adjEmail||"No email on file")+'</div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Communication Rating</div><div class="stars" id="adjStars">'+[1,2,3,4,5].map(i=>'<span class="star '+(i<=(j.adjusterRating||3)?'filled':'')+'" onclick="rateAdjuster(&#39;'+j.id+'&#39;,'+i+')">&#9733;</span>').join('')+'</div></div><div class="card"><div class="card-header"><span class="card-title">Homeowner</span>'+(j.communicationTrack?'<span class="badge badge-'+(trackColors[j.communicationTrack]||'blue')+'">'+j.communicationTrack+'</span>':'')+'</div><div style="margin-bottom:8px"><strong>'+(j.homeowner||"Unknown Homeowner")+'</strong></div><div style="font-size:1rem;color:var(--text-secondary);margin-bottom:4px">&#9742; '+(j.hoPhone||"No phone on file")+'</div><div style="font-size:1rem;color:var(--text-secondary)">&#9993; '+(j.hoEmail||"No email on file")+'</div>'+(function(){var cs=homeownerConsentState(j);if(!cs)return '';return '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)"><span class="badge badge-'+cs.color+'">'+cs.label+'</span><div style="font-size:.92rem;color:var(--text-muted);margin-top:6px;line-height:1.45">'+cs.next+'</div></div>';})()+'</div></div>';
+    // Build adjuster cards — show ALL linked adjusters, primary (POC) first
+    var adjIds=j.adjusterIds||[];
+    if(adjIds.length===0&&j.adjusterId&&String(j.adjusterId).indexOf('rec')===0)adjIds=[j.adjusterId];
+    var adjCardsHtml='';
+    if(adjIds.length>0){
+      adjIds.forEach(function(aid,idx){
+        var ad=adjusterDetails[aid]||{};
+        var adName=(ad.name||'').trim()||'Unknown Adjuster';
+        var adPhone=ad.phone||'';
+        var adEmail=ad.email||'';
+        var adRole=(ad.role||'').trim();
+        var isPrimary=idx===0;
+        var carrierLabel=(ad.carrier&&ad.carrier.length>0&&!ad.carrier.startsWith('rec'))?ad.carrier:(j.carrier&&!j.carrier.startsWith('rec')?j.carrier:'Unknown Carrier');
+        adjCardsHtml+='<div class="card" style="margin-bottom:'+(idx<adjIds.length-1?'12':'0')+'px">'
+          +'<div class="card-header"><span class="card-title">'+(isPrimary?'Adjuster':'Secondary Adjuster')+'</span>'
+          +(isPrimary?'<span class="badge badge-blue">'+carrierLabel+'</span>':'')
+          +(adRole&&adRole.toLowerCase().indexOf('poc')!==-1?'<span class="badge badge-green" style="margin-left:4px">POC</span>':'')
+          +'</div>'
+          +'<div style="margin-bottom:8px"><strong>'+adName+'</strong></div>'
+          +'<div style="font-size:1rem;color:var(--text-secondary);margin-bottom:4px">&#9742; '+(adPhone||'No phone on file')+'</div>'
+          +'<div style="font-size:1rem;color:var(--text-secondary);margin-bottom:'+(isPrimary?'12':'4')+'px">&#9993; '+(adEmail||'No email on file')+'</div>'
+          +(isPrimary?'<div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Communication Rating</div><div class="stars" id="adjStars">'+[1,2,3,4,5].map(function(i){return '<span class="star '+(i<=(j.adjusterRating||3)?'filled':'')+'" onclick="rateAdjuster(&#39;'+j.id+'&#39;,'+i+')">&#9733;</span>';}).join('')+'</div>':'')
+          +'</div>';
+      });
+    } else {
+      adjCardsHtml='<div class="card"><div class="card-header"><span class="card-title">Adjuster</span><span class="badge badge-blue">'+(j.carrier&&!j.carrier.startsWith('rec')?j.carrier:'Unknown Carrier')+'</span></div><div style="color:var(--text-muted)">No adjuster linked yet.</div></div>';
+    }
+    // Homeowner card — use hoEmail only from homeowner record, not job-level email
+    var hoEmailDisplay=j.hoEmail&&j.hoEmail.length>0&&j.hoEmail.indexOf('@')>0&&!j.hoEmail.includes('libertymutual')&&!j.hoEmail.includes('statefarm')&&!j.hoEmail.includes('allstate')&&!j.hoEmail.includes('nationwide')?j.hoEmail:'';
+    html+='<div class="two-col">'+adjCardsHtml+'<div class="card"><div class="card-header"><span class="card-title">Homeowner</span>'+(j.communicationTrack?'<span class="badge badge-'+(trackColors[j.communicationTrack]||'blue')+'">'+j.communicationTrack+'</span>':'')+'</div><div style="margin-bottom:8px"><strong>'+(j.homeowner||'Unknown Homeowner')+'</strong></div><div style="font-size:1rem;color:var(--text-secondary);margin-bottom:4px">&#9742; '+(j.hoPhone||'No phone on file')+'</div><div style="font-size:1rem;color:var(--text-secondary)">&#9993; '+(hoEmailDisplay||'No email on file')+'</div>'+(function(){var cs=homeownerConsentState(j);if(!cs)return '';return '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)"><span class="badge badge-'+cs.color+'">'+cs.label+'</span><div style="font-size:.92rem;color:var(--text-muted);margin-top:6px;line-height:1.45">'+cs.next+'</div></div>';})()+'</div></div>';
   }else if(caseFileTab==='actions'){
     html+=renderCommunicationTrackCard(j)+renderCarrierResponseCard(j)+renderInfoRequestCard(j)+'<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px"><button class="btn btn-primary" onclick="openEmailCompose(\''+j.id+'\')">&#9993; Draft Email</button><button class="btn btn-secondary" onclick="openCallLog(\''+j.id+'\')">&#9742; Log Call</button><button class="btn btn-secondary" style="display:none" onclick="generateStatement(\''+j.id+'\')">&#128196; Generate Statement</button></div><div class="card"><div class="card-header"><span class="card-title">Payment Stop</span><span class="card-subtitle">Prevent payments to unauthorized payees</span></div><div style="display:flex;align-items:center;gap:12px"><label class="toggle"><input type="checkbox" '+(j.paymentStop?'checked ':'')+'onchange="setPaymentStop(\''+j.id+'\',this.checked)"><span class="toggle-slider"></span></label><span style="font-size:1rem">Enable Payment Stop for this job</span></div></div>';
   }
