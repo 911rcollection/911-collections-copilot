@@ -675,7 +675,8 @@ document.addEventListener('DOMContentLoaded',function(){
 // ============================================================
 // MOCK DATA
 // ============================================================
-let JOBS=[];  // REAL-DATA-ONLY: seed removed 2026-07-28 — populated exclusively by loadLiveData()
+let JOBS=[];
+var adjusterDetails = {};  // REAL-DATA-ONLY: seed removed 2026-07-28 — populated exclusively by loadLiveData()
 
 // REAL-DATA-ONLY / F10 (2026-07-28): this used to be a parse-time copy of the JOBS
 // array, which captured the hardcoded seed and kept it alive as a lookup fallback
@@ -1587,15 +1588,9 @@ function saveCallAndLog(taskId){
 }
 function resolveTask(id){
   var t=STRIKE_QUEUE.find(x=>x.id===id)||(AI_INBOX||[]).find(x=>('AI-'+x.id)===id)||(AI_INBOX||[]).find(x=>x.id===id);
-  var isSQ=t&&t.source==='Strike Queue';
-  var isAI=t&&(String(id).indexOf('AI-')===0);
-  var hasEmail=isAI;
+  var isSQ=t&&t.source==='Strike Queue';var isAI=t&&(String(id).indexOf('AI-')===0);var hasEmail=isAI;
   var jobRef=(t&&(t.jobNum||t.claimNum))||'this claim';
-  var resOptions=isSQ
-    ? '<option>Adjuster email added to PSA</option><option>Homeowner data updated in PSA</option><option>Data entry completed</option><option>Deferred — Follow Up Later</option><option>No Action Needed</option>'
-    : isAI
-    ? '<option>Carrier Responded — Payment Expected</option><option>Carrier Responded — Dispute Raised</option><option>Carrier Responded — Info Request</option><option>Carrier Responded — No Action Needed</option><option>Escalated to Supervisor</option><option>Deferred — Follow Up Later</option>'
-    : '<option>Payment Received</option><option>Carrier Responded</option><option>Escalated to Supervisor</option><option>Deferred — Follow Up Later</option><option>No Action Needed</option>';
+  var resOptions=isSQ?'<option>Adjuster email added to PSA</option><option>Homeowner data updated in PSA</option><option>Data entry completed</option><option>Deferred — Follow Up Later</option><option>No Action Needed</option>':isAI?'<option>Carrier Responded — Payment Expected</option><option>Carrier Responded — Dispute Raised</option><option>Carrier Responded — Info Request</option><option>Carrier Responded — No Action Needed</option><option>Escalated to Supervisor</option><option>Deferred — Follow Up Later</option>':'<option>Payment Received</option><option>Carrier Responded</option><option>Escalated to Supervisor</option><option>Deferred — Follow Up Later</option><option>No Action Needed</option>';
   var emailSection=hasEmail?'<div class="form-group"><label>Draft Reply (optional)</label><textarea id="resDraft" rows="5" style="font-size:.85rem">Hi,\n\nThank you for your response regarding '+jobRef+'.\n\nWe have noted your update and will follow up accordingly.\n\nBest regards,\n911 Restoration Collections</textarea></div>':'';
   var followUpSection='<div class="form-group"><label>Follow-Up Reminder (optional)</label><input type="date" id="resFollowUp" style="width:100%"><div style="font-size:.8rem;color:var(--text-muted);margin-top:4px">A follow-up task will be created on this date if no response is received.</div></div>';
   openModal('<div class="modal-header"><h2>Resolve Task</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>Resolution Type</label><select id="resType">'+resOptions+'</select></div>'+emailSection+followUpSection+'<div class="form-group"><label>Notes</label><textarea id="resNotes" placeholder="Describe the outcome..."></textarea></div><div class="form-actions">'+(hasEmail?'<button class="btn btn-primary" onclick="closeModalForce();confirmResolve(\''+id+'\',true)">Send Reply &amp; Resolve</button> ':'')+' <button class="btn btn-success" onclick="closeModalForce();confirmResolve(\''+id+'\',false)">Mark Resolved</button><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button></div>');
@@ -1915,35 +1910,38 @@ function renderCaseFile(){
       }
     }
   }else if(caseFileTab==='contacts'){
-    // Build adjuster cards — show ALL linked adjusters, primary (POC) first
     var adjIds=j.adjusterIds||[];
     if(adjIds.length===0&&j.adjusterId&&String(j.adjusterId).indexOf('rec')===0)adjIds=[j.adjusterId];
     var adjCardsHtml='';
     if(adjIds.length>0){
-      adjIds.forEach(function(aid,idx){
-        var ad=adjusterDetails[aid]||{};
-        var adName=(ad.name||'').trim()||'Unknown Adjuster';
-        var adPhone=ad.phone||'';
-        var adEmail=ad.email||'';
+      adjIds.forEach(function(aid,aidx){
+        var ad=(adjusterDetails&&adjusterDetails[aid])||{};
+        var adName=(ad.name||'').trim()||j.adjuster||'Unknown Adjuster';
+        var adPhone=ad.phone||j.adjPhone||'';
+        var adEmail=ad.email||j.adjEmail||'';
         var adRole=(ad.role||'').trim();
-        var isPrimary=idx===0;
+        var isPrimary=aidx===0;
         var carrierLabel=(ad.carrier&&ad.carrier.length>0&&!ad.carrier.startsWith('rec'))?ad.carrier:(j.carrier&&!j.carrier.startsWith('rec')?j.carrier:'Unknown Carrier');
-        adjCardsHtml+='<div class="card" style="margin-bottom:'+(idx<adjIds.length-1?'12':'0')+'px">'
+        adjCardsHtml+='<div class="card" style="margin-bottom:'+(aidx<adjIds.length-1?'12':'0')+'px">'
           +'<div class="card-header"><span class="card-title">'+(isPrimary?'Adjuster':'Secondary Adjuster')+'</span>'
           +(isPrimary?'<span class="badge badge-blue">'+carrierLabel+'</span>':'')
           +(adRole&&adRole.toLowerCase().indexOf('poc')!==-1?'<span class="badge badge-green" style="margin-left:4px">POC</span>':'')
-          +'</div>'
-          +'<div style="margin-bottom:8px"><strong>'+adName+'</strong></div>'
+          +'</div><div style="margin-bottom:8px"><strong>'+adName+'</strong></div>'
           +'<div style="font-size:1rem;color:var(--text-secondary);margin-bottom:4px">&#9742; '+(adPhone||'No phone on file')+'</div>'
           +'<div style="font-size:1rem;color:var(--text-secondary);margin-bottom:'+(isPrimary?'12':'4')+'px">&#9993; '+(adEmail||'No email on file')+'</div>'
           +(isPrimary?'<div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Communication Rating</div><div class="stars" id="adjStars">'+[1,2,3,4,5].map(function(i){return '<span class="star '+(i<=(j.adjusterRating||3)?'filled':'')+'" onclick="rateAdjuster(&#39;'+j.id+'&#39;,'+i+')">&#9733;</span>';}).join('')+'</div>':'')
           +'</div>';
       });
     } else {
-      adjCardsHtml='<div class="card"><div class="card-header"><span class="card-title">Adjuster</span><span class="badge badge-blue">'+(j.carrier&&!j.carrier.startsWith('rec')?j.carrier:'Unknown Carrier')+'</span></div><div style="color:var(--text-muted)">No adjuster linked yet.</div></div>';
+      var carrierFallback=j.carrier&&!j.carrier.startsWith('rec')?j.carrier:'Unknown Carrier';
+      adjCardsHtml='<div class="card"><div class="card-header"><span class="card-title">Adjuster</span><span class="badge badge-blue">'+carrierFallback+'</span></div>'
+        +'<div style="margin-bottom:8px"><strong>'+(j.adjuster&&!j.adjuster.startsWith('rec')?j.adjuster:'Unknown Adjuster')+'</strong></div>'
+        +'<div style="font-size:1rem;color:var(--text-secondary);margin-bottom:4px">&#9742; '+(j.adjPhone||'No phone on file')+'</div>'
+        +'<div style="font-size:1rem;color:var(--text-secondary);margin-bottom:12px">&#9993; '+(j.adjEmail||'No email on file')+'</div>'
+        +'<div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Communication Rating</div>'
+        +'<div class="stars" id="adjStars">'+[1,2,3,4,5].map(function(i){return '<span class="star '+(i<=(j.adjusterRating||3)?'filled':'')+'" onclick="rateAdjuster(&#39;'+j.id+'&#39;,'+i+')">&#9733;</span>';}).join('')+'</div></div>';
     }
-    // Homeowner card — use hoEmail only from homeowner record, not job-level email
-    var hoEmailDisplay=j.hoEmail&&j.hoEmail.length>0&&j.hoEmail.indexOf('@')>0&&!j.hoEmail.includes('libertymutual')&&!j.hoEmail.includes('statefarm')&&!j.hoEmail.includes('allstate')&&!j.hoEmail.includes('nationwide')?j.hoEmail:'';
+    var hoEmailDisplay=j.hoEmail&&j.hoEmail.indexOf('@')>0&&!j.hoEmail.match(/(libertymutual|statefarm|allstate|nationwide|travelers|farmers|usaa|progressive|geico|chubb|zurich|assurant|amfam|allcatclaims)/)?j.hoEmail:'';
     html+='<div class="two-col">'+adjCardsHtml+'<div class="card"><div class="card-header"><span class="card-title">Homeowner</span>'+(j.communicationTrack?'<span class="badge badge-'+(trackColors[j.communicationTrack]||'blue')+'">'+j.communicationTrack+'</span>':'')+'</div><div style="margin-bottom:8px"><strong>'+(j.homeowner||'Unknown Homeowner')+'</strong></div><div style="font-size:1rem;color:var(--text-secondary);margin-bottom:4px">&#9742; '+(j.hoPhone||'No phone on file')+'</div><div style="font-size:1rem;color:var(--text-secondary)">&#9993; '+(hoEmailDisplay||'No email on file')+'</div>'+(function(){var cs=homeownerConsentState(j);if(!cs)return '';return '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)"><span class="badge badge-'+cs.color+'">'+cs.label+'</span><div style="font-size:.92rem;color:var(--text-muted);margin-top:6px;line-height:1.45">'+cs.next+'</div></div>';})()+'</div></div>';
   }else if(caseFileTab==='actions'){
     html+=renderCommunicationTrackCard(j)+renderCarrierResponseCard(j)+renderInfoRequestCard(j)+'<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px"><button class="btn btn-primary" onclick="openEmailCompose(\''+j.id+'\')">&#9993; Draft Email</button><button class="btn btn-secondary" onclick="openCallLog(\''+j.id+'\')">&#9742; Log Call</button><button class="btn btn-secondary" style="display:none" onclick="generateStatement(\''+j.id+'\')">&#128196; Generate Statement</button></div><div class="card"><div class="card-header"><span class="card-title">Payment Stop</span><span class="card-subtitle">Prevent payments to unauthorized payees</span></div><div style="display:flex;align-items:center;gap:12px"><label class="toggle"><input type="checkbox" '+(j.paymentStop?'checked ':'')+'onchange="setPaymentStop(\''+j.id+'\',this.checked)"><span class="toggle-slider"></span></label><span style="font-size:1rem">Enable Payment Stop for this job</span></div></div>';
@@ -3281,7 +3279,7 @@ async function loadLiveData() {
     } catch(e) { /* carriers table optional */ }
     // Fetch Adjusters table to resolve linked record IDs to names
     var adjusterMap = {};
-    var adjusterDetails = {};
+    adjusterDetails = {};
     try {
       var adjRecs = await fetchAllRecords(T.adjusters, ['Adjuster Name','Phone','Email','Rating'], pat);
       adjRecs.forEach(function(r) {
