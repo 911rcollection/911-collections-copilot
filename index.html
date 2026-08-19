@@ -1,6 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+(function(){
+  var APP_VERSION = "20260818-212424";
+  window.__APP_VERSION__ = APP_VERSION;
+  try {
+    var url = location.pathname + '?_cb=' + Date.now();
+    fetch(url, {cache:'no-store'}).then(function(r){return r.text();}).then(function(t){
+      var m = t.match(/APP_VERSION\s*=\s*"([0-9\-]+)"/);
+      if (!m) return;
+      if (m[1] !== APP_VERSION) {
+        if (sessionStorage.getItem('__cc_reloaded__') === m[1]) return;
+        sessionStorage.setItem('__cc_reloaded__', m[1]);
+        location.reload(true);
+      }
+    }).catch(function(){});
+  } catch(e) {}
+})();
+</script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
