@@ -1797,9 +1797,10 @@ function renderCaseFileList(){
     var d=jobAgeDays(j);
     var c=(d===null)?'blue':agingColor(d);
     var carrier=(j.carrier&&String(j.carrier).indexOf('rec')!==0)?j.carrier:'—';
-    return '<tr style="cursor:pointer" onclick="openCaseFile(\''+j.id+'\')"><td><span style="color:var(--accent-blue);font-weight:600">'+(j.jobNum||'—')+'</span></td><td>'+(j.claimNum||'—')+'</td><td>'+(j.office||'—')+'</td><td>'+carrier+'</td><td><span class="badge badge-'+c+'">'+(j.status||'—')+'</span></td><td data-sort="'+(d===null?-1:d)+'">'+(d===null?'\u2014':d)+'</td><td data-sort="'+out+'">'+fmt(out)+'</td></tr>';
+    var paid=(j.amtPaid||0);
+    return '<tr style="cursor:pointer" onclick="openCaseFile(\''+j.id+'\')"><td><span style="color:var(--accent-blue);font-weight:600">'+(j.jobNum||'—')+'</span></td><td>'+(j.homeowner||'—')+'</td><td>'+(j.claimNum||'—')+'</td><td>'+(j.office||'—')+'</td><td>'+carrier+'</td><td><span class="badge badge-'+c+'">'+(j.status||'—')+'</span></td><td data-sort="'+(d===null?-1:d)+'">'+(d===null?'\u2014':d)+'</td><td data-sort="'+(j.amtInvoiced||0)+'">'+fmt(j.amtInvoiced||0)+'</td><td data-sort="'+paid+'">'+(paid>0?'<span style="color:var(--accent-green)">'+fmt(paid)+'</span>':fmt(0))+'</td><td data-sort="'+out+'">'+fmt(out)+'</td></tr>';
   }).join('');
-  $('caseFileContent').innerHTML='<div class="card"><div class="card-header"><span class="card-title">&#128193; All Cases</span><span class="card-subtitle">Click any row to open its full case file</span></div><div class="table-container" id="caseListContainer"><table><thead><tr><th>Job #</th><th>Homeowner</th><th>Claim #</th><th>Office</th><th>Carrier</th><th>Status</th><th>Days Out</th><th>Outstanding</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+  $('caseFileContent').innerHTML='<div class="card"><div class="card-header"><span class="card-title">&#128193; All Cases</span><span class="card-subtitle">Click any row to open its full case file</span></div><div class="table-container" id="caseListContainer"><table><thead><tr><th>Job #</th><th>Homeowner</th><th>Claim #</th><th>Office</th><th>Carrier</th><th>Status</th><th>Days Out</th><th>Invoiced</th><th>Paid</th><th>Outstanding</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
   try{makeSortable('caseListContainer')}catch(e){}
 }
 function backToCaseList(){selectedCaseJob=null;caseFileTab='timeline';if(currentScreen!=='case-file'){navigate('case-file');return}renderCaseFile();try{window.scrollTo(0,0)}catch(e){}}
