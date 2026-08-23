@@ -1714,12 +1714,18 @@ function renderCaseFileList(){
   $('caseFileSubtitle').textContent='All cases · '+alljobs.length+' job'+(alljobs.length!==1?'s':'')+' · click a row to open it';
   if(!alljobs.length){$('caseFileContent').innerHTML='<div class="empty-state"><div class="empty-icon">&#128193;</div><h3>No Cases Available</h3><p>No jobs are visible for your offices.</p></div>';return}
   var rows=alljobs.map(function(j){
-    var out=(j.amtInvoiced||0)-(j.amtPaid||0);
+    // Outstanding comes from the linked invoices (live from QBO via S-22).
+    // Jobs.Amount Invoiced / Amount Paid are denormalised PSA copies that are
+    // not reliably maintained, and reading them showed $0 and negative balances.
+    var jobInv=INVOICES.filter(function(x){return x.jobId===j.id;});
+    var out=jobInv.length
+      ? jobInv.reduce(function(s,x){return s+(x.amtDue||0);},0)
+      : (j.amtInvoiced||0)-(j.amtPaid||0);
     // F12: age from the invoice that owns the money; blank when none exists.
     var d=jobAgeDays(j);
     var c=(d===null)?'blue':agingColor(d);
     var carrier=(j.carrier&&String(j.carrier).indexOf('rec')!==0)?j.carrier:'—';
-    return '<tr style="cursor:pointer" onclick="openCaseFile(\''+j.id+'\')"><td><span style="color:var(--accent-blue);font-weight:600">'+(j.jobNum||'—')+'</span></td><td>'+(j.homeowner||'—')+'</td><td>'+(j.claimNum||'—')+'</td><td>'+(j.office||'—')+'</td><td>'+carrier+'</td><td><span class="badge badge-'+c+'">'+(j.status||'—')+'</span></td><td data-sort="'+(d===null?-1:d)+'">'+(d===null?'\u2014':d)+'</td><td data-sort="'+out+'">'+fmt(out)+'</td></tr>';
+    return '<tr style="cursor:pointer" onclick="openCaseFile(\''+j.id+'\')"><td><span style="color:var(--accent-blue);font-weight:600">'+(j.jobNum||'—')+'</span></td><td>'+(j.claimNum||'—')+'</td><td>'+(j.office||'—')+'</td><td>'+carrier+'</td><td><span class="badge badge-'+c+'">'+(j.status||'—')+'</span></td><td data-sort="'+(d===null?-1:d)+'">'+(d===null?'\u2014':d)+'</td><td data-sort="'+out+'">'+fmt(out)+'</td></tr>';
   }).join('');
   $('caseFileContent').innerHTML='<div class="card"><div class="card-header"><span class="card-title">&#128193; All Cases</span><span class="card-subtitle">Click any row to open its full case file</span></div><div class="table-container" id="caseListContainer"><table><thead><tr><th>Job #</th><th>Homeowner</th><th>Claim #</th><th>Office</th><th>Carrier</th><th>Status</th><th>Days Out</th><th>Outstanding</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
   try{makeSortable('caseListContainer')}catch(e){}
@@ -3464,7 +3470,8 @@ async function loadLiveData() {
       PAYMENTS = pmtRecs.map(function(r) {
         var f = r.fields;
         return {
-          id: r.id,
+          id: f['Payment ID'] || r.id,
+          recordId: r.id,
           amount: num(f['Amount']),
           date: f['Payment Date'] || '',
           jobId: (f['Jobs'] && f['Jobs'][0]) || '',
