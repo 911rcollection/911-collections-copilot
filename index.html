@@ -1,30 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-(function(){
-  var APP_VERSION = "20260818-212424";
-  window.__APP_VERSION__ = APP_VERSION;
-  try {
-    var url = location.pathname + '?_cb=' + Date.now();
-    fetch(url, {cache:'no-store'}).then(function(r){return r.text();}).then(function(t){
-      var m = t.match(/APP_VERSION\s*=\s*"([0-9\-]+)"/);
-      if (!m) return;
-      if (m[1] !== APP_VERSION) {
-        if (sessionStorage.getItem('__cc_reloaded__') === m[1]) return;
-        sessionStorage.setItem('__cc_reloaded__', m[1]);
-        location.reload(true);
-      }
-    }).catch(function(){});
-  } catch(e) {}
-})();
-</script>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 <title>911 Restoration - Collections Command Center</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -1609,15 +1587,9 @@ function saveCallAndLog(taskId){
   renderStrikeQueue();
 }
 function resolveTask(id){
-  var t=STRIKE_QUEUE.find(x=>x.id===id)||(AI_INBOX||[]).find(x=>('AI-'+x.id)===id)||(AI_INBOX||[]).find(x=>x.id===id);
-  var isSQ=t&&t.source==='Strike Queue';var isAI=t&&(String(id).indexOf('AI-')===0);var hasEmail=isAI;
-  var jobRef=(t&&(t.jobNum||t.claimNum))||'this claim';
-  var resOptions=isSQ?'<option>Adjuster email added to PSA</option><option>Homeowner data updated in PSA</option><option>Data entry completed</option><option>Deferred — Follow Up Later</option><option>No Action Needed</option>':isAI?'<option>Carrier Responded — Payment Expected</option><option>Carrier Responded — Dispute Raised</option><option>Carrier Responded — Info Request</option><option>Carrier Responded — No Action Needed</option><option>Escalated to Supervisor</option><option>Deferred — Follow Up Later</option>':'<option>Payment Received</option><option>Carrier Responded</option><option>Escalated to Supervisor</option><option>Deferred — Follow Up Later</option><option>No Action Needed</option>';
-  var emailSection=hasEmail?'<div class="form-group"><label>Draft Reply (optional)</label><textarea id="resDraft" rows="5" style="font-size:.85rem">Hi,\n\nThank you for your response regarding '+jobRef+'.\n\nWe have noted your update and will follow up accordingly.\n\nBest regards,\n911 Restoration Collections</textarea></div>':'';
-  var followUpSection='<div class="form-group"><label>Follow-Up Reminder (optional)</label><input type="date" id="resFollowUp" style="width:100%"><div style="font-size:.8rem;color:var(--text-muted);margin-top:4px">A follow-up task will be created on this date if no response is received.</div></div>';
-  openModal('<div class="modal-header"><h2>Resolve Task</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>Resolution Type</label><select id="resType">'+resOptions+'</select></div>'+emailSection+followUpSection+'<div class="form-group"><label>Notes</label><textarea id="resNotes" placeholder="Describe the outcome..."></textarea></div><div class="form-actions">'+(hasEmail?'<button class="btn btn-primary" onclick="closeModalForce();confirmResolve(\''+id+'\',true)">Send Reply &amp; Resolve</button> ':'')+' <button class="btn btn-success" onclick="closeModalForce();confirmResolve(\''+id+'\',false)">Mark Resolved</button><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button></div>');
+  openModal('<div class="modal-header"><h2>Resolve Task '+id+'</h2><button class="modal-close" onclick="closeModalForce()">&times;</button></div><div class="form-group"><label>Resolution Type</label><select id="resType"><option>Payment Received</option><option>Carrier Responded</option><option>Escalated to Supervisor</option><option>Deferred - Follow Up Later</option><option>No Action Needed</option></select></div><div class="form-group"><label>Notes</label><textarea id="resNotes" placeholder="Describe the outcome..."></textarea></div><div class="form-actions"><button class="btn btn-secondary" onclick="closeModalForce()">Cancel</button><button class="btn btn-success" onclick="closeModalForce();confirmResolve(\''+id+'\')">Resolve Task</button></div>');
 }
-function confirmResolve(id,sendReply){
+function confirmResolve(id){
   const t=STRIKE_QUEUE.find(x=>x.id===id);
   if(!t){showToast('Task not found: '+id,'error');return;}
   var resType=(document.getElementById('resType')||{}).value||'Resolved';
@@ -1776,7 +1748,7 @@ function renderCaseFile(){
   if(caseFileTab==='timeline'){
     var logs=COMMS_LOG.filter(l=>l.jobId===j.id||(l.jobNum&&l.jobNum===j.jobNum)||(j.claimNum&&l.summary&&l.summary.indexOf(j.claimNum)!==-1)).sort((a,b)=>new Date(b.date)-new Date(a.date));
     var timelineHeader='';
-    if(!logs.length){timelineHeader='<div style="padding:16px;background:var(--bg-input);border-radius:var(--radius);color:var(--text-muted);font-size:.95rem">No communications logged for this job yet. Entries appear here once email or SMS activity is recorded against '+(j.jobNum||'this job')+'.</div>'}
+    if(!logs.length){logs=[];timelineHeader='<div style="padding:16px;background:var(--bg-input);border-radius:var(--radius);color:var(--text-muted);font-size:.95rem">No communications logged for this job yet.</div>'}
     const icons={email:'&#9993;',phone:'&#9742;',sms:'&#128172;',system:'&#9881;',portal:'&#127760;'};
     html+=logs.length?timelineHeader+logs.map(l=>'<div class="activity-item"><div class="activity-icon '+l.channel+'">'+(icons[l.channel]||'')+'</div><div style="flex:1"><div style="display:flex;justify-content:space-between"><strong style="font-size:1rem">'+l.subject+'</strong><span class="badge badge-'+(l.direction==='Inbound'?'green':'blue')+'">'+l.direction+'</span></div><div class="activity-text" style="margin-top:4px">'+l.summary+'</div><div class="activity-meta">'+formatDateTime(l.date)+' · '+l.agent+' · '+l.channel+'</div></div></div>').join(''):timelineHeader;
   }else if(caseFileTab==='invoices'){
@@ -1932,37 +1904,7 @@ function renderCaseFile(){
       }
     }
   }else if(caseFileTab==='contacts'){
-    var adjIds=j.adjusterIds||[];
-    if(adjIds.length===0&&j.adjusterId&&String(j.adjusterId).indexOf('rec')===0)adjIds=[j.adjusterId];
-    var adjCardsHtml='';
-    if(adjIds.length>0){
-      adjIds.forEach(function(aid,aidx){
-        var ad=(adjusterDetails&&adjusterDetails[aid])||{};
-        var adName=(ad.name||'').trim()||j.adjuster||'Unknown Adjuster';
-        var adPhone=ad.phone||j.adjPhone||'';
-        var adEmail=ad.email||j.adjEmail||'';
-        var adRole=(ad.role||'').trim();
-        var isPrimary=aidx===0;
-        var carrierLabel=(ad.carrier&&ad.carrier.length>0&&!ad.carrier.startsWith('rec'))?ad.carrier:(j.carrier&&!j.carrier.startsWith('rec')?j.carrier:'Unknown Carrier');
-        adjCardsHtml+='<div class="card" style="margin-bottom:'+(aidx<adjIds.length-1?'12':'0')+'px">'
-          +'<div class="card-header"><span class="card-title">'+(isPrimary?'Adjuster':'Secondary Adjuster')+'</span>'
-          +(isPrimary?'<span class="badge badge-blue">'+carrierLabel+'</span>':'')
-          +(adRole&&adRole.toLowerCase().indexOf('poc')!==-1?'<span class="badge badge-green" style="margin-left:4px">POC</span>':'')
-          +'</div><div style="margin-bottom:8px"><strong>'+adName+'</strong></div>'
-          +'<div style="font-size:1rem;color:var(--text-secondary);margin-bottom:4px">&#9742; '+(adPhone||'No phone on file')+'</div>'
-          +'<div style="font-size:1rem;color:var(--text-secondary);margin-bottom:'+(isPrimary?'12':'4')+'px">&#9993; '+(adEmail||'No email on file')+'</div>'
-          +(isPrimary?'<div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Communication Rating</div><div class="stars" id="adjStars">'+[1,2,3,4,5].map(function(i){return '<span class="star '+(i<=(j.adjusterRating||3)?'filled':'')+'" onclick="rateAdjuster(&#39;'+j.id+'&#39;,'+i+')">&#9733;</span>';}).join('')+'</div>':'')
-          +'</div>';
-      });
-    } else {
-      var carrierFallback=j.carrier&&!j.carrier.startsWith('rec')?j.carrier:'Unknown Carrier';
-      adjCardsHtml='<div class="card"><div class="card-header"><span class="card-title">Adjuster</span><span class="badge badge-blue">'+carrierFallback+'</span></div>'
-        +'<div style="margin-bottom:8px"><strong>'+(j.adjuster&&!j.adjuster.startsWith('rec')?j.adjuster:'No adjuster linked')+'</strong></div>'
-        +'<div style="font-size:1rem;color:var(--text-secondary);margin-bottom:4px">&#9742; '+(j.adjPhone||'No phone on file')+'</div>'
-        +'<div style="font-size:1rem;color:var(--text-secondary);margin-bottom:12px">&#9993; '+(j.adjEmail||'No email on file')+'</div></div>';
-    }
-    var hoEmailDisplay=j.hoEmail&&j.hoEmail.indexOf('@')>0&&!j.hoEmail.match(/(libertymutual|statefarm|allstate|nationwide|travelers|farmers|usaa|progressive|geico|chubb|zurich|assurant|amfam|allcatclaims)/)?j.hoEmail:'';
-    html+='<div class="two-col">'+adjCardsHtml+'<div class="card"><div class="card-header"><span class="card-title">Homeowner</span>'+(j.communicationTrack?'<span class="badge badge-'+(trackColors[j.communicationTrack]||'blue')+'">'+j.communicationTrack+'</span>':'')+'</div><div style="margin-bottom:8px"><strong>'+(j.homeowner||'Unknown Homeowner')+'</strong></div><div style="font-size:1rem;color:var(--text-secondary);margin-bottom:4px">&#9742; '+(j.hoPhone||'No phone on file')+'</div><div style="font-size:1rem;color:var(--text-secondary)">&#9993; '+(hoEmailDisplay||'No email on file')+'</div>'+(function(){var cs=homeownerConsentState(j);if(!cs)return '';return '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)"><span class="badge badge-'+cs.color+'">'+cs.label+'</span><div style="font-size:.92rem;color:var(--text-muted);margin-top:6px;line-height:1.45">'+cs.next+'</div></div>';})()+'</div></div>';
+    html+='<div class="two-col"><div class="card"><div class="card-header"><span class="card-title">Adjuster</span><span class="badge badge-blue">'+(j.carrier&&!j.carrier.startsWith("rec")?j.carrier:"Unknown Carrier")+'</span></div><div style="margin-bottom:8px"><strong>'+(j.adjuster&&!j.adjuster.startsWith("rec")?j.adjuster:"Unknown Adjuster")+'</strong></div><div style="font-size:1rem;color:var(--text-secondary);margin-bottom:4px">&#9742; '+(j.adjPhone||"No phone on file")+'</div><div style="font-size:1rem;color:var(--text-secondary);margin-bottom:12px">&#9993; '+(j.adjEmail||"No email on file")+'</div><div style="font-size:.95rem;color:var(--text-muted);margin-bottom:4px">Communication Rating</div><div class="stars" id="adjStars">'+[1,2,3,4,5].map(i=>'<span class="star '+(i<=(j.adjusterRating||3)?'filled':'')+'" onclick="rateAdjuster(&#39;'+j.id+'&#39;,'+i+')">&#9733;</span>').join('')+'</div></div><div class="card"><div class="card-header"><span class="card-title">Homeowner</span>'+(j.communicationTrack?'<span class="badge badge-'+(trackColors[j.communicationTrack]||'blue')+'">'+j.communicationTrack+'</span>':'')+'</div><div style="margin-bottom:8px"><strong>'+(j.homeowner||"Unknown Homeowner")+'</strong></div><div style="font-size:1rem;color:var(--text-secondary);margin-bottom:4px">&#9742; '+(j.hoPhone||"No phone on file")+'</div><div style="font-size:1rem;color:var(--text-secondary)">&#9993; '+(j.hoEmail||"No email on file")+'</div>'+(function(){var cs=homeownerConsentState(j);if(!cs)return '';return '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)"><span class="badge badge-'+cs.color+'">'+cs.label+'</span><div style="font-size:.92rem;color:var(--text-muted);margin-top:6px;line-height:1.45">'+cs.next+'</div></div>';})()+'</div></div>';
   }else if(caseFileTab==='actions'){
     html+=renderCommunicationTrackCard(j)+renderCarrierResponseCard(j)+renderInfoRequestCard(j)+'<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px"><button class="btn btn-primary" onclick="openEmailCompose(\''+j.id+'\')">&#9993; Draft Email</button><button class="btn btn-secondary" onclick="openCallLog(\''+j.id+'\')">&#9742; Log Call</button><button class="btn btn-secondary" style="display:none" onclick="generateStatement(\''+j.id+'\')">&#128196; Generate Statement</button></div><div class="card"><div class="card-header"><span class="card-title">Payment Stop</span><span class="card-subtitle">Prevent payments to unauthorized payees</span></div><div style="display:flex;align-items:center;gap:12px"><label class="toggle"><input type="checkbox" '+(j.paymentStop?'checked ':'')+'onchange="setPaymentStop(\''+j.id+'\',this.checked)"><span class="toggle-slider"></span></label><span style="font-size:1rem">Enable Payment Stop for this job</span></div></div>';
   }
@@ -3648,7 +3590,7 @@ async function loadLiveData() {
     try {
       var invRecs = await fetchAllRecords(T.invoices, [
         'Invoice ID','Linked Job','Status','Invoice Date','Sent Date','Total',
-        'Amount Due','Amount Paid','Days Outstanding (Calc)','Escalation Level',
+        'Amount Due','Amount Paid','Days Outstanding','Escalation Level',
         'Aging Bucket','PSA Job Number','Sequence Halted'], pat);
 
       // Real last-contact = the most recent CommsLog row for that job. CommsLog
@@ -3667,7 +3609,7 @@ async function loadLiveData() {
         var jobId = (f['Linked Job'] && f['Linked Job'][0]) || '';
         var job = JOBS.find(function(j) { return j.id === jobId; }) || null;
         var lookup = function(v) { return Array.isArray(v) ? (v[0] || '') : (v || ''); };
-        var days = Number(f['Days Outstanding (Calc)'] || 0);
+        var days = Number(f['Days Outstanding'] || 0);
         return {
           id: f['Invoice ID'] || r.id,
           recordId: r.id,
@@ -4791,10 +4733,6 @@ function renderMyTaskCard(item) {
     html += '<div style="font-size:.8rem;color:var(--text-muted)">Due: ' + dueHtml + '</div>';
   }
   html += '<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();' + item.navigateFn + '" style="margin-top:4px;white-space:nowrap">&#8594; Take Action</button>';
-  var resolveId = item.id ? (item.id.indexOf('SQ-')===0 ? item.id.substring(3) : item.id) : null;
-  if (resolveId) {
-    html += '<button class="btn btn-success btn-sm" onclick="event.stopPropagation();resolveTask(\'' + resolveId + '\')" style="margin-top:4px;white-space:nowrap">&#10003; Resolve</button>';
-  }
   html += '</div>';
 
   html += '</div>'; // end flex row
