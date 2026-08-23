@@ -1385,7 +1385,8 @@ function kpiCard(label,value,change,dir,icon,grad,onclick){
 
 function exportARToCSV(){
   var rows=[['Job #','Invoice ID','Carrier','Office','Status','Days Outstanding','Amount Due','Amount Paid','Escalation','Last Contact']];
-  filterByOffice(INVOICES).forEach(function(inv){
+  // SCOPE GATE: export must match what the table shows, not the whole ledger.
+  filterByOffice(INVOICES).filter(function(i){ return !!i.jobId; }).forEach(function(inv){
     rows.push([inv.jobNum,inv.id,inv.carrier,inv.office,inv.status,(inv.effectiveDaysOut||inv.daysOut),inv.amtDue,inv.amtPaid,inv.escalationLevel,inv.lastContact||'']);
   });
   var csv=rows.map(function(r){return r.map(function(c){return '"'+(c+'').replace(/"/g,'""')+'"'}).join(',')}).join('\n');
@@ -1399,7 +1400,75 @@ function exportARToCSV(){
   URL.revokeObjectURL(link.href);
   showToast('CSV downloaded','success');
 }
-let arFilterState={status:'',office:'',carrier:'',aging:''};
+
+// ============================================================
+// Multi-select filter dropdown (AR Aging). Replaces the single-choice
+// <select> controls so several statuses / offices / carriers / aging
+// buckets can be combined. Empty array = no filter = All.
+// ============================================================
+function arMultiLabel(key, all){
+  var sel = arFilterState[key] || [];
+  if (!sel.length) return 'All';
+  if (sel.length === 1) return sel[0];
+  if (sel.length === all.length) return 'All';
+  return sel.length + ' selected';
+}
+function arMulti(key, label, options){
+  var sel = arFilterState[key] || [];
+  var id = 'arMulti_' + key;
+  var items = options.map(function(o){
+    var checked = sel.indexOf(o) !== -1 ? ' checked' : '';
+    var safe = String(o).replace(/'/g, "\\'");
+    return '<label style="display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer;font-size:.9rem;white-space:nowrap">'
+      + '<input type="checkbox"' + checked + ' onchange="arMultiToggle(\'' + key + '\',\'' + safe + '\',this.checked)" style="cursor:pointer">'
+      + '<span>' + o + '</span></label>';
+  }).join('');
+  return '<div style="position:relative">'
+    + '<span class="filter-label">' + label + '</span>'
+    + '<button type="button" id="' + id + '_btn" onclick="arMultiOpen(\'' + id + '\')" '
+    + 'style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);'
+    + 'padding:7px 12px;border-radius:6px;cursor:pointer;font-size:.9rem;min-width:130px;text-align:left;'
+    + 'display:flex;align-items:center;justify-content:space-between;gap:8px">'
+    + '<span>' + arMultiLabel(key, options) + '</span><span style="opacity:.6">&#9662;</span></button>'
+    + '<div id="' + id + '" style="display:none;position:absolute;z-index:60;top:100%;left:0;margin-top:4px;'
+    + 'background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;'
+    + 'box-shadow:0 8px 24px rgba(0,0,0,.5);max-height:260px;overflow-y:auto;min-width:100%">'
+    + (items || '<div style="padding:10px;color:var(--text-muted);font-size:.85rem">No values</div>')
+    + (sel.length ? '<div style="border-top:1px solid var(--border);padding:6px 10px"><a href="#" onclick="arMultiClear(\'' + key + '\');return false" style="color:var(--accent-blue);font-size:.85rem;text-decoration:none">Clear</a></div>' : '')
+    + '</div></div>';
+}
+function arMultiOpen(id){
+  var el = document.getElementById(id);
+  if (!el) return;
+  var wasOpen = el.style.display === 'block';
+  ['status','office','carrier','aging'].forEach(function(k){
+    var p = document.getElementById('arMulti_' + k);
+    if (p) p.style.display = 'none';
+  });
+  el.style.display = wasOpen ? 'none' : 'block';
+}
+function arMultiToggle(key, val, on){
+  var sel = arFilterState[key] || [];
+  var i = sel.indexOf(val);
+  if (on && i === -1) sel.push(val);
+  if (!on && i !== -1) sel.splice(i, 1);
+  arFilterState[key] = sel;
+  arPage = 0;
+  renderARTable();
+}
+function arMultiClear(key){
+  arFilterState[key] = [];
+  arPage = 0;
+  renderARTable();
+}
+document.addEventListener('click', function(e){
+  if (e.target.closest && (e.target.closest('[id^=arMulti_]') || e.target.closest('button[id^=arMulti_]'))) return;
+  ['status','office','carrier','aging'].forEach(function(k){
+    var p = document.getElementById('arMulti_' + k);
+    if (p) p.style.display = 'none';
+  });
+});
+let arFilterState={status:[],office:[],carrier:[],aging:[]};
 let arPage=0;const AR_PAGE_SIZE=25;
 function renderARTable(){
   const r=getRole();const isGuided=r.mode==='Guided';
@@ -1417,21 +1486,22 @@ function renderARTable(){
   // labels that were an artefact of the old synthetic INVOICES derivation and
   // match nothing in the InvoiceRecords table. Built from live values now.
   const invStatuses=[...new Set(invoices.map(i=>i.status).filter(Boolean))].sort();
-  $('arFilters').innerHTML='<div><span class="filter-label">Status</span><select id="arFS" onchange="arFilterState.status=this.value;arPage=0;applyARFilters()"><option value="">All</option>'+invStatuses.map(function(x){return '<option>'+x+'</option>'}).join('')+'</select></div><div><span class="filter-label">Office</span><select id="arFO" onchange="arFilterState.office=this.value;arPage=0;applyARFilters()"><option value="">All</option>'+r.offices.map(o=>'<option>'+o+'</option>').join('')+'</select></div><div><span class="filter-label">Carrier</span><select id="arFC" onchange="arFilterState.carrier=this.value;arPage=0;applyARFilters()"><option value="">All</option>'+carriers.map(c=>'<option>'+c+'</option>').join('')+'</select></div><div><span class="filter-label">Aging</span><select id="arFA" onchange="arFilterState.aging=this.value;arPage=0;applyARFilters()"><option value="">All</option><option>0-30</option><option>31-60</option><option>61-90</option><option>90+</option></select></div>';
-  if($('arFS'))$('arFS').value=arFilterState.status;
-  if($('arFO'))$('arFO').value=arFilterState.office;
-  if($('arFC'))$('arFC').value=arFilterState.carrier;
-  if($('arFA'))$('arFA').value=arFilterState.aging;
+  $('arFilters').innerHTML=arMulti('status','Status',invStatuses)+arMulti('office','Office',r.offices)+arMulti('carrier','Carrier',carriers.filter(Boolean))+arMulti('aging','Aging',['0-30','31-60','61-90','90+']);
   if(isGuided){$('arGuidedMode').innerHTML='<div class="guided-highlight"><div class="guided-title">&#128161; Guided Mode Active</div><p style="font-size:1rem;color:var(--text-secondary)">Showing simplified view for Seattle. Click "View Case" to see recommended next steps.</p></div>'}
   else{$('arGuidedMode').innerHTML=''}
   applyARFilters();
 }
 function applyARFilters(){
-  const r=getRole();let filtered=filterByOffice(INVOICES);const isGuided=r.mode==='Guided';
-  if(arFilterState.status)filtered=filtered.filter(i=>i.status===arFilterState.status);
-  if(arFilterState.office)filtered=filtered.filter(i=>i.office===arFilterState.office);
-  if(arFilterState.carrier)filtered=filtered.filter(i=>i.carrier===arFilterState.carrier);
-  if(arFilterState.aging)filtered=filtered.filter(i=>agingBucket(i.effectiveDaysOut||i.daysOut)===arFilterState.aging);
+  const r=getRole();const isGuided=r.mode==='Guided';
+  // SCOPE GATE (see renderARTable): only invoices whose job is in the system.
+  // This is the function that actually paints the table, so the gate must live
+  // here as well as in renderARTable.
+  let filtered=filterByOffice(INVOICES).filter(function(i){ return !!i.jobId; });
+  // multi-select: empty array = no filter
+  if(arFilterState.status.length)filtered=filtered.filter(function(i){return arFilterState.status.indexOf(i.status)!==-1;});
+  if(arFilterState.office.length)filtered=filtered.filter(function(i){return arFilterState.office.indexOf(i.office)!==-1;});
+  if(arFilterState.carrier.length)filtered=filtered.filter(function(i){return arFilterState.carrier.indexOf(i.carrier)!==-1;});
+  if(arFilterState.aging.length)filtered=filtered.filter(function(i){return arFilterState.aging.indexOf(agingBucket(i.effectiveDaysOut||i.daysOut))!==-1;});
   var totalCount=filtered.length;var totalPages=Math.max(1,Math.ceil(totalCount/AR_PAGE_SIZE));
   if(arPage>=totalPages)arPage=totalPages-1;if(arPage<0)arPage=0;
   var paged=filtered.slice(arPage*AR_PAGE_SIZE,(arPage+1)*AR_PAGE_SIZE);
