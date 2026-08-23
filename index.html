@@ -1402,7 +1402,15 @@ function exportARToCSV(){
 let arFilterState={status:'',office:'',carrier:'',aging:''};
 let arPage=0;const AR_PAGE_SIZE=25;
 function renderARTable(){
-  const r=getRole();let invoices=filterByOffice(INVOICES);const isGuided=r.mode==='Guided';
+  const r=getRole();const isGuided=r.mode==='Guided';
+  // 2026-08-23 SCOPE GATE: only invoices belonging to a job that is in the system.
+  // The SyncAllowlist is the single gate for what is in scope; S-02 only creates
+  // jobs that are on it. Invoices with no linked job are for customers that were
+  // deliberately never brought in (commercial accounts, test records, jobs outside
+  // the cohort). 98 such invoices carrying $1,095,928 were being shown here as if
+  // they were collectable AR. Out of scope means out of sight, per the same rule
+  // applied to S-22 and S-02.5.
+  let invoices=filterByOffice(INVOICES).filter(function(i){ return !!i.jobId; });
 
   const carriers=[...new Set(invoices.map(i=>i.carrier))].sort();
   // REAL-DATA-ONLY / F11 (2026-07-28): the Status dropdown offered four fixed
@@ -1714,13 +1722,7 @@ function renderCaseFileList(){
   $('caseFileSubtitle').textContent='All cases · '+alljobs.length+' job'+(alljobs.length!==1?'s':'')+' · click a row to open it';
   if(!alljobs.length){$('caseFileContent').innerHTML='<div class="empty-state"><div class="empty-icon">&#128193;</div><h3>No Cases Available</h3><p>No jobs are visible for your offices.</p></div>';return}
   var rows=alljobs.map(function(j){
-    // Outstanding comes from the linked invoices (live from QBO via S-22).
-    // Jobs.Amount Invoiced / Amount Paid are denormalised PSA copies that are
-    // not reliably maintained, and reading them showed $0 and negative balances.
-    var jobInv=INVOICES.filter(function(x){return x.jobId===j.id;});
-    var out=jobInv.length
-      ? jobInv.reduce(function(s,x){return s+(x.amtDue||0);},0)
-      : (j.amtInvoiced||0)-(j.amtPaid||0);
+    var out=(j.amtInvoiced||0)-(j.amtPaid||0);
     // F12: age from the invoice that owns the money; blank when none exists.
     var d=jobAgeDays(j);
     var c=(d===null)?'blue':agingColor(d);
@@ -3647,6 +3649,23 @@ async function loadLiveData() {
           sequenceHalted: !!f['Sequence Halted'],
           lastContact: (jobId && lastContactByJob[jobId]) || ''
         };
+      });
+
+      // ============================================================
+      // 2026-08-23: Job money is authoritative from the LINKED INVOICES, which S-22
+      // keeps live from QuickBooks. Jobs.Amount Invoiced / Amount Paid are
+      // denormalised PSA copies that S-02 has not refreshed since 2026-08-09.
+      // Reading them showed Kelly Howe at $0 (real: $13,754.85) and Polly Spencer
+      // at -$1,000 (real: $42,091.50), and dragged Total AR down to $24,656.
+      // Overriding here fixes the case list, dashboard, AR aging, lien zone and
+      // every case-file tile in one place rather than ~30 call sites.
+      // Jobs with no linked invoice keep whatever PSA last supplied.
+      // ============================================================
+      JOBS.forEach(function(j) {
+        var iv = INVOICES.filter(function(x) { return x.jobId === j.id; });
+        if (!iv.length) return;
+        j.amtInvoiced = iv.reduce(function(s, x) { return s + (x.total   || 0); }, 0);
+        j.amtPaid     = iv.reduce(function(s, x) { return s + (x.amtPaid || 0); }, 0);
       });
     } catch(e) { INVOICES = []; console.warn('InvoiceRecords load failed:', e.message); }
 
