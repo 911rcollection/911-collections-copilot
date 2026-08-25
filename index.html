@@ -164,7 +164,7 @@ td{font-size:1rem}
 .bar-label{font-size:1.05rem;color:var(--text-muted)}
 .bar-value{font-size:1.15rem;font-weight:700}
 
-.activity-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.activity-item{display:flex;width:100%;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
 .activity-item:last-child{border-bottom:none}
 .activity-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0}
 .activity-icon.email{background:rgba(74,124,255,.15);color:var(--accent-blue)}
@@ -172,8 +172,7 @@ td{font-size:1rem}
 .activity-icon.sms{background:rgba(167,139,250,.15);color:var(--accent-purple)}
 .activity-icon.system{background:rgba(107,108,133,.15);color:var(--text-muted)}
 .activity-icon.portal{background:rgba(251,191,36,.15);color:var(--accent-yellow)}
-.activity-text{flex:1;font-size:1rem;overflow-wrap:anywhere;word-break:break-word;white-space:pre-wrap}
-.activity-item>div{min-width:0}
+.activity-text{flex:1;min-width:0;font-size:1rem;overflow-wrap:break-word}
 .activity-meta{font-size:.95rem;color:var(--text-muted);margin-top:4px}
 
 .priority-p1{background:var(--accent-red);color:#fff;padding:4px 10px;border-radius:4px;font-size:.95rem;font-weight:700}
