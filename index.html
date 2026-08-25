@@ -172,7 +172,8 @@ td{font-size:1rem}
 .activity-icon.sms{background:rgba(167,139,250,.15);color:var(--accent-purple)}
 .activity-icon.system{background:rgba(107,108,133,.15);color:var(--text-muted)}
 .activity-icon.portal{background:rgba(251,191,36,.15);color:var(--accent-yellow)}
-.activity-text{flex:1;font-size:1rem}
+.activity-text{flex:1;font-size:1rem;overflow-wrap:anywhere;word-break:break-word;white-space:pre-wrap}
+.activity-item>div{min-width:0}
 .activity-meta{font-size:.95rem;color:var(--text-muted);margin-top:4px}
 
 .priority-p1{background:var(--accent-red);color:#fff;padding:4px 10px;border-radius:4px;font-size:.95rem;font-weight:700}
@@ -676,7 +677,40 @@ document.addEventListener('DOMContentLoaded',function(){
 // MOCK DATA
 // ============================================================
 let JOBS=[];
-var adjusterDetails = {};  // REAL-DATA-ONLY: seed removed 2026-07-28 — populated exclusively by loadLiveData()
+var adjusterDetails = {};
+
+// ============================================================
+// 2026-08-25: the app loaded its data once at login and never again, so a tab
+// left open showed a frozen snapshot — a case opened in the morning was missing
+// emails that had landed since. Refresh every 15 minutes, but only when the tab
+// is visible and a user is signed in, and skip if a load is already running.
+// Re-renders the current screen in place so the user is not bounced elsewhere.
+// ============================================================
+var _autoRefreshTimer = null;
+var _autoRefreshBusy = false;
+function startAutoRefresh() {
+  if (_autoRefreshTimer) clearInterval(_autoRefreshTimer);
+  _autoRefreshTimer = setInterval(function() {
+    if (document.hidden) return;                       // don't poll a background tab
+    if (_autoRefreshBusy) return;                      // a load is already in flight
+    if (!sessionStorage.getItem('cc_user_email')) return;  // not signed in
+    _autoRefreshBusy = true;
+    loadLiveData().then(function() {
+      var screen = (typeof currentScreen !== 'undefined' && currentScreen) ? currentScreen : null;
+      if (screen) { try { navigate(screen); } catch (e) {} }
+    }).catch(function(){}).then(function(){ _autoRefreshBusy = false; });
+  }, 15 * 60 * 1000);
+}
+document.addEventListener('visibilitychange', function() {
+  // catch up immediately when the user comes back to a tab that sat idle
+  if (!document.hidden && sessionStorage.getItem('cc_user_email') && !_autoRefreshBusy) {
+    _autoRefreshBusy = true;
+    loadLiveData().then(function() {
+      var screen = (typeof currentScreen !== 'undefined' && currentScreen) ? currentScreen : null;
+      if (screen) { try { navigate(screen); } catch (e) {} }
+    }).catch(function(){}).then(function(){ _autoRefreshBusy = false; });
+  }
+});  // REAL-DATA-ONLY: seed removed 2026-07-28 — populated exclusively by loadLiveData()
 
 // REAL-DATA-ONLY / F10 (2026-07-28): this used to be a parse-time copy of the JOBS
 // array, which captured the hardcoded seed and kept it alive as a lookup fallback
@@ -3866,6 +3900,7 @@ async function loadLiveData() {
       }
     });
     showToast('Live data loaded (' + JOBS.length + ' jobs, ' + COMMS_LOG.length + ' comms, ' + PAYMENTS.length + ' payments)', 'success');
+    startAutoRefresh();  // 2026-08-25: keep an open tab current; idempotent, safe to call on every load
     renderDashboard();
   } catch (e) {
     _dataLoadError = e.message;
