@@ -3317,7 +3317,10 @@ async function fetchInboxRecords(pat) {
   var params = new URLSearchParams();
   fieldIds.forEach(function(fid){ params.append('fields[]', fid); });
   params.set('returnFieldsByFieldId', 'true');
-  params.set('filterByFormula', '{Direction}="Inbound"');
+  params.set('filterByFormula', 'AND({Direction}="Inbound", {Channel}="Email")');  // 2026-08-26: SMS excluded. The AI Inbox exists to triage adjuster EMAIL replies that
+  // Gemini classified. Inbound SMS (homeowner consent replies handled by S-15) was landing
+  // here as "NO CLEAR RESPONSE" — no AI ever looked at it, so the label was meaningless and
+  // the rows had no job, carrier or subject. SMS belongs on the case timeline, not this queue.
   params.set('pageSize', '100');
   do {
     if (offset) params.set('offset', offset);
