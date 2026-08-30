@@ -687,6 +687,15 @@ var adjusterDetails = {};
 // ============================================================
 var _autoRefreshTimer = null;
 var _autoRefreshBusy = false;
+function openAgingBucket(bucket) {
+  // Dashboard aging card -> AR Aging Table, pre-filtered to that bucket.
+  // arFilterState is multi-select (arrays); set only the aging filter and clear
+  // the others so the user sees exactly the invoices behind the number they clicked.
+  arFilterState = { status: [], office: [], carrier: [], aging: [] };
+  if (bucket && bucket !== 'Unaged') arFilterState.aging = [bucket];
+  arPage = 0;
+  navigate('ar-aging');
+}
 function startAutoRefresh() {
   if (_autoRefreshTimer) clearInterval(_autoRefreshTimer);
   _autoRefreshTimer = setInterval(function() {
@@ -1337,7 +1346,7 @@ function renderDashboard(){
   var bColors={'0-30':['#34d399','#22d3ee'],'31-60':['#fbbf24','#fb923c'],'61-90':['#fb923c','#ef4444'],'90+':['#ef4444','#dc2626'],'Unaged':['#6b6c85','#94a3b8']};
   var bIcons={'0-30':'\u2705','31-60':'\u26a0\ufe0f','61-90':'\ud83d\udfe0','90+':'\ud83d\udd34','Unaged':'\u2b1c'};
   var bLabel=function(k){return k==='Unaged'?'not yet invoiced':k+' days'};
-  $('agingChart').innerHTML='<div style="display:flex;gap:2px;height:12px;border-radius:6px;overflow:hidden;margin-bottom:20px">'+Object.entries(buckets).map(function(e){var k=e[0],v=e[1];var pct=totalAging>0?Math.max(v/totalAging*100,2):25;var c=bColors[k];return '<div style="flex:0 0 '+pct+'%;background:linear-gradient(90deg,'+c[0]+','+c[1]+');transition:width .6s ease" title="'+bLabel(k)+': '+fmt(v)+'"></div>'}).join('')+'</div><div class="aging-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">'+Object.entries(buckets).map(function(e){var k=e[0],v=e[1];var pct=maxB>0?Math.round(v/maxB*100):0;var c=bColors[k];var ic=bIcons[k];var count=bucketCounts[k]||0;return '<div style="background:var(--bg-input);border-radius:10px;padding:16px;text-align:center;position:relative;overflow:hidden;min-width:0"><div style="position:absolute;bottom:0;left:0;right:0;height:'+Math.max(pct,4)+'%;background:linear-gradient(180deg,'+c[0]+'22,'+c[0]+'08);transition:height .8s ease"></div><div style="position:relative;z-index:1"><div style="font-size:1.3rem;margin-bottom:4px">'+ic+'</div><div style="font-size:1.2rem;font-weight:800;color:'+c[0]+'">'+fmt(v)+'</div><div style="font-size:.78rem;color:var(--text-muted);margin-top:2px">'+bLabel(k)+'</div><div style="font-size:.72rem;color:var(--text-secondary);margin-top:4px">'+count+' job'+(count!==1?'s':'')+'</div></div></div>'}).join('')+'</div>';
+  $('agingChart').innerHTML='<div style="display:flex;gap:2px;height:12px;border-radius:6px;overflow:hidden;margin-bottom:20px">'+Object.entries(buckets).map(function(e){var k=e[0],v=e[1];var pct=totalAging>0?Math.max(v/totalAging*100,2):25;var c=bColors[k];return '<div style="flex:0 0 '+pct+'%;background:linear-gradient(90deg,'+c[0]+','+c[1]+');transition:width .6s ease" title="'+bLabel(k)+': '+fmt(v)+'"></div>'}).join('')+'</div><div class="aging-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">'+Object.entries(buckets).map(function(e){var k=e[0],v=e[1];var pct=maxB>0?Math.round(v/maxB*100):0;var c=bColors[k];var ic=bIcons[k];var count=bucketCounts[k]||0;return '<div onclick="openAgingBucket(\''+k+'\')" title="Show these invoices" style="background:var(--bg-input);border-radius:10px;padding:16px;text-align:center;position:relative;overflow:hidden;min-width:0;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease" onmouseover="this.style.transform=\'translateY(-2px)\';this.style.boxShadow=\'0 4px 14px rgba(0,0,0,.35)\'" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'\'"><div style="position:absolute;bottom:0;left:0;right:0;height:'+Math.max(pct,4)+'%;background:linear-gradient(180deg,'+c[0]+'22,'+c[0]+'08);transition:height .8s ease"></div><div style="position:relative;z-index:1"><div style="font-size:1.3rem;margin-bottom:4px">'+ic+'</div><div style="font-size:1.2rem;font-weight:800;color:'+c[0]+'">'+fmt(v)+'</div><div style="font-size:.78rem;color:var(--text-muted);margin-top:2px">'+bLabel(k)+'</div><div style="font-size:.72rem;color:var(--text-secondary);margin-top:4px">'+count+' job'+(count!==1?'s':'')+'</div></div></div>'}).join('')+'</div>';
 
   var logs=filterByDashOffice(COMMS_LOG).slice(0,10);
   var actIcons={email:'&#9993;',phone:'&#128222;',sms:'&#128172;',system:'&#9881;',portal:'&#127760;'};
