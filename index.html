@@ -3346,6 +3346,13 @@ async function fetchInboxRecords(pat) {
 }
 
 async function loadLiveData() {
+
+  var pat = getAirtablePAT();
+  if (!pat) return;
+  try {
+    showToast('Loading live data from Airtable...', 'info');
+    var T = AIRTABLE_CONFIG.tables;
+
     // 2026-09-02: these 15 tables were fetched one after another, each waiting for
     // the previous round trip. Airtable handles them concurrently, so issuing them
     // together cuts load time to roughly the slowest single call instead of the sum.
@@ -3387,12 +3394,6 @@ async function loadLiveData() {
     ]);
     var __par = {};
     __keys.forEach(function(k, n){ __par[k] = __results[n]; });
-
-  var pat = getAirtablePAT();
-  if (!pat) return;
-  try {
-    showToast('Loading live data from Airtable...', 'info');
-    var T = AIRTABLE_CONFIG.tables;
 
     // Fetch Jobs
     var sel = function(v){ return Array.isArray(v)?v[0]:(v||''); };
