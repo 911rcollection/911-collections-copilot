@@ -2779,6 +2779,8 @@ function renderAIInbox(){
     '<option value="info req">Requesting Info</option>' +
     '<option value="disput">Disputing Claim</option>' +
     '<option value="out of office">Out of Office</option>' +
+    '<option value="adjuster changed">Adjuster Changed</option>' +
+    '<option value="partial agreement">Partial Agreement</option>' +
     '<option value="no clear">No Clear Response</option>' +
     '</select>' +
     '<input type="text" id="aiSearchFilter" onkeyup="renderAIInbox()" placeholder="Search by job, sender, subject..." style="padding:8px 12px;border-radius:6px;background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border-color);width:250px">';
@@ -3320,7 +3322,7 @@ async function fetchAllRecords(tableId, fields, pat) {
 // Fetch inbound CommsLog rows (AI Inbox) by field ID for a stable, name-independent mapping.
 // S-03 writes inbound adjuster replies with Direction="Inbound" and an AI classification token.
 async function fetchInboxRecords(pat) {
-  var fieldIds = ['fldC5yKRoKAA8SLqJ','fldU8wXKv2BxO6u7g','flddP3G9xSdHDuAjZ','fldMn3S6fSmxeYfJX','fldSWOh9ghfk1F4pC','fldOYqQER3Dd9B3mC','fldrrZFBMpVhtJ9D1','fldVQaKNe6xKZxdGV','fldBJZcdmd3gxOBug'];
+  var fieldIds = ['fldC5yKRoKAA8SLqJ','fldU8wXKv2BxO6u7g','flddP3G9xSdHDuAjZ','fldMn3S6fSmxeYfJX','fldSWOh9ghfk1F4pC','fldOYqQER3Dd9B3mC','fldrrZFBMpVhtJ9D1','fldVQaKNe6xKZxdGV','fldBJZcdmd3gxOBug','fldCda3Gw31lFFLX9'];
   var allRecords = [];
   var offset = null;
   var params = new URLSearchParams();
@@ -3344,6 +3346,48 @@ async function fetchInboxRecords(pat) {
 }
 
 async function loadLiveData() {
+    // 2026-09-02: these 15 tables were fetched one after another, each waiting for
+    // the previous round trip. Airtable handles them concurrently, so issuing them
+    // together cuts load time to roughly the slowest single call instead of the sum.
+    var __keys = ['jobRecs', 'carrierRecs', 'adjRecs', 'hoRecs', 'commsRecs', 'pmtRecs', 'hsqRecs', 'errRecs', 'senderRecs', 'holRecs', 'invRecs', 'smRecs', 'msRecs', 'lienRecs', 'userRecs'];
+    var __results = await Promise.all([
+      fetchAllRecords(T.jobs, ['Job ID','PSA Job Number','PSA Outstanding','Claim Number','Office','Primary Status','Alternative Status','Collections Status','Amount Invoiced','Total Paid','Invoiced Date','Lien Deadline','Lien Mode','Property State','Days to Lien Deadline','Diversion Flag','Carriers','Homeowners','Adjusters','Dispute Status','Dispute Date','Our Estimate','Adjuster Estimate','Dispute Gap','Dispute Category','Dispute Notes','Supplement Sent Date','Carrier Response Status','Carrier Agreed Amount','Carrier Response Date','Carrier Response Notes','Partial Gap Decision','Carrier Info Request Status','Info Request Date','Info Requested Items','Info Docs Sent Date','Info Response Deadline','Aging Paused','Aging Pause Start','Aging Pause Days','InvoiceRecords','Payment Stop','Communication Track','Track Assigned Date','Homeowner Email'], pat),
+      fetchAllRecords(T.carriers, ['Carrier Name','Record Name'], pat),
+      fetchAllRecords(T.adjusters, ['Adjuster Name','Phone','Email','Rating'], pat),
+      fetchAllRecords(T.homeowners, [
+        'Client Name','Phone','Email','Preferred Contact Channel','Do Not Contact',
+        'SMS Opt Out','SMS Consent','SMS Consent Date','SMS Consent Request Sent',
+        'Consented Mobile Number','SMS Opt-Out Date','Preferred Language'], pat),
+      fetchAllRecords(T.commsLog, ['Linked Job','Channel','Direction','Subject','Message','Date','Logged By','Log Entry','Scenario Name'], pat),
+      fetchAllRecords(T.payments, ['Amount','Payment Date','Jobs','PSA Job Number','Paid To','Expected Payee','Diversion Flag','Source','Claim Number','Recovery Status','Recovery Step','Payment ID','Diversion Type'], pat),
+      fetchAllRecords(T.hsq, ['Task ID','Jobs','PSA Job Number','Task Type','Priority','Description','Status','Due Date','Assignee','Escalation Level','Amount at Stake','Days Outstanding'], pat),
+      fetchAllRecords(T.errorLog, ['Timestamp','Scenario Name','Module Name','Severity','Error Message','Resolved','Error Type','Source'], pat),
+      fetchAllRecords('tbloXKsztyfjrrFF6', ['Domain','Organization Name','Type','Active','Added Date'], pat),
+      fetchAllRecords('tbl1vSkWPrLwbxEn3', ['Holiday Name','Date','Year','Notes'], pat),
+      fetchAllRecords(T.invoices, [
+        'Invoice ID','Linked Job','Status','Invoice Date','Sent Date','Total',
+        'Amount Due','Amount Paid','Days Outstanding','Escalation Level',
+        'Aging Bucket','PSA Job Number','Sequence Halted'], pat),
+      fetchAllRecords(T.systemMetrics, [
+        'Metric Date','Emails Sent','SMS Sent','API Calls PSA','API Calls QBO',
+        'API Calls Gmail','API Calls Twilio','Errors Warn','Errors Critical',
+        'Make Ops Used','Scenario Failures','Scenarios Run',
+        'Total Invoiced','Total Collected','Avg DSO','Open Invoice Count'], pat),
+      fetchAllRecords(T.metrics, [
+        'Snapshot ID','Total Invoiced','Total Collected','Open Invoice Count','DSO Average',
+        'Diversion Flag Count','Open HSQ Tasks','Today Info Events','Today Warning Events',
+        'Today Critical Events','Today SMS Sent','Today Emails Sent','Last Updated'], pat),
+      fetchAllRecords(T.lienDeadlines, [
+        'Lien Record ID','PSA Job Number','State','Statutory Deadline','System Target Date',
+        'Days Remaining','Lien Mode','Lien Eligible','Lien Filed','Filed Date',
+        'Decision Made By','Decision Date','Notes'], pat),
+      fetchAllRecords(AIRTABLE_CONFIG.tables.users,
+        ['fld1eBaRuFSDPxKmz','fldxxKtzQAy0sMfDA','fldSjjlgfkHDDhdfz','fld1xE5e1Ocjq4wmr',
+         'fld6XXkPIds6C8qji','fld1EbVIMDoGKOwMl','fldVFKS5Qg2iAzm13','fld9ShwB36fKFih9k'], pat)
+    ]);
+    var __par = {};
+    __keys.forEach(function(k, n){ __par[k] = __results[n]; });
+
   var pat = getAirtablePAT();
   if (!pat) return;
   try {
@@ -3353,11 +3397,11 @@ async function loadLiveData() {
     // Fetch Jobs
     var sel = function(v){ return Array.isArray(v)?v[0]:(v||''); };
     var num = function(v){ return typeof v==='number'?v:(parseFloat(v)||0); };
-    var jobRecs = await fetchAllRecords(T.jobs, ['Job ID','PSA Job Number','PSA Outstanding','Claim Number','Office','Primary Status','Alternative Status','Collections Status','Amount Invoiced','Total Paid','Invoiced Date','Lien Deadline','Lien Mode','Property State','Days to Lien Deadline','Diversion Flag','Carriers','Homeowners','Adjusters','Dispute Status','Dispute Date','Our Estimate','Adjuster Estimate','Dispute Gap','Dispute Category','Dispute Notes','Supplement Sent Date','Carrier Response Status','Carrier Agreed Amount','Carrier Response Date','Carrier Response Notes','Partial Gap Decision','Carrier Info Request Status','Info Request Date','Info Requested Items','Info Docs Sent Date','Info Response Deadline','Aging Paused','Aging Pause Start','Aging Pause Days','InvoiceRecords','Payment Stop','Communication Track','Track Assigned Date','Homeowner Email'], pat);
+    var jobRecs = __par.jobRecs;
     // Fetch Carriers table to resolve linked record IDs to names
     var carrierMap = {};
     try {
-      var carrierRecs = await fetchAllRecords(T.carriers, ['Carrier Name','Record Name'], pat);
+      var carrierRecs = __par.carrierRecs;
       carrierRecs.forEach(function(r) {
         var name = (r.fields['Carrier Name'] || r.fields['Record Name'] || '').trim();
         if (name) carrierMap[r.id] = name;
@@ -3367,7 +3411,7 @@ async function loadLiveData() {
     var adjusterMap = {};
     adjusterDetails = {};
     try {
-      var adjRecs = await fetchAllRecords(T.adjusters, ['Adjuster Name','Phone','Email','Rating'], pat);
+      var adjRecs = __par.adjRecs;
       adjRecs.forEach(function(r) {
         var f = r.fields;
         var name = (f['Adjuster Name'] || '').trim();
@@ -3392,10 +3436,7 @@ async function loadLiveData() {
     // ============================================================
     var homeownerDetails = {};
     try {
-      var hoRecs = await fetchAllRecords(T.homeowners, [
-        'Client Name','Phone','Email','Preferred Contact Channel','Do Not Contact',
-        'SMS Opt Out','SMS Consent','SMS Consent Date','SMS Consent Request Sent',
-        'Consented Mobile Number','SMS Opt-Out Date','Preferred Language'], pat);
+      var hoRecs = __par.hoRecs;
       hoRecs.forEach(function(r) {
         var f = r.fields;
         homeownerDetails[r.id] = {
@@ -3509,7 +3550,7 @@ async function loadLiveData() {
     }
 
     // Fetch CommsLog
-    var commsRecs = await fetchAllRecords(T.commsLog, ['Linked Job','Channel','Direction','Subject','Message','Date','Logged By','Log Entry','Scenario Name'], pat);
+    var commsRecs = __par.commsRecs;
     if (true) { // REAL-DATA-ONLY: was `commsRecs.length` — an empty Airtable table must render an empty screen, never silently retain seed data
       COMMS_LOG = commsRecs.map(function(r) {
         var f = r.fields;
@@ -3543,8 +3584,20 @@ async function loadLiveData() {
         var f = r.fields;
         // Classification token lives in the AI summary field (fldSWOh9ghfk1F4pC); fall back to body / subject.
         var classifySrc = ((f['fldSWOh9ghfk1F4pC'] || '') + ' ' + (f['fldOYqQER3Dd9B3mC'] || '') + ' ' + (f['fldMn3S6fSmxeYfJX'] || '')).toUpperCase();
-        var outcome = 'no clear response';
-        if (classifySrc.indexOf('PAYMENT_CONFIRMATION') !== -1 || classifySrc.indexOf('PAYMENT CONFIRM') !== -1) outcome = 'payment confirmed';
+        // 2026-09-02: token list now mirrors S-03's actual intent vocabulary.
+        // It previously looked for INFO_REQUEST while S-03 emits INFORMATION_REQUEST,
+        // and had no entry for PARTIAL_AGREEMENT — so both fell through to
+        // "no clear response" even though the AI had classified them correctly.
+        // 2026-09-02: S-03 now writes the AI's own classification into CommsLog.Outcome,
+        // so read it rather than re-deriving it. The token matching below is retained only
+        // for rows logged before that change — deriving it was fragile and silently broke
+        // whenever S-03's intent vocabulary grew.
+        var stored = (f['fldCda3Gw31lFFLX9'] || '').toString().trim().toLowerCase();
+        var outcome = stored || 'no clear response';
+        if (stored) { /* trust the AI's classification */ }
+        else if (classifySrc.indexOf('PAYMENT_CONFIRMATION') !== -1 || classifySrc.indexOf('PAYMENT CONFIRM') !== -1) outcome = 'payment confirmed';
+        else if (classifySrc.indexOf('PARTIAL_AGREEMENT') !== -1 || classifySrc.indexOf('PARTIAL AGREEMENT') !== -1) outcome = 'partial agreement';
+        else if (classifySrc.indexOf('INFORMATION_REQUEST') !== -1) outcome = 'info request';
         else if (classifySrc.indexOf('DISPUTE') !== -1) outcome = 'disputing claim';
         else if (classifySrc.indexOf('ADJUSTER_WILL_RESPOND') !== -1 || classifySrc.indexOf('WILL_RESPOND') !== -1 || classifySrc.indexOf('WILL RESPOND') !== -1) outcome = 'will respond';
         else if (classifySrc.indexOf('OUT_OF_OFFICE') !== -1 || classifySrc.indexOf('OUT OF OFFICE') !== -1) outcome = 'out of office';
@@ -3583,7 +3636,7 @@ async function loadLiveData() {
     }
 
     // Fetch Payments
-    var pmtRecs = await fetchAllRecords(T.payments, ['Amount','Payment Date','Jobs','PSA Job Number','Paid To','Expected Payee','Diversion Flag','Source','Claim Number','Recovery Status','Recovery Step','Payment ID','Diversion Type'], pat);
+    var pmtRecs = __par.pmtRecs;
     if (true) { // REAL-DATA-ONLY: was `pmtRecs.length` — an empty Airtable table must render an empty screen, never silently retain seed data
       PAYMENTS = pmtRecs.map(function(r) {
         var f = r.fields;
@@ -3607,7 +3660,7 @@ async function loadLiveData() {
     }
 
     // Fetch Strike Queue
-    var hsqRecs = await fetchAllRecords(T.hsq, ['Task ID','Jobs','PSA Job Number','Task Type','Priority','Description','Status','Due Date','Assignee','Escalation Level','Amount at Stake','Days Outstanding'], pat);
+    var hsqRecs = __par.hsqRecs;
     if (true) { // REAL-DATA-ONLY: was `hsqRecs.length` — an empty Airtable table must render an empty screen, never silently retain seed data
       STRIKE_QUEUE = hsqRecs.map(function(r) {
         var f = r.fields;
@@ -3645,7 +3698,7 @@ async function loadLiveData() {
     STRIKE_QUEUE.forEach(backfillOfficeFromJob);
 
     // Fetch Error Log
-    var errRecs = await fetchAllRecords(T.errorLog, ['Timestamp','Scenario Name','Module Name','Severity','Error Message','Resolved','Error Type','Source'], pat);
+    var errRecs = __par.errRecs;
     if (true) { // REAL-DATA-ONLY: was `errRecs.length` — an empty Airtable table must render an empty screen, never silently retain seed data
       ERROR_LOG = errRecs.map(function(r) {
         var f = r.fields;
@@ -3663,7 +3716,7 @@ async function loadLiveData() {
 
     // Fetch AuthorizedSenders + HolidayCalendar so Settings shows and edits live config
     try {
-      var senderRecs = await fetchAllRecords('tbloXKsztyfjrrFF6', ['Domain','Organization Name','Type','Active','Added Date'], pat);
+      var senderRecs = __par.senderRecs;
       if (true) { // REAL-DATA-ONLY: was `senderRecs.length` — an empty Airtable table must render an empty screen, never silently retain seed data
         AUTHORIZED_SENDERS = senderRecs.map(function(r){ var f = r.fields; return {
           id: r.id, domain: f['Domain'] || '', name: f['Organization Name'] || f['Domain'] || '',
@@ -3674,7 +3727,7 @@ async function loadLiveData() {
       }
     } catch(e) { console.warn('AuthorizedSenders fetch failed:', e); }
     try {
-      var holRecs = await fetchAllRecords('tbl1vSkWPrLwbxEn3', ['Holiday Name','Date','Year','Notes'], pat);
+      var holRecs = __par.holRecs;
       if (true) { // REAL-DATA-ONLY: was `holRecs.length` — an empty Airtable table must render an empty screen, never silently retain seed data
         HOLIDAYS_2026 = holRecs.map(function(r){ var f = r.fields; return {
           id: r.id, name: f['Holiday Name'] || '', date: f['Date'] || '',
@@ -3713,10 +3766,7 @@ async function loadLiveData() {
     // INVOICES is now the InvoiceRecords table, verbatim.
     // ============================================================
     try {
-      var invRecs = await fetchAllRecords(T.invoices, [
-        'Invoice ID','Linked Job','Status','Invoice Date','Sent Date','Total',
-        'Amount Due','Amount Paid','Days Outstanding','Escalation Level',
-        'Aging Bucket','PSA Job Number','Sequence Halted'], pat);
+      var invRecs = __par.invRecs;
 
       // Real last-contact = the most recent CommsLog row for that job. CommsLog
       // is already loaded above. No row for the job means no contact has been
@@ -3793,11 +3843,7 @@ async function loadLiveData() {
 
     // --- SystemMetrics (tblNu3JZ8XnP34PqT) -> Ops Dashboard trend charts ---
     try {
-      var smRecs = await fetchAllRecords(T.systemMetrics, [
-        'Metric Date','Emails Sent','SMS Sent','API Calls PSA','API Calls QBO',
-        'API Calls Gmail','API Calls Twilio','Errors Warn','Errors Critical',
-        'Make Ops Used','Scenario Failures','Scenarios Run',
-        'Total Invoiced','Total Collected','Avg DSO','Open Invoice Count'], pat);
+      var smRecs = __par.smRecs;
       SYSTEM_METRICS = smRecs.map(function(r){
         var f = r.fields; var num = function(k){ return Number(f[k] || 0); };
         return {
@@ -3821,19 +3867,13 @@ async function loadLiveData() {
 
     // --- MetricsSummary (tblfasmXanr8c6ET5) -> live KPI snapshot row ---
     try {
-      var msRecs = await fetchAllRecords(T.metrics, [
-        'Snapshot ID','Total Invoiced','Total Collected','Open Invoice Count','DSO Average',
-        'Diversion Flag Count','Open HSQ Tasks','Today Info Events','Today Warning Events',
-        'Today Critical Events','Today SMS Sent','Today Emails Sent','Last Updated'], pat);
+      var msRecs = __par.msRecs;
       METRICS_SUMMARY = msRecs.length ? msRecs[0].fields : null;
     } catch(e) { METRICS_SUMMARY = null; console.warn('MetricsSummary load failed:', e.message); }
 
     // --- LienDeadlines (tbloK5k8FaiYr7tkb) -> Lien Zone ---
     try {
-      var lienRecs = await fetchAllRecords(T.lienDeadlines, [
-        'Lien Record ID','PSA Job Number','State','Statutory Deadline','System Target Date',
-        'Days Remaining','Lien Mode','Lien Eligible','Lien Filed','Filed Date',
-        'Decision Made By','Decision Date','Notes'], pat);
+      var lienRecs = __par.lienRecs;
       LIEN_DEADLINES = lienRecs.map(function(r){
         var f = r.fields;
         var days = (f['Days Remaining'] === undefined || f['Days Remaining'] === null) ? null : Number(f['Days Remaining']);
@@ -3860,9 +3900,7 @@ async function loadLiveData() {
     // --- Users (tbl7dCGCVGuI1Zjnz) — real roster for the Settings > User Roles table ---
     // SECURITY: the 'Password' field is deliberately NOT requested. It must never reach the browser.
     try {
-      var userRecs = await fetchAllRecords(AIRTABLE_CONFIG.tables.users,
-        ['fld1eBaRuFSDPxKmz','fldxxKtzQAy0sMfDA','fldSjjlgfkHDDhdfz','fld1xE5e1Ocjq4wmr',
-         'fld6XXkPIds6C8qji','fld1EbVIMDoGKOwMl','fldVFKS5Qg2iAzm13','fld9ShwB36fKFih9k'], pat);
+      var userRecs = __par.userRecs;
       USERS = userRecs.map(function(r){
         var f = r.fields;
         return {
