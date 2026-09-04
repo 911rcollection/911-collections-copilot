@@ -955,8 +955,20 @@ function jobAgeDays(j){
 }
 // Bucket key for a job, or null when the job has no aged invoice at all.
 function jobAgeBucketKey(j){var d=jobAgeDays(j);return d===null?null:agingBucket(d)}
-function formatDate(d){if(!d)return'-';return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}
-function formatDateTime(d){if(!d)return'-';const dt=new Date(d);return dt.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}
+function formatDate(d){var t=safeTime(d);if(t===null)return'-';return new Date(t).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}
+function formatDateTime(d){var t=safeTime(d);if(t===null)return'Date missing';var dt=new Date(t);return dt.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})+' '+localTZLabel()}
+// --- Date safety helpers (added 2026-09-04) ---------------------------------
+// Airtable rows with an empty Date arrive here as '' . new Date('') is Invalid
+// Date, and NaN-NaN is NaN, which Array.sort treats as "equal" — so undated
+// rows kept whatever position they happened to hold and appeared to float to
+// the top of the Timeline. These helpers make missing dates explicit and sort
+// them deterministically last instead.
+function safeTime(d){if(d===null||d===undefined||d==='')return null;var t=new Date(d).getTime();return isNaN(t)?null:t}
+function byDateDesc(a,b){var ta=safeTime(a&&a.date),tb=safeTime(b&&b.date);if(ta===null&&tb===null)return 0;if(ta===null)return 1;if(tb===null)return-1;return tb-ta}
+function byDateAsc(a,b){return-byDateDesc(a,b)}
+function byNearest(target){return function(a,b){var ta=safeTime(a&&a.date),tb=safeTime(b&&b.date);if(ta===null&&tb===null)return 0;if(ta===null)return 1;if(tb===null)return-1;return Math.abs(ta-target)-Math.abs(tb-target)}}
+var __tzLabel=null;
+function localTZLabel(){if(__tzLabel!==null)return __tzLabel;try{var p=new Intl.DateTimeFormat('en-US',{timeZoneName:'short'}).formatToParts(new Date()).find(function(x){return x.type==='timeZoneName'});__tzLabel=p?p.value:''}catch(e){__tzLabel=''}return __tzLabel}
 function getRole(){
   if(CURRENT_USER){
     var isGuided=CURRENT_USER.role==='Staff';
@@ -1755,7 +1767,7 @@ function showStepDetail(jobId,stepNum,stepLabel,stepChannel,stepDate){
     7:{subject:'FINAL NOTICE — Payment Required Within 48 Hours',body:'Dear Homeowner,\n\nThis is your final notice. If payment is not received or forwarded within 48 hours, 911 Restoration will proceed with lien filing and potential litigation.\n\nPlease contact us immediately to avoid legal action.'},
     8:{subject:'Legal Escalation — Internal',body:'All automated recovery attempts exhausted. Case escalated to legal team for lien filing and/or litigation proceedings. Full communication history attached.'}
   };
-  var comms=COMMS_LOG.filter(function(c){return c.jobId===jobId}).sort(function(a,b){return new Date(b.date)-new Date(a.date)});
+  var comms=COMMS_LOG.filter(function(c){return c.jobId===jobId}).sort(byDateDesc);
   // For recovery steps, only show OUTBOUND comms (not inbound carrier emails)
   var outboundComms=comms.filter(function(c){
     var dir=(c.direction||'').toLowerCase();
@@ -1781,11 +1793,11 @@ function showStepDetail(jobId,stepNum,stepLabel,stepChannel,stepDate){
         return Math.abs(cd.getTime()-sd.getTime())<=windowMs;
       });
       if(dateFiltered.length>0){
-        dateFiltered.sort(function(a,b){return Math.abs(new Date(a.date).getTime()-sd.getTime())-Math.abs(new Date(b.date).getTime()-sd.getTime())});
+        dateFiltered.sort(byNearest(sd.getTime()));
         stepComms=dateFiltered;
       } else {
         // Closest outbound comm by date
-        channelFiltered.sort(function(a,b){return Math.abs(new Date(a.date).getTime()-sd.getTime())-Math.abs(new Date(b.date).getTime()-sd.getTime())});
+        channelFiltered.sort(byNearest(sd.getTime()));
         stepComms=channelFiltered.slice(0,1);
       }
     } else {
@@ -1867,11 +1879,11 @@ function renderCaseFile(){
   html+='<div class="tabs"><div class="tab '+(caseFileTab==='timeline'?'active':'')+'" onclick="caseFileTab=\'timeline\';renderCaseFile()">Timeline</div><div class="tab '+(caseFileTab==='invoices'?'active':'')+'" onclick="caseFileTab=\'invoices\';renderCaseFile()">Invoices</div><div class="tab '+(caseFileTab==='payments'?'active':'')+'" onclick="caseFileTab=\'payments\';renderCaseFile()">Payments</div><div class="tab '+(caseFileTab==='disputes'?'active':'')+'" onclick="caseFileTab=\'disputes\';renderCaseFile()" style="'+(j.disputeStatus==='Active Dispute'?'color:var(--accent-red);font-weight:700':'')+'">'+ disputeTabLabel +'</div><div class="tab '+(caseFileTab==='contacts'?'active':'')+'" onclick="caseFileTab=\'contacts\';renderCaseFile()">Contacts</div><div class="tab '+(caseFileTab==='actions'?'active':'')+'" onclick="caseFileTab=\'actions\';renderCaseFile()">Actions</div></div>';
 
   if(caseFileTab==='timeline'){
-    var logs=COMMS_LOG.filter(l=>l.jobId===j.id||(l.jobNum&&l.jobNum===j.jobNum)||(j.claimNum&&l.summary&&l.summary.indexOf(j.claimNum)!==-1)).sort((a,b)=>new Date(b.date)-new Date(a.date));
+    var logs=COMMS_LOG.filter(l=>l.jobId===j.id||(l.jobNum&&l.jobNum===j.jobNum)||(j.claimNum&&l.summary&&l.summary.indexOf(j.claimNum)!==-1)).sort(byDateDesc);
     var timelineHeader='';
     if(!logs.length){logs=[];timelineHeader='<div style="padding:16px;background:var(--bg-input);border-radius:var(--radius);color:var(--text-muted);font-size:.95rem">No communications logged for this job yet.</div>'}
     const icons={email:'&#9993;',phone:'&#9742;',sms:'&#128172;',system:'&#9881;',portal:'&#127760;'};
-    html+=logs.length?timelineHeader+logs.map(l=>'<div class="activity-item"><div class="activity-icon '+l.channel+'">'+(icons[l.channel]||'')+'</div><div style="flex:1"><div style="display:flex;justify-content:space-between"><strong style="font-size:1rem">'+l.subject+'</strong><span class="badge badge-'+(l.direction==='Inbound'?'green':'blue')+'">'+l.direction+'</span></div><div class="activity-text" style="margin-top:4px">'+l.summary+'</div><div class="activity-meta">'+formatDateTime(l.date)+' · '+l.agent+' · '+l.channel+'</div></div></div>').join(''):timelineHeader;
+    html+=logs.length?timelineHeader+logs.map(l=>'<div class="activity-item"><div class="activity-icon '+l.channel+'">'+(icons[l.channel]||'')+'</div><div style="flex:1"><div style="display:flex;justify-content:space-between"><strong style="font-size:1rem">'+l.subject+'</strong><span class="badge badge-'+(l.direction==='Inbound'?'green':'blue')+'">'+l.direction+'</span></div><div class="activity-text" style="margin-top:4px">'+l.summary+'</div><div class="activity-meta">'+(safeTime(l.date)===null?'<span style="color:#c0392b;font-weight:600">Date missing</span>':formatDateTime(l.date))+' · '+(l.agent||'Unknown')+' · '+(l.channel||'unknown')+'</div></div></div>').join(''):timelineHeader;
   }else if(caseFileTab==='invoices'){
     const invs=caseFileShowAll?filterByOffice(INVOICES):INVOICES.filter(i=>i.jobId===j.id);
     var invJobCol=caseFileShowAll?'<th>Job #</th>':'';
@@ -2353,7 +2365,7 @@ function generateStatement(jobId){
   doc.text('Communications Timeline',marginL,y);
   y+=2;y=addLine(y,blue);y+=2;
 
-  var jobComms=COMMS_LOG.filter(function(l){return l.jobId===j.id||(l.jobNum&&l.jobNum===j.jobNum)||(j.claimNum&&l.summary&&l.summary.indexOf(j.claimNum)!==-1);}).sort(function(a,b){return new Date(b.date)-new Date(a.date);}).slice(0,15);
+  var jobComms=COMMS_LOG.filter(function(l){return l.jobId===j.id||(l.jobNum&&l.jobNum===j.jobNum)||(j.claimNum&&l.summary&&l.summary.indexOf(j.claimNum)!==-1);}).sort(byDateDesc).slice(0,15);
   if(jobComms.length>0){
     doc.autoTable({
       startY:y,
