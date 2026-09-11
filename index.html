@@ -1588,6 +1588,66 @@ function hsqStatusLabel(v) {
   var m = { OPEN:'Open', IN_PROGRESS:'In Progress', DONE:'Done', SNOOZED:'Snoozed' };
   return m[hsqStatus(v)] || hsqStatus(v);
 }
+
+// 2026-09-10: escape anything that arrived from an external mailbox before it
+// goes into innerHTML. Carrier and homeowner email bodies were injected raw.
+function ccEscHtml(s){
+  return String(s==null?'':s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// 2026-09-10 (Moshe): show the one-line summary, keep the full note one click
+// away rather than printing the whole email into the timeline.
+function ccTimelineEntry(l){
+  var line=(l.aiSummary||'').trim()||(l.logEntry||'').trim()||(l.subject||'').trim()||'(no summary)';
+  var body=(l.body||'').trim();
+  var out='<div class="activity-text" style="margin-top:4px">'+ccEscHtml(line)+'</div>';
+  if(body&&body!==line){
+    out+='<details style="margin-top:6px"><summary style="cursor:pointer;font-size:.85rem;color:var(--text-muted);user-select:none">Show full note</summary>'
+      +'<div style="margin-top:6px;padding:10px 12px;background:rgba(255,255,255,.04);border-radius:6px;white-space:pre-wrap;font-size:.9rem;line-height:1.5">'+ccEscHtml(body)+'</div></details>';
+  }
+  return out;
+}
+
+// 2026-09-10: Days Outstanding is only set on invoice-derived tasks, so every
+// other task read "Age not recorded". Fall back to Created At.
+function hsqAgeLabel(t){
+  if(t&&typeof t.daysOpen==='number'&&t.daysOpen>0) return t.daysOpen+' days open';
+  var c=t&&t.createdAt;
+  if(c){
+    var ms=new Date(c).getTime();
+    if(!isNaN(ms)){
+      var d=Math.floor((Date.now()-ms)/86400000);
+      if(d<=0) return 'opened today';
+      if(d===1) return '1 day open';
+      return d+' days open';
+    }
+  }
+  return 'Age not recorded';
+}
+
+// 2026-09-10 (Moshe): "after clicking Take Action the alert is still present".
+// Mark it picked up, shared across users. It dims and sorts down but is NOT
+// removed - work in progress must stay visible until it is actually resolved.
+function acknowledgeTask(recId){
+  if(!recId) return;
+  var t=(STRIKE_QUEUE||[]).find(function(x){return x.recId===recId||x.id===recId;});
+  if(t&&hsqStatus(t.status)==='IN_PROGRESS') return;
+  if(t) t.status='IN_PROGRESS';
+  try{ updateMyTasksBadge(); }catch(e){}
+  var pat=getAirtablePAT();
+  if(!pat||String(recId).indexOf('rec')!==0) return;
+  fetch(AIRTABLE_CONFIG.apiUrl+'/'+AIRTABLE_CONFIG.baseId+'/'+AIRTABLE_CONFIG.tables.hsq+'/'+recId,{
+    method:'PATCH',headers:{'Authorization':'Bearer '+pat,'Content-Type':'application/json'},
+    body:JSON.stringify({typecast:false,fields:{'Status':'IN_PROGRESS'}})
+  }).then(function(r){ if(!r.ok) throw new Error('PATCH '+r.status); })
+   .catch(function(e){
+     if(t) t.status='OPEN';
+     try{ updateMyTasksBadge(); }catch(e2){}
+     showToast('Could not mark task as picked up: '+e.message,'error');
+   });
+}
 function renderStrikeQueue(){
 
   const r=getRole();
@@ -1602,7 +1662,7 @@ function renderStrikeQueue(){
   $('strikeQueueList').innerHTML=tasks.map(t=>{
     const sb=hsqStatus(t.status)==='IN_PROGRESS'?'badge-blue':'badge-gray';
     const pc=t.priority==='P1'?'red':t.priority==='P2'?'orange':'blue';
-    return '<div class="task-card" id="task-'+t.id+'" onclick="toggleTask(\''+t.id+'\')"><div class="task-card-header"><div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0"><span class="priority-'+(t.priority||'P3').toLowerCase()+'">'+t.priority+'</span><div style="min-width:0"><strong>'+(t.taskType||'Untyped task')+'</strong><div style="font-size:.95rem;color:var(--text-muted)">'+t.id+' · '+t.jobNum+'</div></div></div><div style="display:flex;align-items:center;gap:12px"><span class="badge '+sb+'">'+hsqStatusLabel(t.status)+'</span><span style="font-size:1.1rem;font-weight:700;color:var(--accent-'+pc+')">'+(t.amount?fmt(t.amount):'\u2014')+'</span></div></div><div class="task-card-meta"><span>&#128100; '+(t.assignedTo||'Unassigned')+'</span><span>&#128197; '+(t.daysOpen?t.daysOpen+' days open':'Age not recorded')+'</span><span>&#127970; '+(t.office||'\u2014')+'</span></div><div class="task-card-body"><p style="font-size:1rem;color:var(--text-secondary);margin-bottom:12px">'+(t.description||'No description recorded on the Airtable task.')+'</p>'+(t.callNotes?'<div style="margin-bottom:12px"><strong style="font-size:.95rem">Call Notes:</strong><p style="font-size:1rem;color:var(--text-secondary)">'+t.callNotes+'</p></div>':'')+'<div style="display:flex;gap:8px;flex-wrap:wrap">'+(hsqStatus(t.status)!=='IN_PROGRESS'?'<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();startTask(\''+t.id+'\')">&#9742; Start Call</button>':'')+'<button class="btn btn-success btn-sm" onclick="event.stopPropagation();resolveTask(\''+t.id+'\')">&#10003; Resolve</button><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openCaseFile(\''+t.jobId+'\')">&#128193; View Case</button>'+(isGuided?'<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();showGuidedHelp(\''+t.id+'\')">&#128161; What Should I Do?</button>':'')+'</div></div></div>';
+    return '<div class="task-card" id="task-'+t.id+'" onclick="toggleTask(\''+t.id+'\')"><div class="task-card-header"><div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0"><span class="priority-'+(t.priority||'P3').toLowerCase()+'">'+t.priority+'</span><div style="min-width:0"><strong>'+(t.taskType||'Untyped task')+'</strong><div style="font-size:.95rem;color:var(--text-muted)">'+t.id+' · '+t.jobNum+'</div></div></div><div style="display:flex;align-items:center;gap:12px"><span class="badge '+sb+'">'+hsqStatusLabel(t.status)+'</span><span style="font-size:1.1rem;font-weight:700;color:var(--accent-'+pc+')">'+(t.amount?fmt(t.amount):'\u2014')+'</span></div></div><div class="task-card-meta"><span>&#128100; '+(t.assignedTo||'Unassigned')+'</span><span>&#128197; '+hsqAgeLabel(t)+'</span><span>&#127970; '+(t.office||'\u2014')+'</span></div>'+(t.actionNeeded?'<div style="margin-top:10px;padding:8px 12px;background:rgba(255,255,255,.05);border-left:3px solid var(--accent-'+pc+');border-radius:6px;font-size:.95rem;color:var(--text-secondary);line-height:1.45">'+ccEscHtml(t.actionNeeded)+'</div>':'')+'<div class="task-card-body">'+(t.description?'<div style="font-size:.78rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:6px">Full detail</div><p style="font-size:.95rem;color:var(--text-secondary);margin-bottom:12px;white-space:pre-wrap;line-height:1.55">'+ccEscHtml(t.description)+'</p>':'<p style="font-size:.95rem;color:var(--text-muted);margin-bottom:12px">No further detail recorded on the Airtable task.</p>')+(t.callNotes?'<div style="margin-bottom:12px"><strong style="font-size:.95rem">Call Notes:</strong><p style="font-size:1rem;color:var(--text-secondary)">'+t.callNotes+'</p></div>':'')+'<div style="display:flex;gap:8px;flex-wrap:wrap">'+(hsqStatus(t.status)!=='IN_PROGRESS'?'<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();startTask(\''+t.id+'\')">&#9742; Start Call</button>':'')+'<button class="btn btn-success btn-sm" onclick="event.stopPropagation();resolveTask(\''+t.id+'\')">&#10003; Resolve</button><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openCaseFile(\''+t.jobId+'\')">&#128193; View Case</button>'+(isGuided?'<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();showGuidedHelp(\''+t.id+'\')">&#128161; What Should I Do?</button>':'')+'</div></div></div>';
   }).join('');
 }
 function toggleTask(id){var el=document.getElementById('task-'+id);if(el)el.classList.toggle('expanded')}
@@ -1883,7 +1943,7 @@ function renderCaseFile(){
     var timelineHeader='';
     if(!logs.length){logs=[];timelineHeader='<div style="padding:16px;background:var(--bg-input);border-radius:var(--radius);color:var(--text-muted);font-size:.95rem">No communications logged for this job yet.</div>'}
     const icons={email:'&#9993;',phone:'&#9742;',sms:'&#128172;',system:'&#9881;',portal:'&#127760;'};
-    html+=logs.length?timelineHeader+logs.map(l=>'<div class="activity-item"><div class="activity-icon '+l.channel+'">'+(icons[l.channel]||'')+'</div><div style="flex:1"><div style="display:flex;justify-content:space-between"><strong style="font-size:1rem">'+l.subject+'</strong><span class="badge badge-'+(l.direction==='Inbound'?'green':'blue')+'">'+l.direction+'</span></div><div class="activity-text" style="margin-top:4px">'+l.summary+'</div><div class="activity-meta">'+(safeTime(l.date)===null?'<span style="color:#c0392b;font-weight:600">Date missing</span>':formatDateTime(l.date))+' · '+(l.agent||'Unknown')+' · '+(l.channel||'unknown')+'</div></div></div>').join(''):timelineHeader;
+    html+=logs.length?timelineHeader+logs.map(l=>'<div class="activity-item"><div class="activity-icon '+l.channel+'">'+(icons[l.channel]||'')+'</div><div style="flex:1"><div style="display:flex;justify-content:space-between"><strong style="font-size:1rem">'+l.subject+'</strong><span class="badge badge-'+(l.direction==='Inbound'?'green':'blue')+'">'+l.direction+'</span></div>'+ccTimelineEntry(l)+'<div class="activity-meta">'+(safeTime(l.date)===null?'<span style="color:#c0392b;font-weight:600">Date missing</span>':formatDateTime(l.date))+' · '+(l.agent||'Unknown')+' · '+(l.channel||'unknown')+'</div></div></div>').join(''):timelineHeader;
   }else if(caseFileTab==='invoices'){
     const invs=caseFileShowAll?filterByOffice(INVOICES):INVOICES.filter(i=>i.jobId===j.id);
     var invJobCol=caseFileShowAll?'<th>Job #</th>':'';
@@ -3377,9 +3437,9 @@ async function loadLiveData() {
         'Client Name','Phone','Email','Preferred Contact Channel','Do Not Contact',
         'SMS Opt Out','SMS Consent','SMS Consent Date','SMS Consent Request Sent',
         'Consented Mobile Number','SMS Opt-Out Date','Preferred Language'], pat),
-      fetchAllRecords(T.commsLog, ['Linked Job','Channel','Direction','Subject','Message','Date','Logged By','Log Entry','Scenario Name'], pat),
+      fetchAllRecords(T.commsLog, ['Linked Job','Channel','Direction','Subject','Message','Date','Logged By','Log Entry','Scenario Name','AI Summary'], pat),
       fetchAllRecords(T.payments, ['Amount','Payment Date','Jobs','PSA Job Number','Paid To','Expected Payee','Diversion Flag','Source','Claim Number','Recovery Status','Recovery Step','Payment ID','Diversion Type'], pat),
-      fetchAllRecords(T.hsq, ['Task ID','Jobs','PSA Job Number','Task Type','Priority','Description','Status','Due Date','Assignee','Escalation Level','Amount at Stake','Days Outstanding'], pat),
+      fetchAllRecords(T.hsq, ['Task ID','Jobs','PSA Job Number','Task Type','Priority','Description','Action Needed','Status','Due Date','Assignee','Escalation Level','Amount at Stake','Days Outstanding','Created At'], pat),
       fetchAllRecords(T.errorLog, ['Timestamp','Scenario Name','Module Name','Severity','Error Message','Resolved','Error Type','Source'], pat),
       fetchAllRecords('tbloXKsztyfjrrFF6', ['Domain','Organization Name','Type','Active','Added Date'], pat),
       fetchAllRecords('tbl1vSkWPrLwbxEn3', ['Holiday Name','Date','Year','Notes'], pat),
@@ -3576,6 +3636,9 @@ async function loadLiveData() {
           direction: f['Direction'] || 'Outbound',
           subject: f['Subject'] || f['Log Entry'] || '',
           summary: f['Message'] || f['Log Entry'] || '',
+          aiSummary: f['AI Summary'] || '',
+          logEntry: f['Log Entry'] || '',
+          body: f['Message'] || '',
           date: f['Date'] || '',
           agent: f['Logged By'] || f['Scenario Name'] || 'System'
         };
@@ -3690,6 +3753,8 @@ async function loadLiveData() {
           daysOpen: num(f['Days Outstanding']),
           amount: num(f['Amount at Stake']),
           description: f['Description'] || '',
+          actionNeeded: f['Action Needed'] || '',
+          createdAt: f['Created At'] || r.createdTime || '',
           callNotes: '',
           outcome: ''
         };
@@ -4737,11 +4802,13 @@ function getStrikeQueueTasks() {
         if (tt === 'PHONE_ESCALATION') return 'Escalated call — previous attempts failed. Try alternate contacts or supervisor.';
         if (tt === 'FINAL_NOTICE') return 'Send final demand notice before legal action. Last chance for voluntary payment.';
         if (tt === 'LEGAL_REVIEW') return 'Review with legal team. Prepare documentation for potential litigation.';
-        return t.description ? t.description.substring(0, 120) : 'Review case file and take appropriate follow-up action.';
+        return t.actionNeeded ? t.actionNeeded : (t.description ? t.description.substring(0, 120) : 'Review case file and take appropriate follow-up action.');
       })(),
       urgency: t.priority === 'P1' ? 0 : t.priority === 'P2' ? 1 : 2,
       navigateFn: "openCaseFile('" + (t.jobId||'') + "')",
-      jobId: t.jobId
+      jobId: t.jobId,
+      hsqRecId: t.recId || '',
+      pickedUp: hsqStatus(t.status) === 'IN_PROGRESS'
     });
   });
   return tasks;
@@ -4888,7 +4955,7 @@ function renderMyTaskCard(item) {
   };
   var srcColor = sourceColors[item.source] || 'var(--accent-blue)';
 
-  var html = '<div class="my-task-card urgency-' + item.urgency + '" onclick="' + item.navigateFn + '" style="cursor:pointer">';
+  var html = '<div class="my-task-card urgency-' + item.urgency + '" onclick="' + (item.hsqRecId ? "acknowledgeTask('" + item.hsqRecId + "');" : '') + item.navigateFn + '" style="cursor:pointer' + (item.pickedUp ? ';opacity:.55' : '') + '">';
 
   // Left color stripe is handled by CSS, but add the source pill
   html += '<div style="display:flex;gap:16px;align-items:flex-start;width:100%">';
@@ -4903,6 +4970,7 @@ function renderMyTaskCard(item) {
   html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">';
   html += '<span style="background:' + srcColor + ';color:#fff;padding:2px 10px;border-radius:12px;font-size:.75rem;font-weight:600;white-space:nowrap">' + item.source + '</span>';
   html += '<strong style="font-size:1rem">' + item.title + '</strong>';
+  if (item.pickedUp) html += '<span style="background:var(--accent-green);color:#fff;padding:2px 8px;border-radius:10px;font-size:.7rem;font-weight:700;white-space:nowrap">PICKED UP</span>';
   html += '</div>';
 
   // Row 2: Subtitle (job details)
@@ -4926,7 +4994,7 @@ function renderMyTaskCard(item) {
   if (dueHtml) {
     html += '<div style="font-size:.8rem;color:var(--text-muted)">Due: ' + dueHtml + '</div>';
   }
-  html += '<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();' + item.navigateFn + '" style="margin-top:4px;white-space:nowrap">&#8594; Take Action</button>';
+  html += '<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();' + (item.hsqRecId ? "acknowledgeTask('" + item.hsqRecId + "');" : '') + item.navigateFn + '" style="margin-top:4px;white-space:nowrap">' + (item.pickedUp ? '&#8594; Open' : '&#8594; Take Action') + '</button>';
   html += '</div>';
 
   html += '</div>'; // end flex row
@@ -4945,6 +5013,7 @@ function renderMyTasks() {
 
   // Sort within urgency: amount descending
   allItems.sort(function(a, b) {
+    if (!!a.pickedUp !== !!b.pickedUp) return a.pickedUp ? 1 : -1;
     if (a.urgency !== b.urgency) return a.urgency - b.urgency;
     return (b.amount||0) - (a.amount||0);
   });
@@ -4964,7 +5033,7 @@ function renderMyTasks() {
     tiers[u].push(item);
   });
 
-  var critical = tiers[0].length, today = tiers[1].length;
+  var critical = tiers[0].filter(function(x){return !x.pickedUp;}).length, today = tiers[1].filter(function(x){return !x.pickedUp;}).length;
   var total = allItems.length;
   var subtitle = total + ' action item' + (total !== 1 ? 's' : '') + ' · ' + (critical + today) + ' urgent';
   var sub = document.getElementById('myTasksSubtitle');
@@ -4994,8 +5063,8 @@ function renderMyTasks() {
 function updateMyTasksBadge() {
   try {
     var critical = 0, today = 0;
-    try { critical = getStrikeQueueTasks().filter(function(t){return t.urgency===0;}).length + getLienZoneTasks().filter(function(t){return t.urgency===0;}).length + getDisputeTasks().filter(function(t){return t.urgency===0;}).length + getDiversionTasks().filter(function(t){return t.urgency===0;}).length + getInfoRequestTasks().filter(function(t){return t.urgency===0;}).length; } catch(e){}
-    try { today = getStrikeQueueTasks().filter(function(t){return t.urgency===1;}).length + getLienZoneTasks().filter(function(t){return t.urgency===1;}).length + getDisputeTasks().filter(function(t){return t.urgency===1;}).length + getDiversionTasks().filter(function(t){return t.urgency===1;}).length + getAIInboxTasks().filter(function(t){return t.urgency===1;}).length + getInfoRequestTasks().filter(function(t){return t.urgency===1;}).length; } catch(e){}
+    try { critical = getStrikeQueueTasks().filter(function(t){return t.urgency===0&&!t.pickedUp;}).length + getLienZoneTasks().filter(function(t){return t.urgency===0;}).length + getDisputeTasks().filter(function(t){return t.urgency===0;}).length + getDiversionTasks().filter(function(t){return t.urgency===0;}).length + getInfoRequestTasks().filter(function(t){return t.urgency===0;}).length; } catch(e){}
+    try { today = getStrikeQueueTasks().filter(function(t){return t.urgency===1&&!t.pickedUp;}).length + getLienZoneTasks().filter(function(t){return t.urgency===1;}).length + getDisputeTasks().filter(function(t){return t.urgency===1;}).length + getDiversionTasks().filter(function(t){return t.urgency===1;}).length + getAIInboxTasks().filter(function(t){return t.urgency===1;}).length + getInfoRequestTasks().filter(function(t){return t.urgency===1;}).length; } catch(e){}
     var count = critical + today;
     var badge = document.getElementById('myTasksBadge');
     if (badge) {
