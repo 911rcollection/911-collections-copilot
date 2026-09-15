@@ -2942,9 +2942,14 @@ function openAIEmailDetail(id) {
     '<div class="card" style="margin-bottom:16px"><div style="padding:16px">' +
     '<h3 style="margin:0 0 8px">Subject</h3><p style="margin:0">' + (entry.subject || '—') + '</p>' +
     '</div></div>' +
+    (entry.aiSummary ? '<div class="card" style="margin-bottom:16px"><div style="padding:16px">' +
+      '<h3 style="margin:0 0 8px">AI Summary</h3>' +
+      '<p style="margin:0;white-space:pre-wrap">' + ccEscHtml(entry.aiSummary) + '</p>' +
+      (entry.aiClassified ? '' : '<p style="margin:8px 0 0;font-size:.8rem;color:var(--text-secondary)">Summarised after the fact — S-03 did not classify this email, so the intent above is inferred from the summary text.</p>') +
+      '</div></div>' : '') +
     '<div class="card"><div style="padding:16px">' +
-    '<h3 style="margin:0 0 8px">AI Summary / Body Preview</h3>' +
-    '<p style="margin:0;white-space:pre-wrap">' + (entry.bodyPreview || '—') + '</p>' +
+    '<h3 style="margin:0 0 8px">Message Body</h3>' +
+    '<p style="margin:0;white-space:pre-wrap">' + ccEscHtml(entry.bodyPreview || '—') + '</p>' +
     '</div></div>' +
     '<div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">' +
     (entry.jobId || entry.jobNum ? '<button class="btn btn-primary" onclick="closeModal();openCaseFile(\'' + (entry.jobNum || entry.jobId) + '\')">Open Case File</button>' : '') +
@@ -3394,7 +3399,7 @@ async function fetchAllRecords(tableId, fields, pat) {
 // Fetch inbound CommsLog rows (AI Inbox) by field ID for a stable, name-independent mapping.
 // S-03 writes inbound adjuster replies with Direction="Inbound" and an AI classification token.
 async function fetchInboxRecords(pat) {
-  var fieldIds = ['fldC5yKRoKAA8SLqJ','fldU8wXKv2BxO6u7g','flddP3G9xSdHDuAjZ','fldMn3S6fSmxeYfJX','fldSWOh9ghfk1F4pC','fldOYqQER3Dd9B3mC','fldrrZFBMpVhtJ9D1','fldVQaKNe6xKZxdGV','fldBJZcdmd3gxOBug','fldCda3Gw31lFFLX9'];
+  var fieldIds = ['fldC5yKRoKAA8SLqJ','fldU8wXKv2BxO6u7g','flddP3G9xSdHDuAjZ','fldMn3S6fSmxeYfJX','fldSWOh9ghfk1F4pC','fldOYqQER3Dd9B3mC','fldrrZFBMpVhtJ9D1','fldVQaKNe6xKZxdGV','fldBJZcdmd3gxOBug','fldCda3Gw31lFFLX9','fldpHekSAtK2J7Ov0'];
   var allRecords = [];
   var offset = null;
   var params = new URLSearchParams();
@@ -3659,7 +3664,11 @@ async function loadLiveData() {
       AI_INBOX = inboxRecs.map(function(r) {
         var f = r.fields;
         // Classification token lives in the AI summary field (fldSWOh9ghfk1F4pC); fall back to body / subject.
-        var classifySrc = ((f['fldSWOh9ghfk1F4pC'] || '') + ' ' + (f['fldOYqQER3Dd9B3mC'] || '') + ' ' + (f['fldMn3S6fSmxeYfJX'] || '')).toUpperCase();
+        // 2026-09-11: AI Summary (fldpHekSAtK2J7Ov0) added to the classification source.
+        // Rows written by S-03B (the audit safety-net) carry no Outcome and no intent token,
+        // so every one of them fell through to "no clear response". The hourly AI Summary
+        // automation does read those rows, so its prose is the only signal available here.
+        var classifySrc = ((f['fldSWOh9ghfk1F4pC'] || '') + ' ' + (f['fldOYqQER3Dd9B3mC'] || '') + ' ' + (f['fldMn3S6fSmxeYfJX'] || '') + ' ' + (f['fldpHekSAtK2J7Ov0'] || '')).toUpperCase();
         // 2026-09-02: token list now mirrors S-03's actual intent vocabulary.
         // It previously looked for INFO_REQUEST while S-03 emits INFORMATION_REQUEST,
         // and had no entry for PARTIAL_AGREEMENT — so both fell through to
@@ -3678,6 +3687,14 @@ async function loadLiveData() {
         else if (classifySrc.indexOf('ADJUSTER_WILL_RESPOND') !== -1 || classifySrc.indexOf('WILL_RESPOND') !== -1 || classifySrc.indexOf('WILL RESPOND') !== -1) outcome = 'will respond';
         else if (classifySrc.indexOf('OUT_OF_OFFICE') !== -1 || classifySrc.indexOf('OUT OF OFFICE') !== -1) outcome = 'out of office';
         else if (classifySrc.indexOf('INFO_REQUEST') !== -1 || classifySrc.indexOf('INFO REQUEST') !== -1) outcome = 'info request';
+        // Prose fallbacks — these read the AI Summary's own wording, not an intent token.
+        // Only reached when S-03 never classified the row (S-03B safety-net captures).
+        else if (/\bOUT OF (THE )?OFFICE\b|\bWILL RETURN\b|\bRETURNS? (ON |NEXT )|\bUPON (HIS|HER|THEIR) RETURN\b|\bAWAITING [A-Z. ]{0,20}RETURN\b/.test(classifySrc)) outcome = 'out of office';
+        else if (/\bDISPUT|\bDISAGREE|\bTOO HIGH\b|\bBENCHMARK/.test(classifySrc)) outcome = 'disputing claim';
+        else if (/\bREQUEST(S|ED|ING)?( FOR)?( THE| A| FURTHER| ADDITIONAL)* (FINAL REPORT|BREAKDOWN|CLARIFICATION|DOCUMENT)/.test(classifySrc)) outcome = 'info request';
+        else if (/\bPAYMENT (HAS BEEN |WAS )?(ISSUED|MAILED|SENT|RELEASED)\b|\bCHECK (HAS BEEN |WAS )?(MAILED|ISSUED)/.test(classifySrc)) outcome = 'payment confirmed';
+        else if (/\bWILL (REVIEW|RESPOND|GET BACK|FOLLOW UP)\b|\bUNDER (ACTIVE )?REVIEW\b|\bREVIEWING\b/.test(classifySrc)) outcome = 'will respond';
+        var aiSummary = (f['fldpHekSAtK2J7Ov0'] || '').toString().trim();
         var body = f['fldOYqQER3Dd9B3mC'] || '';
         var senderEmail = f['flddP3G9xSdHDuAjZ'] || '';
         var senderName = f['fldU8wXKv2BxO6u7g'] || (senderEmail ? senderEmail.split('@')[0] : '');
@@ -3691,6 +3708,8 @@ async function loadLiveData() {
           subject: f['fldMn3S6fSmxeYfJX'] || '',
           bodyPreview: body,
           body: body,
+          aiSummary: aiSummary,
+          aiClassified: !!stored,
           outcome: outcome,
           deliveryStatus: f['fldrrZFBMpVhtJ9D1'] || 'RECEIVED',
           date: f['fldVQaKNe6xKZxdGV'] || '',
@@ -4905,10 +4924,18 @@ function getAIInboxTasks() {
       subtitle: (e.senderName||e.senderEmail||'Unknown') + (e.jobNum ? ' · ' + e.jobNum : ''),
       amount: 0,
       dueDate: e.date,
-      nextAction: outcomeLower.indexOf('payment confirmed') !== -1 ? 'Log confirmed payment in system' :
+      // 2026-09-11: the card used to print one of five canned strings keyed on outcome.
+      // Because S-03B rows carry no Outcome, every card read "Review email and determine
+      // next action" — the same sentence on every task, which is no analysis at all.
+      // The per-email AI Summary is the analysis; the ladder is now only the fallback.
+      nextAction: (e.aiSummary && e.aiSummary.length > 20) ? e.aiSummary :
+                  outcomeLower.indexOf('payment confirmed') !== -1 ? 'Log confirmed payment in system' :
                   outcomeLower.indexOf('payment promised') !== -1 ? 'Set follow-up reminder for promised payment' :
-                  outcomeLower.indexOf('requesting') !== -1 ? 'Gather requested docs and respond to carrier' :
-                  outcomeLower.indexOf('disput') !== -1 ? 'Open dispute workflow' : 'Review email and determine next action',
+                  outcomeLower.indexOf('requesting') !== -1 || outcomeLower.indexOf('info req') !== -1 ? 'Gather requested docs and respond to carrier' :
+                  outcomeLower.indexOf('disput') !== -1 ? 'Open dispute workflow' :
+                  outcomeLower.indexOf('out of office') !== -1 ? 'Adjuster is away — confirm the return date and hold the cadence' :
+                  outcomeLower.indexOf('will respond') !== -1 ? 'Carrier said it will respond — set a follow-up date' :
+                  'Not yet classified by S-03 — open the email and decide the next step',
       urgency: daysOld > 2 ? 1 : 3,
       navigateFn: "openAIEmailDetail('" + e.id + "');navigate('ai-inbox')",
       jobId: e.jobId
