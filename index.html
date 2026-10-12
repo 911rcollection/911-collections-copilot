@@ -1844,6 +1844,14 @@ function renderARTable(){
   else{$('arGuidedMode').innerHTML=''}
   applyARFilters();
 }
+// 2026-10-12 (Moshe): client name + copyable claim number in AR aging; client link in AI inbox.
+function ccJobOf(id){ if(!id||typeof JOBS==='undefined') return null; return JOBS.find(function(x){return x.id===id;})||null; }
+function ccClientName(jobId){ var j=ccJobOf(jobId); var n=j&&j.homeowner?String(j.homeowner).trim():''; return n?ccEscHtml(n):'&mdash;'; }
+function ccClaimOf(jobId,fallback){ var j=ccJobOf(jobId); return String((j&&j.claimNum)||fallback||'').trim(); }
+function ccClaimCell(claim){ var c=String(claim||'').trim(); if(!c) return '&mdash;'; var s=ccEscHtml(c); return '<span style="white-space:nowrap">'+s+' <button class="icon-btn" type="button" title="Copy claim number" aria-label="Copy claim number '+s+'" data-claim="'+s+'" onclick="event.stopPropagation();ccCopyClaim(this)" style="padding:2px 4px;vertical-align:middle">&#128203;</button></span>'; }
+function ccCopyClaim(btn){ var c=String(btn.getAttribute('data-claim')||'').trim(); var done=function(){ btn.innerHTML='&#10003;'; setTimeout(function(){ btn.innerHTML='&#128203;'; },1200); };
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(c).then(done,function(){ ccCopyFallback(c); done(); }); } else { ccCopyFallback(c); done(); } }
+function ccCopyFallback(c){ var t=document.createElement('textarea'); t.value=c; t.style.position='fixed'; t.style.opacity='0'; document.body.appendChild(t); t.select(); try{ document.execCommand('copy'); }catch(e){} document.body.removeChild(t); }
 function applyARFilters(){
   const r=getRole();const isGuided=r.mode==='Guided';
   // SCOPE GATE (see renderARTable): only invoices whose job is in the system.
@@ -1860,9 +1868,9 @@ function applyARFilters(){
   var paged=filtered.slice(arPage*AR_PAGE_SIZE,(arPage+1)*AR_PAGE_SIZE);
   var pager=totalCount>AR_PAGE_SIZE?'<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;font-size:.95rem"><span>Showing '+(arPage*AR_PAGE_SIZE+1)+'–'+Math.min((arPage+1)*AR_PAGE_SIZE,totalCount)+' of '+totalCount+'</span><div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="arPage--;applyARFilters()" '+(arPage<=0?'disabled':'')+'>&#9664; Prev</button><button class="btn btn-secondary btn-sm" onclick="arPage++;applyARFilters()" '+(arPage>=totalPages-1?'disabled':'')+'>Next &#9654;</button></div></div>':'';
   if(isGuided){
-    $('arTableContainer').innerHTML=pager+'<table><thead><tr><th>Job #</th><th>Carrier</th><th>Status</th><th>Days Out</th><th>Amount Due</th><th>Action</th></tr></thead><tbody>'+paged.map(inv=>'<tr class="row-'+agingColor(inv.effectiveDaysOut||inv.daysOut)+'"><td>'+inv.jobNum+'</td><td>'+inv.carrier+'</td><td><span class="badge '+arStatusClass(inv.status)+'">'+inv.status+'</span></td><td data-sort="'+(inv.effectiveDaysOut||inv.daysOut)+'" style="white-space:nowrap"><span class="age-dot age-'+agingColor(inv.effectiveDaysOut||inv.daysOut)+'"></span>'+(inv.effectiveDaysOut||inv.daysOut)+' days'+(inv.agingPaused?' <span title="Aging paused" style="color:var(--accent-yellow)">&#9208;</span>':'')+' </td><td data-sort="'+inv.amtDue+'">'+fmt(inv.amtDue)+'</td><td><button class="btn btn-primary btn-sm" onclick="openCaseFile(\''+inv.jobId+'\')">Open case file</button></td></tr>').join('')+'</tbody></table>'+pager;
+    $('arTableContainer').innerHTML=pager+'<table><thead><tr><th>Job #</th><th>Client</th><th>Claim #</th><th>Carrier</th><th>Status</th><th>Days Out</th><th>Amount Due</th><th>Action</th></tr></thead><tbody>'+paged.map(inv=>'<tr class="row-'+agingColor(inv.effectiveDaysOut||inv.daysOut)+'"><td>'+inv.jobNum+'</td><td>'+ccClientName(inv.jobId)+'</td><td>'+ccClaimCell(ccClaimOf(inv.jobId,inv.claimNum))+'</td><td>'+inv.carrier+'</td><td><span class="badge '+arStatusClass(inv.status)+'">'+inv.status+'</span></td><td data-sort="'+(inv.effectiveDaysOut||inv.daysOut)+'" style="white-space:nowrap"><span class="age-dot age-'+agingColor(inv.effectiveDaysOut||inv.daysOut)+'"></span>'+(inv.effectiveDaysOut||inv.daysOut)+' days'+(inv.agingPaused?' <span title="Aging paused" style="color:var(--accent-yellow)">&#9208;</span>':'')+' </td><td data-sort="'+inv.amtDue+'">'+fmt(inv.amtDue)+'</td><td><button class="btn btn-primary btn-sm" onclick="openCaseFile(\''+inv.jobId+'\')">Open case file</button></td></tr>').join('')+'</tbody></table>'+pager;
   }else{
-    $('arTableContainer').innerHTML=pager+'<table><thead><tr><th>Job #</th><th>Carrier</th><th>Office</th><th>Status</th><th>Days Out</th><th>Amount Due</th><th>Paid</th><th>Escalation</th><th>Last Contact</th><th class="no-sort" style="text-align:right">Actions</th></tr></thead><tbody>'+paged.map(inv=>'<tr class="row-'+agingColor(inv.effectiveDaysOut||inv.daysOut)+'" style="cursor:pointer" onclick="openCaseFile(\''+inv.jobId+'\')"><td><strong>'+inv.jobNum+'</strong><div class="cell-sub">'+inv.id+'</div></td><td>'+inv.carrier+'</td><td>'+inv.office+'</td><td><span class="badge '+arStatusClass(inv.status)+'">'+inv.status+'</span></td><td data-sort="'+(inv.effectiveDaysOut||inv.daysOut)+'" style="white-space:nowrap"><span class="age-dot age-'+agingColor(inv.effectiveDaysOut||inv.daysOut)+'"></span>'+(inv.effectiveDaysOut||inv.daysOut)+' days'+(inv.agingPaused?' <span title="Aging paused" style="color:var(--accent-yellow)">&#9208;</span>':'')+' </td><td data-sort="'+inv.amtDue+'">'+fmt(inv.amtDue)+'</td><td data-sort="'+inv.amtPaid+'">'+fmt(inv.amtPaid)+'</td><td>'+inv.escalationLevel+'</td><td>'+formatDate(inv.lastContact)+'</td><td class="row-actions"><button class="icon-btn" type="button" title="Log a call" aria-label="Log a call for '+inv.jobNum+'" onclick="event.stopPropagation();openCallLog(\''+inv.jobId+'\')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2"/></svg></button><button class="icon-btn" type="button" title="Open the Actions tab" aria-label="Open the Actions tab for '+inv.jobNum+'" onclick="event.stopPropagation();openCaseFile(\''+inv.jobId+'\',\'actions\')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></td></tr>').join('')+'</tbody></table>'+pager;
+    $('arTableContainer').innerHTML=pager+'<table><thead><tr><th>Job #</th><th>Client</th><th>Claim #</th><th>Carrier</th><th>Office</th><th>Status</th><th>Days Out</th><th>Amount Due</th><th>Paid</th><th>Escalation</th><th>Last Contact</th><th class="no-sort" style="text-align:right">Actions</th></tr></thead><tbody>'+paged.map(inv=>'<tr class="row-'+agingColor(inv.effectiveDaysOut||inv.daysOut)+'" style="cursor:pointer" onclick="openCaseFile(\''+inv.jobId+'\')"><td><strong>'+inv.jobNum+'</strong><div class="cell-sub">'+inv.id+'</div></td><td>'+ccClientName(inv.jobId)+'</td><td>'+ccClaimCell(ccClaimOf(inv.jobId,inv.claimNum))+'</td><td>'+inv.carrier+'</td><td>'+inv.office+'</td><td><span class="badge '+arStatusClass(inv.status)+'">'+inv.status+'</span></td><td data-sort="'+(inv.effectiveDaysOut||inv.daysOut)+'" style="white-space:nowrap"><span class="age-dot age-'+agingColor(inv.effectiveDaysOut||inv.daysOut)+'"></span>'+(inv.effectiveDaysOut||inv.daysOut)+' days'+(inv.agingPaused?' <span title="Aging paused" style="color:var(--accent-yellow)">&#9208;</span>':'')+' </td><td data-sort="'+inv.amtDue+'">'+fmt(inv.amtDue)+'</td><td data-sort="'+inv.amtPaid+'">'+fmt(inv.amtPaid)+'</td><td>'+inv.escalationLevel+'</td><td>'+formatDate(inv.lastContact)+'</td><td class="row-actions"><button class="icon-btn" type="button" title="Log a call" aria-label="Log a call for '+inv.jobNum+'" onclick="event.stopPropagation();openCallLog(\''+inv.jobId+'\')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2"/></svg></button><button class="icon-btn" type="button" title="Open the Actions tab" aria-label="Open the Actions tab for '+inv.jobNum+'" onclick="event.stopPropagation();openCaseFile(\''+inv.jobId+'\',\'actions\')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></td></tr>').join('')+'</tbody></table>'+pager;
   }
   makeSortable('arTableContainer');
   renderArBucketChips();
@@ -3255,7 +3263,7 @@ function renderAIInbox(){
   }
   if (searchFilter) {
     filtered = filtered.filter(function(d) {
-      return (d.jobNum + ' ' + (d.senderName||d.fromName||'') + ' ' + (d.senderEmail||d.from||'') + ' ' + d.subject + ' ' + d.carrier).toLowerCase().indexOf(searchFilter) !== -1;
+      var _j = ccJobOf(d.jobId); return (d.jobNum + ' ' + ((_j && _j.homeowner) || '') + ' ' + (d.senderName||d.fromName||'') + ' ' + (d.senderEmail||d.from||'') + ' ' + d.subject + ' ' + d.carrier).toLowerCase().indexOf(searchFilter) !== -1;
     });
   }
 
@@ -3266,7 +3274,7 @@ function renderAIInbox(){
   }
 
   var html = '<table id="aiInboxTable"><thead><tr>' +
-    '<th>Date &#9650;</th><th>Job # &#9650;</th><th>Carrier</th><th>Sender &#9650;</th><th>Subject</th><th>AI Classification &#9650;</th><th>Status</th><th>Actions</th>' +
+    '<th>Date &#9650;</th><th>Job # &#9650;</th><th>Client</th><th>Carrier</th><th>Sender &#9650;</th><th>Subject</th><th>AI Classification &#9650;</th><th>Status</th><th>Actions</th>' +
     '</tr></thead><tbody>';
 
   filtered.forEach(function(e) {
@@ -3288,6 +3296,7 @@ function renderAIInbox(){
     html += '<tr style="cursor:pointer" onclick="openAIEmailDetail(\'' + e.id + '\')">' +
       '<td>' + formatDate(e.date) + '</td>' +
       '<td><strong>' + (e.jobNum || '—') + '</strong></td>' +
+      '<td>' + (function(){ var j = ccJobOf(e.jobId); var n = j && j.homeowner ? String(j.homeowner).trim() : ''; if (!n) return '—'; return j ? '<a href="#" title="Open client file" style="color:var(--accent-blue);font-weight:600" onclick="event.stopPropagation();event.preventDefault();openCaseFile(\'' + j.id + '\')">' + ccEscHtml(n) + '</a>' : ccEscHtml(n); })() + '</td>' +
       '<td>' + (e.carrier || '—') + '</td>' +
       '<td>' + (e.senderName || e.senderEmail || '—') + '<br><small style="color:var(--text-muted)">' + (e.senderRole || '') + '</small></td>' +
       '<td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (e.subject || '—') + '</td>' +
@@ -3937,7 +3946,7 @@ async function loadLiveData() {
         return {
           id: r.id,
           jobNum: f['PSA Job Number'] || f['Job ID'] || '',
-          claimNum: f['Claim Number'] || '',
+          claimNum: String(f['Claim Number'] || '').trim(),
           office: sel(f['Office']) || 'Portland',
           carrier: (function(){ var ids = f['Carriers']; if (!ids || !ids.length) return ''; return carrierMap[ids[0]] || ids[0] || ''; })() || '',
           primaryStatus: sel(f['Primary Status']) || '',
@@ -4924,20 +4933,23 @@ function showSendConfirmationModal(jobId, responseType, agreedAmount, gap, respD
   var subject = '', body = '';
 
   if (responseType === 'full') {
-    subject = 'Payment Confirmation — Claim ' + (j.claimNum||j.jobNum);
-    body = 'Dear ' + adjName + ',\n\n' +
+    // 2026-10-12 (Moshe): his wording — claim # and agreed amount only, no job number,
+    // no carrier block, payment line cites service agreement paragraph #5. Mirrors S-29 / T-AGR.
+    var claimTrim = String(j.claimNum || '').trim();
+    var carrierName = (carrier && String(carrier).indexOf('rec') !== 0) ? String(carrier).trim() : '';
+    subject = (claimTrim || j.jobNum) + ' — Agreed Amount Confirmation';
+    body = 'Dear ' + (carrierName || 'Insurance Company') + ',\n\n' +
       'Thank you for confirming payment for the above-referenced claim.\n\n' +
-      'This email confirms the following:\n' +
-      '• Job: ' + j.jobNum + '\n' +
-      '• Claim #: ' + (j.claimNum||'N/A') + '\n' +
-      '• Carrier: ' + carrier + '\n' +
-      '• Agreed Amount: ' + fmt(agreedAmount) + '\n' +
-      '• Confirmation Date: ' + respDate + '\n' +
-      (refNum ? '• Reference #: ' + refNum + '\n' : '') +
-      '\nWe kindly request payment be issued to 911 Restoration within 15 business days per the terms of our agreement.\n\n' +
-      'Please do not hesitate to contact us if any additional documentation is required.\n\n' +
-      'Best regards,\n' +
-      '911 Restoration — Collections Department';
+      '• Claim #: ' + (claimTrim || 'N/A') + '\n' +
+      'Agreed Amount: ' + new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(agreedAmount)||0) + '\n\n' +
+      'Please send payment to 911 Restoration directly as agreed with the client in our service agreement paragraph #5.\n\n' +
+      'Do not hesitate to contact us if you have any questions,\n\n' +
+      'Sincerely,\n\n' +
+      '--\n' +
+      'Moshe "Moe" Shtilman\n' +
+      'Mobile 971-533-0214\n' +
+      'IICRC Certified- WRT, AMRT, ASD, FSRT, CDS.\n' +
+      '911 Restoration';
   } else if (responseType === 'partial') {
     subject = 'Partial Payment Acknowledgment — Claim ' + (j.claimNum||j.jobNum);
     body = 'Dear ' + adjName + ',\n\n' +
